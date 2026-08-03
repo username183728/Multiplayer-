@@ -91,9 +91,29 @@
   }
   #chatBtn:active { transform: scale(0.92); filter:brightness(1.3); }
 
+  /* ---------- 5 Tombol Ekspresi (foto+suara), kecil-kecil, deket tombol Lompat ---------- */
+  #exprWheel {
+    position: fixed; bottom: 112px; right: 20px; z-index: 20;
+    display: flex; gap: 6px;
+  }
+  .exprSelBtn {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: linear-gradient(145deg, rgba(255,255,255,0.26), rgba(255,255,255,0.06));
+    border: 2px solid rgba(255, 255, 255, 0.28);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: #fff; cursor: pointer;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.4), inset 0 1px 3px rgba(255,255,255,0.15);
+    transition: transform 0.1s, filter 0.15s, border-color 0.15s;
+  }
+  .exprSelBtn:active { transform: scale(0.88); filter: brightness(1.25); }
+  .exprSelBtn.activeExpr {
+    border-color: #3ddc7f;
+    box-shadow: 0 0 8px rgba(46,213,115,0.6), inset 0 1px 3px rgba(255,255,255,0.2);
+  }
+
   /* ---------- Virtual Controls (Joystick, Jump, Skills) ---------- */
   #joystickBase {
-    position: fixed; bottom: 24px; right: 24px;
+    position: fixed; bottom: 24px; left: 24px;
     width: 120px; height: 120px;
     background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.22), rgba(255,255,255,0.06));
     border: 2px solid rgba(255, 255, 255, 0.28);
@@ -117,7 +137,7 @@
   }
 
   #jumpBtn {
-    position: fixed; bottom: 24px; left: 24px;
+    position: fixed; bottom: 24px; right: 24px;
     width: 80px; height: 80px;
     background: linear-gradient(145deg, rgba(255,255,255,0.28), rgba(255,255,255,0.08));
     border: 2px solid rgba(255, 255, 255, 0.28);
@@ -149,6 +169,8 @@
   .skillBtn:active { transform: scale(0.9); filter:brightness(1.2); }
   #skill1Btn { right: 24px; }
   #skill2Btn { right: 88px; }
+  #emoteBtn { right: 152px; }
+  #emoteBtn:active { animation: none; }
 
   /* ---------- Chat Modal Overlay ---------- */
   #chatModal {
@@ -185,7 +207,7 @@
   #rotateOverlay p { font-size:15px; opacity:0.85; max-width:280px; }
   @media (orientation: portrait) and (max-width: 950px) {
     #rotateOverlay { display:flex; }
-    #gameContainer, #joystickBase, #jumpBtn, #chatBtn, #gearBtn, #micBtn, #skill1Btn, #skill2Btn, #lobbyOverlay, #fsHint, #mpStatus { visibility:hidden; }
+    #gameContainer, #joystickBase, #jumpBtn, #chatBtn, #gearBtn, #micBtn, #exprWheel, #skill1Btn, #skill2Btn, #emoteBtn, #lobbyOverlay, #fsHint, #mpStatus, #timeBadge { visibility:hidden; }
   }
 
   /* ---------- Settings gear ---------- */
@@ -202,10 +224,10 @@
 
   #settingsPanel {
     position:fixed; top:0; right:0; height:100%; width:300px; max-width:86vw;
-    background:rgba(20,22,18,0.95); color:#fff; z-index:40;
+    background:#16180f; color:#fff; z-index:40;
     padding:20px; overflow-y:auto;
     transform:translateX(100%); transition:transform 0.25s ease;
-    box-shadow:-6px 0 24px rgba(0,0,0,0.4);
+    box-shadow:-6px 0 24px rgba(0,0,0,0.5);
   }
   #settingsPanel.open { transform:translateX(0); }
   #settingsPanel h2 { font-size:18px; margin-bottom:16px; }
@@ -213,12 +235,15 @@
   .field { margin-bottom:14px; }
   .fileBtn {
     display:inline-block; width:100%; text-align:center;
-    background:linear-gradient(145deg,#4cb956,#2f7a34); color:#fff; border:none; border-radius:8px;
+    background:#2c2f27; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px;
     padding:10px 12px; font-size:13px; font-weight:600; cursor:pointer;
   }
-  .fileBtn:active { filter:brightness(0.9); }
+  .fileBtn:active { filter:brightness(1.25); }
   .thumbRow { display:flex; align-items:center; gap:8px; margin-top:6px; font-size:12px; opacity:0.8; }
   .thumbRow img { width:32px; height:32px; object-fit:contain; border-radius:6px; background:rgba(255,255,255,0.08); }
+  .exprLabel { font-size:12px; font-weight:600; opacity:0.85; margin-bottom:6px; }
+  .soundBtn { margin-top:6px; }
+  .soundRow { display:flex; align-items:center; gap:6px; margin-top:6px; font-size:12px; opacity:0.8; }
   select {
     width:100%; padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.2);
     background:rgba(255,255,255,0.08); color:#fff; font-size:13px;
@@ -228,7 +253,7 @@
     font-size:20px; cursor:pointer; opacity:0.7;
   }
   #panelBackdrop {
-    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:35;
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:35;
   }
   #panelBackdrop.open { display:block; }
 
@@ -256,6 +281,15 @@
     transition: background 0.3s, box-shadow 0.3s;
   }
   #mpStatus.online .dot { background:#2ed573; box-shadow:0 0 4px rgba(46,213,115,0.8); }
+
+  /* ---------- Badge waktu: Pagi / Siang / Malam ---------- */
+  #timeBadge {
+    position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:30;
+    background:rgba(0,0,0,0.32); color:#fff; border:1px solid rgba(255,255,255,0.15);
+    border-radius:20px; padding:5px 12px; font-size:12px; font-weight:600;
+    display:flex; align-items:center; gap:6px;
+    pointer-events:none; transition: background 0.4s;
+  }
 </style>
 </head>
 <body>
@@ -272,6 +306,7 @@
     <h1>🌾 Petualangan Padang Rumput</h1>
     <p>Masukkan namamu untuk mulai bermain bersama pemain lain</p>
     <input type="text" id="lobbyNameInput" placeholder="Nama kamu..." maxlength="16">
+    <input type="password" id="lobbyAdminCode" placeholder="Kode admin (kosongkan jika bukan admin)" maxlength="30" style="font-size:12px; padding:9px; opacity:0.85;">
     <button id="lobbyPlayBtn">Mulai Main</button>
     <div id="lobbyOnlineCount">Menghubungkan...</div>
   </div>
@@ -289,11 +324,23 @@
     <div id="joystickStick"></div>
   </div>
   <div id="jumpBtn">LOMPAT</div>
-  <button id="skill1Btn" class="skillBtn" title="Skill 1: Bakar">🔥</button>
+
+  <!-- 5 Tombol Ekspresi (foto + suara), kecil-kecil, tepat di atas tombol Lompat -->
+  <div id="exprWheel">
+    <button class="exprSelBtn" data-expr="normal" title="Normal">🙂</button>
+    <button class="exprSelBtn" data-expr="marah" title="Marah">😠</button>
+    <button class="exprSelBtn" data-expr="senang" title="Senang">😄</button>
+    <button class="exprSelBtn" data-expr="sedih" title="Sedih">😢</button>
+    <button class="exprSelBtn" data-expr="ketawa" title="Ketawa">🤣</button>
+  </div>
+
+  <button id="skill1Btn" class="skillBtn" title="Skill 1: Bakar (Admin: Kick)" style="display:none;">🔥</button>
   <button id="skill2Btn" class="skillBtn" title="Skill 2: Gamper">🫱</button>
+  <button id="emoteBtn" class="skillBtn" title="Emote: Goyang Rumput">🌾</button>
 
   <button id="fsHint" title="Layar penuh">⛶</button>
   <div id="mpStatus"><span class="dot"></span><span id="mpStatusText">…</span></div>
+  <div id="timeBadge"><span id="timeBadgeIcon">🌅</span><span id="timeBadgeText">Pagi</span></div>
 </div>
 
 <!-- Chat Input Modal -->
@@ -311,20 +358,69 @@
   <button id="closePanelBtn">✕</button>
   <h2>Kustomisasi</h2>
 
-  <h3>Karaktermu</h3>
-  <div class="field">
-    <input type="file" id="playerFile" accept="image/*" style="display:none">
-    <button class="fileBtn" id="playerFileBtn">📤 Upload Karakter</button>
-    <div class="thumbRow" id="playerThumbRow" style="display:none;">
-      <img id="playerThumb"><span>Karakter aktif (tersinkron ke pemain lain)</span>
+  <h3>Foto Karaktermu (maks 5 ekspresi)</h3>
+  <div class="field expr-field" data-expr="normal">
+    <div class="exprLabel">1. Normal 🙂</div>
+    <input type="file" class="exprFileInput" accept="image/*" style="display:none">
+    <button class="fileBtn exprFileBtn">📤 Upload Foto</button>
+    <div class="thumbRow" style="display:none;">
+      <img class="exprThumb"><span>Tersimpan</span>
     </div>
+    <input type="file" class="exprSoundInput" accept="audio/*" style="display:none">
+    <button class="fileBtn soundBtn exprSoundBtn">🎵 Upload Suara</button>
+    <div class="soundRow" style="display:none;"><span>🎵 Suara tersimpan</span></div>
   </div>
+  <div class="field expr-field" data-expr="marah">
+    <div class="exprLabel">2. Marah 😠</div>
+    <input type="file" class="exprFileInput" accept="image/*" style="display:none">
+    <button class="fileBtn exprFileBtn">📤 Upload Foto</button>
+    <div class="thumbRow" style="display:none;">
+      <img class="exprThumb"><span>Tersimpan</span>
+    </div>
+    <input type="file" class="exprSoundInput" accept="audio/*" style="display:none">
+    <button class="fileBtn soundBtn exprSoundBtn">🎵 Upload Suara</button>
+    <div class="soundRow" style="display:none;"><span>🎵 Suara tersimpan</span></div>
+  </div>
+  <div class="field expr-field" data-expr="senang">
+    <div class="exprLabel">3. Senang 😄</div>
+    <input type="file" class="exprFileInput" accept="image/*" style="display:none">
+    <button class="fileBtn exprFileBtn">📤 Upload Foto</button>
+    <div class="thumbRow" style="display:none;">
+      <img class="exprThumb"><span>Tersimpan</span>
+    </div>
+    <input type="file" class="exprSoundInput" accept="audio/*" style="display:none">
+    <button class="fileBtn soundBtn exprSoundBtn">🎵 Upload Suara</button>
+    <div class="soundRow" style="display:none;"><span>🎵 Suara tersimpan</span></div>
+  </div>
+  <div class="field expr-field" data-expr="sedih">
+    <div class="exprLabel">4. Sedih 😢</div>
+    <input type="file" class="exprFileInput" accept="image/*" style="display:none">
+    <button class="fileBtn exprFileBtn">📤 Upload Foto</button>
+    <div class="thumbRow" style="display:none;">
+      <img class="exprThumb"><span>Tersimpan</span>
+    </div>
+    <input type="file" class="exprSoundInput" accept="audio/*" style="display:none">
+    <button class="fileBtn soundBtn exprSoundBtn">🎵 Upload Suara</button>
+    <div class="soundRow" style="display:none;"><span>🎵 Suara tersimpan</span></div>
+  </div>
+  <div class="field expr-field" data-expr="ketawa">
+    <div class="exprLabel">5. Ketawa 🤣</div>
+    <input type="file" class="exprFileInput" accept="image/*" style="display:none">
+    <button class="fileBtn exprFileBtn">📤 Upload Foto</button>
+    <div class="thumbRow" style="display:none;">
+      <img class="exprThumb"><span>Tersimpan</span>
+    </div>
+    <input type="file" class="exprSoundInput" accept="audio/*" style="display:none">
+    <button class="fileBtn soundBtn exprSoundBtn">🎵 Upload Suara</button>
+    <div class="soundRow" style="display:none;"><span>🎵 Suara tersimpan</span></div>
+  </div>
+  <p style="font-size:11px; opacity:0.6; margin-top:-6px; margin-bottom:14px;">Tiap slot bisa diisi foto + suara sendiri. Di layar permainan, tekan tombol 1️⃣-5️⃣ kecil di atas tombol LOMPAT untuk pindah foto sekaligus muter suaranya.</p>
 
   <h3>Posisi Joystick</h3>
   <div class="field">
     <select id="joystickPosSelect">
-      <option value="right" selected>Kanan</option>
-      <option value="left">Kiri</option>
+      <option value="left" selected>Kiri</option>
+      <option value="right">Kanan</option>
     </select>
   </div>
 </div>
@@ -345,7 +441,8 @@
        "players": { ".read": "auth != null", ".write": "auth != null" },
        "kicked":  { ".read": "auth != null", ".write": "auth != null" },
        "effects": { ".read": "auth != null", ".write": "auth != null" },
-       "signals": { ".read": "auth != null", ".write": "auth != null" }
+       "signals": { ".read": "auth != null", ".write": "auth != null" },
+       "pushes":  { ".read": "auth != null", ".write": "auth != null" }
      }
    }
    Dan Authentication → Sign-in method → Anonymous harus di-Enable.
@@ -368,6 +465,7 @@ let authReady = false;
 let isKicked = false;
 let kickedRef = null;
 let effectsRef = null;
+let pushesRef = null;
 
 try {
   firebase.initializeApp(firebaseConfig);
@@ -375,6 +473,7 @@ try {
   playersRef = db.ref('players');
   kickedRef = db.ref('kicked');
   effectsRef = db.ref('effects');
+  pushesRef = db.ref('pushes');
 } catch (err) {
   console.error('Gagal inisialisasi Firebase:', err);
   mpEnabled = false;
@@ -419,6 +518,18 @@ let dustSpawnTimer = 0;
 
 let gameEntered = false;
 
+// ---------- Sistem Admin (lokal, khusus kamu) ----------
+// Ganti kode ini ke kata rahasia milikmu sendiri, lalu simpan file ini untuk diri sendiri saja.
+// Siapapun yang tahu/isi kode ini persis akan jadi admin dan dapat tombol Skill 1 (Kick 🔥).
+// Pemain biasa (kode kosong/salah) cuma dapat Skill 2 (Dorong 🫱).
+const ADMIN_CODE = 'RUMPUT-ADMIN-2026';
+let isAdmin = false;
+
+// ---------- Batas jumlah pemain (buat testing dulu sama sedikit orang) ----------
+// Ganti angka ini sesuka kamu. Isi 0 kalau nanti mau dibuka bebas tanpa batas.
+// Admin (kode di atas cocok) selalu boleh masuk walau room sudah penuh.
+const MAX_PLAYERS = 5;
+
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
@@ -440,7 +551,7 @@ resize();
 
 // ---------- World setup ----------
 const WORLD_W = 4800, WORLD_H = 4800;
-const TILE = 48;
+const TILE = 32;
 
 const player = { 
   x: WORLD_W/2, 
@@ -452,7 +563,11 @@ const player = {
   facing: 'right', 
   moving: false, 
   sprite: null,
-  avatarDataURL: null,
+  sprites: { normal: null, marah: null, senang: null, sedih: null, ketawa: null },
+  avatarDataURLs: { normal: null, marah: null, senang: null, sedih: null, ketawa: null },
+  soundDataURLs: { normal: null, marah: null, senang: null, sedih: null, ketawa: null },
+  sounds: { normal: null, marah: null, senang: null, sedih: null, ketawa: null },
+  expr: 'normal',
   name: '',
   z: 0,
   vz: 0,
@@ -461,10 +576,68 @@ const player = {
   chatTimer: 0,
   micActive: false,
   isSpeaking: false,
-  speechAnimTimer: 0
+  speechAnimTimer: 0,
+  hitFlashTimer: 0,
+  emoting: false,
+  emoteTimer: 0,
+  emotePhase: 0
 };
 
+// Daftar ekspresi foto yang bisa diunggah pemain (maks 5, siklus lewat tombol 🙂)
+const EXPR_LIST = [
+  { key: 'normal', label: 'Normal', icon: '🙂' },
+  { key: 'marah',  label: 'Marah',  icon: '😠' },
+  { key: 'senang', label: 'Senang', icon: '😄' },
+  { key: 'sedih',  label: 'Sedih',  icon: '😢' },
+  { key: 'ketawa', label: 'Ketawa', icon: '🤣' }
+];
+
 let camera = { x: player.x - W/2, y: player.y - H/2 };
+
+// ---------- Siklus Waktu: Pagi / Siang / Malam ----------
+const DAY_CYCLE_SECONDS = 300; // satu putaran penuh pagi->siang->malam = 5 menit
+const gameStartPerf = performance.now();
+const DAY_STOPS = [
+  { p: 0.00, c: [255, 178, 102], a: 0.22, label: 'Pagi',  icon: '🌅' },
+  { p: 0.28, c: [255, 178, 102], a: 0.05, label: 'Pagi',  icon: '🌅' },
+  { p: 0.33, c: [255, 224, 170], a: 0.00, label: 'Siang', icon: '☀️' },
+  { p: 0.62, c: [255, 224, 170], a: 0.00, label: 'Siang', icon: '☀️' },
+  { p: 0.68, c: [50,  45,  100], a: 0.32, label: 'Malam', icon: '🌙' },
+  { p: 0.90, c: [12,  16,  55],  a: 0.60, label: 'Malam', icon: '🌙' },
+  { p: 1.00, c: [255, 178, 102], a: 0.22, label: 'Pagi',  icon: '🌅' }
+];
+function lerp(a, b, t) { return a + (b - a) * t; }
+function getDayNightInfo() {
+  const cycleT = ((performance.now() - gameStartPerf) / 1000 % DAY_CYCLE_SECONDS) / DAY_CYCLE_SECONDS;
+  for (let i = 0; i < DAY_STOPS.length - 1; i++) {
+    const s0 = DAY_STOPS[i], s1 = DAY_STOPS[i + 1];
+    if (cycleT >= s0.p && cycleT <= s1.p) {
+      const segT = (cycleT - s0.p) / (s1.p - s0.p || 1);
+      const color = [0, 1, 2].map(k => lerp(s0.c[k], s1.c[k], segT));
+      const alpha = lerp(s0.a, s1.a, segT);
+      const label = segT < 0.5 ? s0.label : s1.label;
+      const icon = segT < 0.5 ? s0.icon : s1.icon;
+      return { color, alpha, label, icon };
+    }
+  }
+  const last = DAY_STOPS[DAY_STOPS.length - 1];
+  return { color: last.c, alpha: last.a, label: last.label, icon: last.icon };
+}
+function drawDayNightOverlay(info) {
+  if (info.alpha <= 0.003) return;
+  ctx.save();
+  ctx.fillStyle = `rgba(${info.color[0]|0}, ${info.color[1]|0}, ${info.color[2]|0}, ${info.alpha})`;
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+}
+let lastBadgeLabel = '';
+function updateTimeBadge(info) {
+  if (info.label !== lastBadgeLabel) {
+    document.getElementById('timeBadgeText').textContent = info.label;
+    document.getElementById('timeBadgeIcon').textContent = info.icon;
+    lastBadgeLabel = info.label;
+  }
+}
 
 // ---------- Setup koneksi multiplayer (Firebase Realtime Database) ----------
 const mpStatusEl = document.getElementById('mpStatus');
@@ -489,9 +662,8 @@ function refreshLobbyNames(data) {
     .filter(id => id !== playerID)
     .map(id => data[id] && data[id].name)
     .filter(Boolean);
-  lobbyOnlineCount.textContent = names.length > 0
-    ? (names.length + ' pemain online sekarang')
-    : 'Jadilah pemain pertama online!';
+  const countText = MAX_PLAYERS > 0 ? (names.length + '/' + MAX_PLAYERS + ' pemain online') : (names.length + ' pemain online sekarang');
+  lobbyOnlineCount.textContent = names.length > 0 ? countText : 'Jadilah pemain pertama online!';
   lobbyNamesBg.innerHTML = names.map(n => '<span>' + escapeHtml(n) + '</span>').join('');
 }
 
@@ -507,17 +679,24 @@ function refreshLobbyNames(data) {
 const RTC_CONFIG = {
   iceServers: [
     { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' }
+    { urls: 'stun:stun1.l.google.com:19302' },
+    // TURN server cadangan (gratis, dipakai kalau koneksi P2P langsung gagal
+    // karena NAT/firewall jaringan seluler atau WiFi yang ketat)
+    { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+    { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+    { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
   ]
 };
 let localStream = null;
 const peerConnections = {};   // remoteId -> RTCPeerConnection
 const remoteAudioEls = {};    // remoteId -> <audio>
 let micAudioCtx = null, micAnalyser = null, micDataArray = null;
+let speakingHoldTimer = 0; // biar indikator hijau tidak kedap-kedip
 
 function setupMicAnalyser(stream) {
   try {
     micAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (micAudioCtx.state === 'suspended') micAudioCtx.resume();
     const source = micAudioCtx.createMediaStreamSource(stream);
     micAnalyser = micAudioCtx.createAnalyser();
     micAnalyser.fftSize = 512;
@@ -683,6 +862,20 @@ if (mpEnabled && db && playersRef) {
       }
     });
 
+    // Dengarkan kalau AKU yang didorong pemain lain (skill Gamper) — posisi baru
+    // diterapkan ke player.x/y milikKU sendiri, supaya tidak "balik lagi" saat
+    // aku mengirim update posisiku sendiri berikutnya (poin: dorongan sekarang menetap).
+    if (pushesRef) {
+      pushesRef.child(playerID).on('child_added', snap => {
+        const push = snap.val();
+        snap.ref.remove();
+        if (!push) return;
+        player.x = Math.max(20, Math.min(WORLD_W - 20, push.nx));
+        player.y = Math.max(20, Math.min(WORLD_H - 20, push.ny));
+        player.hitFlashTimer = 0.35;
+      });
+    }
+
     // Pantau status koneksi ke Firebase
     db.ref('.info/connected').on('value', snap => {
       updateMpIndicator(snap.val() === true, Object.keys(otherPlayers).length);
@@ -752,12 +945,15 @@ function sendMyPositionIfDue(dt) {
   myPlayerRef.update({
     x: Math.round(player.x),
     y: Math.round(player.y),
+    z: Math.round(player.z),
     dir: player.dir,
     facing: player.facing,
     moving: player.moving,
     micActive: player.micActive,
     isSpeaking: player.isSpeaking,
     chatMessage: player.chatMessage || '',
+    emoting: player.emoting,
+    expr: player.expr,
     lastSeen: firebase.database.ServerValue.TIMESTAMP
   });
 }
@@ -773,11 +969,15 @@ function enterGame(name) {
     myPlayerRef = playersRef.child(playerID);
     const initData = {
       x: player.x, y: player.y, dir: player.dir, facing: player.facing,
-      moving: false, name: player.name,
+      moving: false, name: player.name, expr: player.expr,
       lastSeen: firebase.database.ServerValue.TIMESTAMP
     };
-    // Kalau avatar sudah diupload sebelumnya di sesi ini, ikut kirim
-    if (player.avatarDataURL) initData.avatar = player.avatarDataURL;
+    // Kalau foto ekspresi sudah diupload sebelumnya di sesi ini, ikut kirim semua
+    const uploadedAvatars = {};
+    for (const k in player.avatarDataURLs) {
+      if (player.avatarDataURLs[k]) uploadedAvatars[k] = player.avatarDataURLs[k];
+    }
+    if (Object.keys(uploadedAvatars).length > 0) initData.avatars = uploadedAvatars;
     myPlayerRef.set(initData);
 
     // Kalau koneksi HP putus / tab ditutup, hapus otomatis data pemain ini dari
@@ -790,18 +990,42 @@ function enterGame(name) {
 }
 
 const lobbyNameInput = document.getElementById('lobbyNameInput');
+const lobbyAdminCode = document.getElementById('lobbyAdminCode');
 const lobbyPlayBtn = document.getElementById('lobbyPlayBtn');
 function submitLobby() {
   let name = lobbyNameInput.value.trim();
   if (!name) name = 'Petualang' + Math.floor(Math.random() * 1000);
   name = name.substring(0, 16);
+
+  // Cek kode admin: kalau cocok persis, baru dapat status admin + Skill 1 (Kick)
+  isAdmin = lobbyAdminCode.value.trim() !== '' && lobbyAdminCode.value.trim() === ADMIN_CODE;
+  lobbyAdminCode.value = ''; // langsung dikosongkan, tidak disimpan/ dikirim kemana-mana
+
+  // Sembunyikan tombol Kick (Skill 1) untuk pemain biasa; hanya admin yang melihatnya
+  skill1Btn.style.display = isAdmin ? 'flex' : 'none';
+
+  // Batas jumlah pemain: kalau room sudah penuh, pemain biasa ditolak masuk.
+  // Admin selalu boleh masuk walau penuh (misalnya buat ngecek/ngatur room).
+  if (mpEnabled && db && !isAdmin && MAX_PLAYERS > 0) {
+    const currentCount = Object.keys(otherPlayers).length;
+    if (currentCount >= MAX_PLAYERS) {
+      alert('Maaf, room sudah penuh (maksimal ' + MAX_PLAYERS + ' pemain). Coba lagi nanti ya!');
+      return;
+    }
+  }
+
   enterGame(name);
 }
 lobbyPlayBtn.addEventListener('click', submitLobby);
 lobbyNameInput.addEventListener('keydown', e => { if (e.key === 'Enter') submitLobby(); });
 
 // ---------- Terrain Generation ----------
+// Danau tetap (statis) di dalam map supaya tidak terasa sepi
+const LAKE = { x: WORLD_W * 0.72, y: WORLD_H * 0.26, r: 260 };
 function getTerrain(col, row) {
+  const wx = col * TILE, wy = row * TILE;
+  if (Math.hypot(wx - LAKE.x, wy - LAKE.y) < LAKE.r) return 'lake';
+
   const riverLine = Math.sin(col * 0.1) * 6 + 25;
   if (Math.abs(row - riverLine) < 2) return 'river';
 
@@ -822,13 +1046,61 @@ for (let i=0; i<300; i++) {
   const type = r < 0.55 ? 'tree' : (r < 0.8 ? 'rock' : 'bush');
   const rx = rnd()*WORLD_W, ry = rnd()*WORLD_H;
   const col = Math.floor(rx/TILE), row = Math.floor(ry/TILE);
-  if (getTerrain(col, row) === 'river') continue;
+  const oTerrain = getTerrain(col, row);
+  if (oTerrain === 'river' || oTerrain === 'lake') continue;
   const baseR = type === 'tree' ? 22 : (type === 'rock' ? 14 : 11);
   obstacles.push({ x: rx, y: ry, type, r: baseR, scale: 0.8 + rnd()*0.6 });
 }
 for (let i = obstacles.length-1; i>=0; i--) {
   const o = obstacles[i];
   if (Math.hypot(o.x-player.x, o.y-player.y) < 140) obstacles.splice(i,1);
+}
+
+// ---------- Ikan kecil di air (danau & sungai) ----------
+const FISH = [];
+const FISH_COLORS = ['#ff8c42', '#f4d35e', '#7ec8e3', '#ff6b81', '#e8e8e8', '#6fcf97'];
+const rndFish = seededRandom(101);
+// Ikan di danau, tersebar acak di dalam lingkaran danau
+for (let i=0; i<26; i++) {
+  const ang = rndFish()*Math.PI*2, rad = rndFish()*LAKE.r*0.82;
+  FISH.push({
+    homeX: LAKE.x + Math.cos(ang)*rad, homeY: LAKE.y + Math.sin(ang)*rad,
+    phase: rndFish()*Math.PI*2, speed: 0.6+rndFish()*0.7, range: 8+rndFish()*12,
+    size: 3+rndFish()*2, color: FISH_COLORS[Math.floor(rndFish()*FISH_COLORS.length)]
+  });
+}
+// Ikan di sepanjang sungai
+for (let wx=0; wx<WORLD_W; wx+=220) {
+  if (rndFish() > 0.6) continue;
+  const col = wx/TILE;
+  const riverLine = Math.sin(col * 0.1) * 6 + 25;
+  const wy = riverLine * TILE + (rndFish()-0.5)*30;
+  FISH.push({
+    homeX: wx, homeY: wy,
+    phase: rndFish()*Math.PI*2, speed: 0.6+rndFish()*0.7, range: 6+rndFish()*8,
+    size: 3+rndFish()*2, color: FISH_COLORS[Math.floor(rndFish()*FISH_COLORS.length)]
+  });
+}
+
+// ---------- Hewan darat kecil: kupu-kupu & burung kecil di atas rumput ----------
+const CRITTERS = [];
+const rndCritter = seededRandom(202);
+const BUTTERFLY_COLORS = ['#ff9ecf', '#fff07a', '#8ec9ff', '#ffffff'];
+const BIRD_COLORS = ['#8b5a2b', '#5a5a5a', '#c97b4a'];
+for (let i=0; i<60; i++) {
+  const cx = rndCritter()*WORLD_W, cy = rndCritter()*WORLD_H;
+  const col = Math.floor(cx/TILE), row = Math.floor(cy/TILE);
+  if (getTerrain(col, row) !== 'grass') continue;
+  const isButterfly = rndCritter() < 0.55;
+  CRITTERS.push({
+    type: isButterfly ? 'butterfly' : 'bird',
+    homeX: cx, homeY: cy,
+    phase: rndCritter()*Math.PI*2,
+    speed: isButterfly ? (0.8+rndCritter()*0.6) : (0.4+rndCritter()*0.3),
+    range: isButterfly ? (16+rndCritter()*20) : (5+rndCritter()*7),
+    color: isButterfly ? BUTTERFLY_COLORS[Math.floor(rndCritter()*BUTTERFLY_COLORS.length)]
+                        : BIRD_COLORS[Math.floor(rndCritter()*BIRD_COLORS.length)]
+  });
 }
 
 // ---------- Input & Mic & Chat & Skills ----------
@@ -887,10 +1159,11 @@ micBtn.addEventListener('click', async () => {
   }
 });
 
-// Skill 1: Bakar (🔥) - Pemain lain yang didekati akan dikeluarkan (kick) dari game
+// Skill 1: Bakar (🔥) - KHUSUS ADMIN: Pemain lain yang didekati akan dikeluarkan (kick) dari game
 const skill1Btn = document.getElementById('skill1Btn');
 function useSkill1() {
   if (!gameEntered) return;
+  if (!isAdmin) return; // hanya admin yang boleh nge-kick
   if (mpEnabled && db) {
     let nearestId = null, nearestDist = 100;
     for (const id in otherPlayers) {
@@ -933,11 +1206,24 @@ function useSkill2() {
   ny = Math.max(20, Math.min(WORLD_H - 20, ny));
 
   broadcastEffect('push', target.x || player.x, target.y || player.y);
-  db.ref('players/' + nearestId).update({ x: Math.round(nx), y: Math.round(ny) });
+  // Kirim event dorongan ke pemain yang dituju — DIA sendiri yang akan menerapkan
+  // posisi baru ini ke datanya, jadi tidak akan "balik lagi" ke posisi semula.
+  if (pushesRef) pushesRef.child(nearestId).push({ nx: Math.round(nx), ny: Math.round(ny) });
   otherPlayers[nearestId] = { ...target, x: nx, y: ny };
+  if (otherPlayersRender[nearestId]) { otherPlayersRender[nearestId].x = nx; otherPlayersRender[nearestId].y = ny; }
 }
 skill2Btn.addEventListener('touchstart', e => { useSkill2(); e.preventDefault(); }, {passive: false});
 skill2Btn.addEventListener('click', useSkill2);
+
+// Emote: goyang seperti rumput kena angin (miring kiri-kanan saja)
+const emoteBtn = document.getElementById('emoteBtn');
+function useEmote() {
+  if (!gameEntered) return;
+  player.emoting = true;
+  player.emoteTimer = 2.2;
+}
+emoteBtn.addEventListener('touchstart', e => { useEmote(); e.preventDefault(); }, {passive: false});
+emoteBtn.addEventListener('click', useEmote);
 
 // Chat system wiring (max 50 chars enforced)
 const chatBtn = document.getElementById('chatBtn');
@@ -1098,44 +1384,90 @@ function loadImageFromFile(file, onReady) {
   reader.readAsDataURL(file);
 }
 
-// ---------- Upload avatar: tetap jernih, cuma diturunkan resolusinya kalau kegedean (poin 1) ----------
-// PENTING: tombol harus memicu klik pada input file tersembunyi, ini yang tadinya hilang
-// sehingga tombol "Upload Karakter" tidak melakukan apa-apa saat ditekan.
-document.getElementById('playerFileBtn').addEventListener('click', () => {
-  document.getElementById('playerFile').click();
-});
-document.getElementById('playerFile').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  loadImageFromFile(file, img => {
-    const original = Math.min(img.naturalWidth, img.naturalHeight);
-    // Kalau foto aslinya sudah kecil/pas, jangan diperkecil lagi (biar tidak makin buram).
-    // Kalau resolusinya tinggi, baru diturunkan ke maksimal 160px supaya hemat data.
-    const targetSize = Math.min(original, 160);
-    const off = document.createElement('canvas');
-    off.width = targetSize; off.height = targetSize;
-    const octx = off.getContext('2d');
-    octx.imageSmoothingEnabled = true;
-    octx.imageSmoothingQuality = 'high';
-    const sx = (img.naturalWidth - original) / 2, sy = (img.naturalHeight - original) / 2;
-    octx.drawImage(img, sx, sy, original, original, 0, 0, targetSize, targetSize);
-    const quality = targetSize > 100 ? 0.9 : 0.95;
-    const dataURL = off.toDataURL('image/jpeg', quality);
+// ---------- Upload foto ekspresi (maks 5): tetap jernih, cuma diturunkan resolusinya kalau kegedean ----------
+// Tiap slot (.expr-field) punya tombol upload sendiri, dikenali lewat atribut data-expr.
+document.querySelectorAll('.expr-field').forEach(field => {
+  const exprKey = field.dataset.expr;
+  const fileInput = field.querySelector('.exprFileInput');
+  const fileBtn = field.querySelector('.exprFileBtn');
+  const thumbRow = field.querySelector('.thumbRow');
+  const thumbImg = field.querySelector('.exprThumb');
+  const soundInput = field.querySelector('.exprSoundInput');
+  const soundBtn = field.querySelector('.exprSoundBtn');
+  const soundRow = field.querySelector('.soundRow');
 
-    const compressed = new Image();
-    compressed.onload = () => {
-      player.sprite = compressed;
-      player.avatarDataURL = dataURL;
-      const thumb = document.getElementById('playerThumb');
-      thumb.src = dataURL;
-      document.getElementById('playerThumbRow').style.display = 'flex';
-      // Kirim avatar ke Firebase (jadi bagian dari node pemain ini, sehingga otomatis
-      // ikut terhapus saat pemain keluar/kena kick/tidak aktif — tidak ada sampah tersisa)
-      if (mpEnabled && myPlayerRef) myPlayerRef.update({ avatar: dataURL });
+  // Upload suara khusus ekspresi ini (diputar tiap kali tombol foto ini ditekan di layar permainan)
+  soundBtn.addEventListener('click', () => soundInput.click());
+  soundInput.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const dataURL = ev.target.result;
+      player.soundDataURLs[exprKey] = dataURL;
+      player.sounds[exprKey] = new Audio(dataURL);
+      soundRow.style.display = 'flex';
     };
-    compressed.src = dataURL;
+    reader.readAsDataURL(file);
+  });
+
+  fileBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    loadImageFromFile(file, img => {
+      const original = Math.min(img.naturalWidth, img.naturalHeight);
+      // Kalau foto aslinya sudah kecil/pas, jangan diperkecil lagi (biar tidak makin buram).
+      // Kalau resolusinya tinggi, baru diturunkan ke maksimal 160px supaya hemat data.
+      const targetSize = Math.min(original, 160);
+      const off = document.createElement('canvas');
+      off.width = targetSize; off.height = targetSize;
+      const octx = off.getContext('2d');
+      octx.imageSmoothingEnabled = true;
+      octx.imageSmoothingQuality = 'high';
+      const sx = (img.naturalWidth - original) / 2, sy = (img.naturalHeight - original) / 2;
+      octx.drawImage(img, sx, sy, original, original, 0, 0, targetSize, targetSize);
+      const quality = targetSize > 100 ? 0.9 : 0.95;
+      const dataURL = off.toDataURL('image/jpeg', quality);
+
+      const compressed = new Image();
+      compressed.onload = () => {
+        player.sprites[exprKey] = compressed;
+        player.avatarDataURLs[exprKey] = dataURL;
+        thumbImg.src = dataURL;
+        thumbRow.style.display = 'flex';
+        // Kalau ekspresi yang baru diupload ini sedang aktif dipakai, langsung tampilkan
+        if (player.expr === exprKey) player.sprite = compressed;
+        // Kirim ke Firebase per-ekspresi (jadi bagian dari node pemain ini, sehingga otomatis
+        // ikut terhapus saat pemain keluar/kena kick/tidak aktif — tidak ada sampah tersisa)
+        if (mpEnabled && myPlayerRef) myPlayerRef.child('avatars').update({ [exprKey]: dataURL });
+      };
+      compressed.src = dataURL;
+    });
   });
 });
+
+// ---------- 5 Tombol pilih foto+suara langsung (1:Normal 2:Marah 3:Senang 4:Sedih 5:Ketawa) ----------
+const exprSelBtns = document.querySelectorAll('.exprSelBtn');
+function selectExpression(exprKey) {
+  const info = EXPR_LIST.find(e => e.key === exprKey);
+  if (!info) return;
+  player.expr = exprKey;
+  player.sprite = player.sprites[exprKey] || null;
+  exprSelBtns.forEach(b => b.classList.toggle('activeExpr', b.dataset.expr === exprKey));
+  // Mainkan suara yang sudah diupload untuk foto ini (kalau ada)
+  const snd = player.sounds[exprKey];
+  if (snd) {
+    try { snd.currentTime = 0; snd.play(); } catch (e) {}
+  }
+  if (mpEnabled && myPlayerRef) myPlayerRef.update({ expr: player.expr });
+}
+exprSelBtns.forEach(btn => {
+  const key = btn.dataset.expr;
+  btn.addEventListener('touchstart', e => { selectExpression(key); e.preventDefault(); }, {passive: false});
+  btn.addEventListener('click', () => selectExpression(key));
+});
+document.querySelector('.exprSelBtn[data-expr="normal"]')?.classList.add('activeExpr');
 
 // ---------- Collision ----------
 function collides(nx, ny) {
@@ -1208,22 +1540,44 @@ function update(dt) {
     player.walkAnim += dt * 9;
   }
 
+  // Emote: goyang kiri-kanan seperti rumput kena angin
+  if (player.emoteTimer > 0) {
+    player.emoteTimer -= dt;
+    player.emotePhase += dt * 6;
+    if (player.emoteTimer <= 0) {
+      player.emoteTimer = 0;
+      player.emoting = false;
+      player.emotePhase = 0;
+    }
+  }
+
   // Deteksi suara asli dari mikrofon (bukan simulasi acak lagi)
+  // Pakai ambang lebih rendah + "hold" singkat supaya indikator hijau tidak
+  // kedap-kedip tiap ada jeda kecil di kalimat.
   if (player.micActive) {
     const vol = getMicVolume();
-    player.isSpeaking = vol > 0.045;
+    if (vol > 0.018) {
+      speakingHoldTimer = 0.35;
+    } else {
+      speakingHoldTimer = Math.max(0, speakingHoldTimer - dt);
+    }
+    player.isSpeaking = speakingHoldTimer > 0;
   } else {
     player.isSpeaking = false;
+    speakingHoldTimer = 0;
   }
 
   // Perbarui posisi render pemain lain secara halus (interpolasi) supaya tidak patah-patah (poin 4)
   for (const id in otherPlayers) {
     const p = otherPlayers[id];
-    if (!otherPlayersRender[id]) otherPlayersRender[id] = { x: p.x||0, y: p.y||0 };
+    if (!otherPlayersRender[id]) otherPlayersRender[id] = { x: p.x||0, y: p.y||0, z: p.z||0 };
     const rp = otherPlayersRender[id];
     const smoothing = 1 - Math.pow(0.001, dt); // ~exponential smoothing, halus di segala framerate
     rp.x += ((p.x||0) - rp.x) * smoothing;
     rp.y += ((p.y||0) - rp.y) * smoothing;
+    // Ketinggian loncat dihaluskan lebih cepat biar loncatan tetap terasa "cepat" (poin: loncat tersinkron)
+    const zSmoothing = 1 - Math.pow(0.00001, dt);
+    rp.z += ((p.z||0) - rp.z) * zSmoothing;
   }
 
   // Chat timer countdown
@@ -1233,6 +1587,9 @@ function update(dt) {
       player.chatMessage = '';
     }
   }
+
+  // Kedip merah singkat saat kena dorongan (poin: kelihatan kalau kena pukul)
+  if (player.hitFlashTimer > 0) player.hitFlashTimer -= dt;
 
   // Serpihan debu saat berjalan
   if (gameEntered && player.moving && player.z === 0) {
@@ -1272,6 +1629,14 @@ function update(dt) {
   sendMyPositionIfDue(dt);
 }
 
+// Seed acak yang konsisten per-tile (tidak berubah tiap frame, jadi teksturnya tidak "berkedip")
+function tileNoise(col, row) {
+  let h = (col * 374761393 + row * 668265263);
+  h = (h ^ (h >> 13)) * 1274126177;
+  h = h ^ (h >> 16);
+  return ((h % 1000) + 1000) % 1000 / 1000; // 0..1
+}
+
 function drawGround() {
   ctx.save();
   ctx.beginPath(); ctx.rect(0,0,W,H); ctx.clip();
@@ -1281,28 +1646,172 @@ function drawGround() {
   const cols = Math.ceil(W/TILE)+2;
   const rows = Math.ceil(H/TILE)+2;
 
-  for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
-    const wx = (startCol+c)*TILE, wy = (startRow+r)*TILE;
-    const tType = getTerrain(startCol+c, startRow+r);
-    const sx = wx - camera.x, sy = wy - camera.y;
+  // Fungsi bantu: seed acak yang konsisten per-tile (tidak berubah tiap frame,
+  // jadi teksturnya tidak "berkedip")
 
-    if (tType === 'river') {
-      ctx.fillStyle = '#4a90e2';
+  const now = performance.now() / 1000;
+
+  for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
+    const col = startCol+c, row = startRow+r;
+    const wx = col*TILE, wy = row*TILE;
+    const tType = getTerrain(col, row);
+    const sx = wx - camera.x, sy = wy - camera.y;
+    const n = tileNoise(col, row);
+
+    if (tType === 'lake') {
+      // Danau tenang dengan riak melingkar pelan
+      ctx.fillStyle = n < 0.5 ? '#3f7fd1' : '#4a90e2';
       ctx.fillRect(sx, sy, TILE, TILE);
-      ctx.fillStyle = 'rgba(255,255,255,0.2)';
-      ctx.fillRect(sx + 8, sy + 16, 16, 4);
+      const rippleT = now * 0.8 + (col * 0.4 + row * 0.4);
+      ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(sx + TILE / 2, sy + TILE / 2, 5 + Math.sin(rippleT) * 2.5, 0, Math.PI * 2);
+      ctx.stroke();
+    } else if (tType === 'river') {
+      // Air dengan gradasi warna + kilau bergerak (poin: map lebih hidup)
+      ctx.fillStyle = n < 0.5 ? '#4a90e2' : '#5399e8';
+      ctx.fillRect(sx, sy, TILE, TILE);
+      const shimmerY = sy + TILE/2 + Math.sin(now * 1.4 + col * 0.6) * 5;
+      ctx.fillStyle = 'rgba(255,255,255,0.22)';
+      ctx.fillRect(sx + 6, shimmerY, TILE - 12, 3);
+      ctx.fillStyle = 'rgba(255,255,255,0.10)';
+      ctx.fillRect(sx + 2, sy + 6, TILE - 4, 2);
     } else if (tType === 'path') {
-      ctx.fillStyle = '#c29b61';
+      // Jalan setapak tanah dengan variasi warna + kerikil kecil
+      ctx.fillStyle = n < 0.4 ? '#c29b61' : (n < 0.75 ? '#ba9257' : '#c8a26c');
       ctx.fillRect(sx, sy, TILE, TILE);
       ctx.fillStyle = 'rgba(0,0,0,0.08)';
-      ctx.fillRect(sx + 4, sy + 4, TILE - 8, TILE - 8);
+      ctx.fillRect(sx + 3, sy + 3, TILE - 6, TILE - 6);
+      if (n > 0.6) {
+        ctx.fillStyle = 'rgba(90,65,35,0.35)';
+        ctx.beginPath();
+        ctx.arc(sx + 10 + n*20, sy + 12 + (n*37%20), 2, 0, Math.PI*2);
+        ctx.fill();
+      }
+      if (n < 0.15) {
+        ctx.fillStyle = 'rgba(255,255,255,0.12)';
+        ctx.beginPath();
+        ctx.arc(sx + 30, sy + 30, 2, 0, Math.PI*2);
+        ctx.fill();
+      }
     } else {
-      ctx.fillStyle = '#5fae3f';
+      // Rumput dengan variasi warna alami + rumpun kecil / bunga sesekali
+      ctx.fillStyle = n < 0.35 ? '#5fae3f' : (n < 0.7 ? '#57a53a' : '#66b846');
       ctx.fillRect(sx, sy, TILE, TILE);
-      if (((startCol+c)+(startRow+r))%2===0) {
+      if (((col)+(row))%2===0) {
         ctx.fillStyle = 'rgba(0,0,0,0.05)';
         ctx.fillRect(sx, sy, TILE, TILE);
       }
+      // Rumpun rumput kecil (lebih sering biar tanah tidak polos)
+      if (n > 0.68) {
+        ctx.strokeStyle = 'rgba(40,90,30,0.5)';
+        ctx.lineWidth = 1.5;
+        const bx = sx + 10 + (n*53%28), by = sy + 14 + (n*91%20);
+        ctx.beginPath();
+        ctx.moveTo(bx, by); ctx.lineTo(bx-3, by-7);
+        ctx.moveTo(bx, by); ctx.lineTo(bx, by-8);
+        ctx.moveTo(bx, by); ctx.lineTo(bx+3, by-7);
+        ctx.stroke();
+      }
+      // Bunga kecil sesekali (beberapa warna biar tidak monoton)
+      if (n > 0.9) {
+        const fx = sx + 20 + (n*70%10), fy = sy + 26 + (n*40%10);
+        const petalColors = ['#fff07a', '#ff9ecf', '#c9a6ff', '#ffffff'];
+        ctx.fillStyle = petalColors[Math.floor(n*40)%petalColors.length];
+        for (let k=0;k<4;k++) {
+          const ang = k * Math.PI/2;
+          ctx.beginPath();
+          ctx.arc(fx + Math.cos(ang)*2.5, fy + Math.sin(ang)*2.5, 2, 0, Math.PI*2);
+          ctx.fill();
+        }
+        ctx.fillStyle = '#f4c542';
+        ctx.beginPath(); ctx.arc(fx, fy, 1.6, 0, Math.PI*2); ctx.fill();
+      }
+      // Batu kecil sesekali biar tanah tidak polos
+      else if (n > 0.75 && n <= 0.82) {
+        const px = sx + 8 + (n*61%18), py = sy + 18 + (n*33%12);
+        ctx.fillStyle = 'rgba(0,0,0,0.12)';
+        ctx.beginPath(); ctx.ellipse(px, py+2, 4, 1.6, 0, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#9a9a92';
+        ctx.beginPath(); ctx.ellipse(px, py, 3.6, 2.6, 0.3, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.beginPath(); ctx.ellipse(px-1, py-1, 1.4, 0.9, 0, 0, Math.PI*2); ctx.fill();
+      }
+    }
+
+    // Tepi berpasir di antara rumput & air (sungai/danau), biar transisinya tidak kaku
+    if (tType === 'grass') {
+      const isWater = t => t === 'river' || t === 'lake';
+      const nearRiver = isWater(getTerrain(col-1,row)) || isWater(getTerrain(col+1,row)) ||
+                         isWater(getTerrain(col,row-1)) || isWater(getTerrain(col,row+1));
+      if (nearRiver) {
+        ctx.fillStyle = 'rgba(222, 197, 142, 0.55)';
+        if (isWater(getTerrain(col,row-1))) ctx.fillRect(sx, sy, TILE, 8);
+        if (isWater(getTerrain(col,row+1))) ctx.fillRect(sx, sy+TILE-8, TILE, 8);
+        if (isWater(getTerrain(col-1,row))) ctx.fillRect(sx, sy, 8, TILE);
+        if (isWater(getTerrain(col+1,row))) ctx.fillRect(sx+TILE-8, sy, 8, TILE);
+      }
+    }
+  }
+
+  // Ikan kecil berenang di air (danau & sungai)
+  const nowFish = performance.now() / 1000;
+  for (const f of FISH) {
+    const swim = Math.sin(nowFish * f.speed + f.phase);
+    const fx = f.homeX + swim * f.range;
+    const fy = f.homeY + Math.cos(nowFish * f.speed * 0.7 + f.phase) * f.range * 0.35;
+    const sx = fx - camera.x, sy = fy - camera.y;
+    if (sx < -20 || sx > W + 20 || sy < -20 || sy > H + 20) continue;
+    const dir = Math.cos(nowFish * f.speed + f.phase) >= 0 ? 1 : -1;
+    ctx.save();
+    ctx.translate(sx, sy);
+    ctx.scale(dir, 1);
+    ctx.fillStyle = f.color;
+    ctx.beginPath(); ctx.ellipse(0, 0, f.size, f.size * 0.55, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(-f.size, 0);
+    ctx.lineTo(-f.size - 3.5, -2.5);
+    ctx.lineTo(-f.size - 3.5, 2.5);
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  // Hewan darat kecil: kupu-kupu terbang & burung kecil mematuk-matuk
+  const nowC = performance.now() / 1000;
+  for (const c of CRITTERS) {
+    const wx = Math.sin(nowC * c.speed + c.phase);
+    const wy = Math.cos(nowC * c.speed * 0.8 + c.phase);
+    const cx = c.homeX + wx * c.range;
+    const cy = c.homeY + wy * c.range * 0.5;
+    const sx = cx - camera.x, sy = cy - camera.y;
+    if (sx < -24 || sx > W + 24 || sy < -24 || sy > H + 24) continue;
+
+    if (c.type === 'butterfly') {
+      const flap = Math.abs(Math.sin(nowC * 10 + c.phase));
+      const flyY = sy - 10 - Math.sin(nowC * c.speed * 2 + c.phase) * 3;
+      ctx.save();
+      ctx.translate(sx, flyY);
+      ctx.fillStyle = c.color;
+      ctx.beginPath(); ctx.ellipse(-3, 0, 3, 1.8 * (0.3 + flap*0.7), Math.PI/5, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(3, 0, 3, 1.8 * (0.3 + flap*0.7), -Math.PI/5, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = 'rgba(40,30,20,0.7)';
+      ctx.fillRect(-0.5, -1.5, 1, 3);
+      ctx.restore();
+    } else {
+      const peck = Math.sin(nowC * 3 + c.phase) > 0.85 ? 1.5 : 0;
+      ctx.save();
+      ctx.translate(sx, sy);
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      ctx.beginPath(); ctx.ellipse(0, 4, 4.5, 1.6, 0, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = c.color;
+      ctx.beginPath(); ctx.ellipse(0, 0, 4.2, 3.2, 0, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3.2, -1 + peck, 1.9, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#f4c542';
+      ctx.beginPath();
+      ctx.moveTo(6, -1 + peck); ctx.lineTo(8.3, -1 + peck); ctx.lineTo(6, 0.4 + peck);
+      ctx.closePath(); ctx.fill();
+      ctx.restore();
     }
   }
 
@@ -1318,8 +1827,8 @@ function drawGround() {
 
   const otherDrawables = Object.keys(otherPlayers).map(id => {
     const p = otherPlayers[id];
-    const rp = otherPlayersRender[id] || { x: p.x||0, y: p.y||0 };
-    return { isOther:true, id, x: rp.x, y: rp.y, drawY: rp.y, data: p };
+    const rp = otherPlayersRender[id] || { x: p.x||0, y: p.y||0, z: p.z||0 };
+    return { isOther:true, id, x: rp.x, y: rp.y, drawY: rp.y, z: rp.z, data: p };
   });
 
   const drawables = obstacles.map(o=>({...o, drawY:o.y})).concat([
@@ -1331,7 +1840,7 @@ function drawGround() {
     const sx = d.x - camera.x, sy = d.y - camera.y;
     if (sx<-80||sx>W+80||sy<-80||sy>H+80) continue;
     if (d.isPlayer) drawPlayer(sx, sy);
-    else if (d.isOther) drawOtherPlayer(sx, sy, d.id, d.data);
+    else if (d.isOther) drawOtherPlayer(sx, sy, d.id, d.data, d.z || 0);
     else if (d.type==='tree') drawTree(sx, sy, d.scale);
     else if (d.type==='rock') drawRock(sx, sy, d.scale);
     else drawBush(sx, sy, d.scale);
@@ -1423,8 +1932,22 @@ function drawPlayer(x,y) {
   const bounce = player.moving ? Math.abs(Math.sin(player.walkAnim)) * 5 : 0;
   const squashX = player.moving ? 1 - Math.abs(Math.sin(player.walkAnim)) * 0.05 : 1;
   const squashY = player.moving ? 1 + Math.abs(Math.sin(player.walkAnim)) * 0.05 : 1;
+  // Goyang emote kiri-kanan saja, seperti rumput kena angin
+  const swayAngle = player.emoting ? Math.sin(player.emotePhase) * 0.22 : 0;
 
   const renderY = y - player.z - bounce;
+
+  // Efek kedip merah saat kena dorongan (poin: kelihatan sendiri kalau habis kena pukul)
+  if (player.hitFlashTimer > 0) {
+    const t = player.hitFlashTimer / 0.35;
+    ctx.save();
+    ctx.strokeStyle = `rgba(255, 70, 70, ${t})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(x, renderY - 10, 24 * (1.4 - t), 0, Math.PI*2);
+    ctx.stroke();
+    ctx.restore();
+  }
 
   if (player.sprite) {
     const img = player.sprite;
@@ -1432,6 +1955,7 @@ function drawPlayer(x,y) {
     const targetW = targetH * (img.naturalWidth / img.naturalHeight);
     ctx.save();
     ctx.translate(x, renderY);
+    ctx.rotate(swayAngle);
     if (player.facing === 'left') ctx.scale(-1, 1);
     ctx.scale(squashX, squashY);
     ctx.drawImage(img, -targetW/2, -targetH + 14, targetW, targetH);
@@ -1439,6 +1963,7 @@ function drawPlayer(x,y) {
   } else {
     ctx.save();
     ctx.translate(x, renderY);
+    ctx.rotate(swayAngle);
     if (player.facing === 'left') ctx.scale(-1, 1);
     ctx.scale(squashX, squashY);
     ctx.strokeStyle = 'rgba(255,255,255,0.85)';
@@ -1522,10 +2047,12 @@ function drawPlayer(x,y) {
 }
 
 // Gambar pemain lain yang datanya diterima dari Firebase (avatar jernih, nama, animasi jalan)
-function drawOtherPlayer(x, y, id, data) {
+function drawOtherPlayer(x, y, id, data, z) {
+  z = z || 0;
+  const shadowScale = Math.max(0.6, 1 - (z / 180));
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
   ctx.beginPath();
-  ctx.ellipse(x, y+16, 14, 5, 0, 0, Math.PI*2);
+  ctx.ellipse(x, y+16, 14 * shadowScale, 5 * shadowScale, 0, 0, Math.PI*2);
   ctx.fill();
 
   // Animasi berjalan untuk pemain lain, pakai fase acak per-id biar tidak seragam persis
@@ -1533,17 +2060,23 @@ function drawOtherPlayer(x, y, id, data) {
   const bounce = data.moving ? Math.abs(Math.sin(phase)) * 5 : 0;
   const squashX = data.moving ? 1 - Math.abs(Math.sin(phase)) * 0.05 : 1;
   const squashY = data.moving ? 1 + Math.abs(Math.sin(phase)) * 0.05 : 1;
-  const renderY = y - bounce;
+  const swayPhase = performance.now() / 1000 * 6 + idPhaseOffset(id);
+  const swayAngle = data.emoting ? Math.sin(swayPhase) * 0.22 : 0;
+  const renderY = y - z - bounce;
 
   let avImg = null;
-  if (data.avatar) {
-    const cached = avatarImgCache[id];
-    if (cached && cached.url === data.avatar) {
+  // Ambil foto sesuai ekspresi yang sedang dipakai pemain itu (fallback ke field 'avatar' lama)
+  const exprKey = data.expr || 'normal';
+  const avatarURL = (data.avatars && data.avatars[exprKey]) || data.avatar;
+  if (avatarURL) {
+    if (!avatarImgCache[id]) avatarImgCache[id] = {};
+    const cached = avatarImgCache[id][exprKey];
+    if (cached && cached.url === avatarURL) {
       avImg = cached.img;
     } else {
       const img = new Image();
-      img.src = data.avatar;
-      avatarImgCache[id] = { url: data.avatar, img };
+      img.src = avatarURL;
+      avatarImgCache[id][exprKey] = { url: avatarURL, img };
       avImg = img;
     }
   }
@@ -1553,6 +2086,7 @@ function drawOtherPlayer(x, y, id, data) {
     const targetW = targetH * (avImg.naturalWidth / avImg.naturalHeight);
     ctx.save();
     ctx.translate(x, renderY);
+    ctx.rotate(swayAngle);
     if (data.facing === 'left') ctx.scale(-1, 1);
     ctx.scale(squashX, squashY);
     ctx.drawImage(avImg, -targetW/2, -targetH + 14, targetW, targetH);
@@ -1560,6 +2094,7 @@ function drawOtherPlayer(x, y, id, data) {
   } else {
     ctx.save();
     ctx.translate(x, renderY);
+    ctx.rotate(swayAngle);
     if (data.facing === 'left') ctx.scale(-1, 1);
     ctx.scale(squashX, squashY);
     ctx.strokeStyle = 'rgba(74, 144, 226, 0.9)';
@@ -1668,6 +2203,12 @@ function drawMinimap() {
   }
   ctx.stroke();
 
+  // Danau di minimap
+  ctx.fillStyle = '#4a90e2';
+  ctx.beginPath();
+  ctx.arc(mapX + LAKE.x * scaleX, mapY + LAKE.y * scaleY, Math.max(3, LAKE.r * scaleX), 0, Math.PI * 2);
+  ctx.fill();
+
   // Draw other players on minimap
   ctx.fillStyle = '#4a90e2';
   for (const id in otherPlayers) {
@@ -1700,6 +2241,9 @@ function loop(now) {
   update(dt);
   ctx.clearRect(0,0,W,H);
   drawGround();
+  const dayInfo = getDayNightInfo();
+  drawDayNightOverlay(dayInfo);
+  updateTimeBadge(dayInfo);
   drawMinimap();
   requestAnimationFrame(loop);
 }
