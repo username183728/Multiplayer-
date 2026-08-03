@@ -21,90 +21,132 @@
     display:block;
     background:#5fae3f;
   }
-  #hint {
-    position:fixed; bottom:14px; left:50%; transform:translateX(-50%);
-    color:#fff; font-size:13px; text-shadow:0 2px 4px rgba(0,0,0,0.6);
-    background:rgba(0,0,0,0.35); padding:6px 14px; border-radius:8px;
-    pointer-events:none; text-align:center; z-index:20;
+
+  /* ---------- Lobby / Landing overlay ---------- */
+  #lobbyOverlay {
+    position:fixed; inset:0; z-index:200;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(61,150,69,0.35), transparent 60%),
+      radial-gradient(circle at 80% 80%, rgba(74,144,226,0.25), transparent 60%),
+      #14180f;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+    font-family:'Segoe UI', Tahoma, sans-serif;
   }
+  #lobbyNamesBg {
+    position:absolute; inset:0; z-index:1;
+    display:flex; flex-wrap:wrap; align-content:flex-start; gap:14px;
+    padding:24px; opacity:0.18; pointer-events:none;
+  }
+  #lobbyNamesBg span {
+    color:#9be08a; font-size:22px; font-weight:700; white-space:nowrap;
+  }
+  .lobby-box {
+    position:relative; z-index:2;
+    background:rgba(20,22,18,0.9); border:1px solid rgba(255,255,255,0.2);
+    border-radius:14px; padding:26px 24px; width:100%; max-width:320px;
+    text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.5);
+  }
+  .lobby-box h1 { color:#fff; font-size:20px; margin-bottom:6px; }
+  .lobby-box p { color:rgba(255,255,255,0.6); font-size:13px; margin-bottom:16px; }
+  .lobby-box input {
+    width:100%; padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.3);
+    background:rgba(255,255,255,0.1); color:#fff; font-size:15px; outline:none; margin-bottom:12px;
+    text-align:center;
+  }
+  .lobby-box button {
+    width:100%; background:linear-gradient(145deg,#4cb956,#2f7a34); color:#fff; border:none; border-radius:8px;
+    padding:12px; font-weight:700; font-size:15px; cursor:pointer;
+    box-shadow:0 4px 10px rgba(0,0,0,0.35);
+  }
+  .lobby-box button:active { filter:brightness(0.9); }
+  #lobbyOnlineCount { color:rgba(255,255,255,0.55); font-size:12px; margin-top:12px; }
 
   /* ---------- Mic & Chat Buttons near Minimap ---------- */
   #micBtn {
     position: fixed; top: 14px; left: 128px; z-index: 30;
     width: 36px; height: 36px; border-radius: 50%;
-    background: #ff4757; border: 1px solid rgba(255,255,255,0.3);
-    color: #fff; font-size: 16px; cursor: pointer;
+    background: linear-gradient(145deg, #3d3d3d, #1c1c1c);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: #fff; font-size: 15px; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-    transition: background 0.2s, transform 0.1s;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12);
+    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
   }
   #micBtn:active { transform: scale(0.92); }
-  #micBtn.active { background: #2ed573; }
+  #micBtn.active {
+    background: linear-gradient(145deg, #3ddc7f, #1f9e52);
+    box-shadow: 0 0 14px rgba(46,213,115,0.65), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
 
   #chatBtn {
     position: fixed; top: 58px; left: 128px; z-index: 30;
     width: 36px; height: 36px; border-radius: 50%;
-    background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.3);
-    color: #fff; font-size: 16px; cursor: pointer;
+    background: linear-gradient(145deg, #3d3d3d, #1c1c1c);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: #fff; font-size: 15px; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12);
     transition: background 0.2s, transform 0.1s;
   }
-  #chatBtn:active { transform: scale(0.92); background: rgba(0,0,0,0.6); }
+  #chatBtn:active { transform: scale(0.92); filter:brightness(1.3); }
 
   /* ---------- Virtual Controls (Joystick, Jump, Skills) ---------- */
   #joystickBase {
     position: fixed; bottom: 24px; right: 24px;
     width: 120px; height: 120px;
-    background: rgba(255, 255, 255, 0.15);
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.22), rgba(255,255,255,0.06));
+    border: 2px solid rgba(255, 255, 255, 0.28);
     border-radius: 50%;
     touch-action: none;
     z-index: 20;
     display: flex; align-items: center; justify-content: center;
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(3px);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.35), inset 0 2px 6px rgba(0,0,0,0.15);
     transition: left 0.2s, right 0.2s;
   }
   #joystickStick {
     position: absolute;
     width: 50px; height: 50px;
-    background: rgba(255, 255, 255, 0.4);
+    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.65), rgba(255,255,255,0.25));
     border: 2px solid rgba(255, 255, 255, 0.6);
     border-radius: 50%;
     pointer-events: none;
     will-change: transform;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
   }
 
   #jumpBtn {
     position: fixed; bottom: 24px; left: 24px;
     width: 80px; height: 80px;
-    background: rgba(255, 255, 255, 0.15);
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: linear-gradient(145deg, rgba(255,255,255,0.28), rgba(255,255,255,0.08));
+    border: 2px solid rgba(255, 255, 255, 0.28);
     border-radius: 50%;
     touch-action: none;
     z-index: 20;
     display: flex; align-items: center; justify-content: center;
-    backdrop-filter: blur(2px);
-    color: #fff; font-weight: 600; font-size: 14px;
+    backdrop-filter: blur(3px);
+    color: #fff; font-weight: 700; font-size: 13px;
     text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.35), inset 0 2px 6px rgba(255,255,255,0.15);
     transition: left 0.2s, right 0.2s;
   }
-  #jumpBtn:active { background: rgba(255, 255, 255, 0.35); }
+  #jumpBtn:active { filter:brightness(1.2); transform:scale(0.96); }
 
   .skillBtn {
     position: fixed; bottom: 156px; z-index: 20;
     width: 54px; height: 54px;
-    background: rgba(255, 255, 255, 0.15);
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: linear-gradient(145deg, rgba(255,255,255,0.26), rgba(255,255,255,0.06));
+    border: 2px solid rgba(255, 255, 255, 0.28);
     border-radius: 50%;
     touch-action: none;
     display: flex; align-items: center; justify-content: center;
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(3px);
     color: #fff; font-size: 22px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 2px 6px rgba(255,255,255,0.15);
     transition: transform 0.1s, background 0.2s;
   }
-  .skillBtn:active { transform: scale(0.92); background: rgba(255, 255, 255, 0.35); }
+  .skillBtn:active { transform: scale(0.9); filter:brightness(1.2); }
   #skill1Btn { right: 24px; }
   #skill2Btn { right: 88px; }
 
@@ -125,10 +167,10 @@
     background: rgba(255,255,255,0.1); color: #fff; font-size: 14px; outline: none;
   }
   .chat-box button {
-    background: #3d9645; color: #fff; border: none; border-radius: 8px;
+    background: linear-gradient(145deg,#4cb956,#2f7a34); color: #fff; border: none; border-radius: 8px;
     padding: 10px; font-weight: 600; cursor: pointer; font-size: 14px;
   }
-  .chat-box button:active { background: #2f7a34; }
+  .chat-box button:active { filter:brightness(0.9); }
 
   /* ---------- Rotate device overlay ---------- */
   #rotateOverlay {
@@ -143,18 +185,20 @@
   #rotateOverlay p { font-size:15px; opacity:0.85; max-width:280px; }
   @media (orientation: portrait) and (max-width: 950px) {
     #rotateOverlay { display:flex; }
-    #gameContainer, #hint, #joystickBase, #jumpBtn, #chatBtn, #gearBtn, #micBtn, #skill1Btn, #skill2Btn { visibility:hidden; }
+    #gameContainer, #joystickBase, #jumpBtn, #chatBtn, #gearBtn, #micBtn, #skill1Btn, #skill2Btn, #lobbyOverlay, #fsHint, #mpStatus { visibility:hidden; }
   }
 
   /* ---------- Settings gear ---------- */
   #gearBtn {
     position:fixed; top:14px; right:14px; z-index:30;
-    width:42px; height:42px; border-radius:50%;
-    background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.25);
-    color:#fff; font-size:20px; cursor:pointer;
+    width:40px; height:40px; border-radius:50%;
+    background: linear-gradient(145deg, #3d3d3d, #1c1c1c);
+    border:1px solid rgba(255,255,255,0.18);
+    color:#fff; font-size:18px; cursor:pointer;
     display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.5);
   }
-  #gearBtn:active { background:rgba(0,0,0,0.65); }
+  #gearBtn:active { filter:brightness(1.3); }
 
   #settingsPanel {
     position:fixed; top:0; right:0; height:100%; width:300px; max-width:86vw;
@@ -169,10 +213,10 @@
   .field { margin-bottom:14px; }
   .fileBtn {
     display:inline-block; width:100%; text-align:center;
-    background:#3d9645; color:#fff; border:none; border-radius:8px;
+    background:linear-gradient(145deg,#4cb956,#2f7a34); color:#fff; border:none; border-radius:8px;
     padding:10px 12px; font-size:13px; font-weight:600; cursor:pointer;
   }
-  .fileBtn:active { background:#2f7a34; }
+  .fileBtn:active { filter:brightness(0.9); }
   .thumbRow { display:flex; align-items:center; gap:8px; margin-top:6px; font-size:12px; opacity:0.8; }
   .thumbRow img { width:32px; height:32px; object-fit:contain; border-radius:6px; background:rgba(255,255,255,0.08); }
   select {
@@ -188,23 +232,30 @@
   }
   #panelBackdrop.open { display:block; }
 
+  /* ---------- Tombol layar penuh: kecil, ikon saja ---------- */
   #fsHint {
     position:fixed; bottom:14px; left:14px; z-index:20;
-    background:rgba(0,0,0,0.4); color:#fff; border:1px solid rgba(255,255,255,0.3);
-    border-radius:8px; padding:8px 12px; font-size:12px; cursor:pointer;
+    width:36px; height:36px; border-radius:50%;
+    background: linear-gradient(145deg, #3d3d3d, #1c1c1c);
+    color:#fff; border:1px solid rgba(255,255,255,0.18);
+    display:flex; align-items:center; justify-content:center;
+    font-size:15px; cursor:pointer;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.5);
   }
 
-  /* ---------- Status koneksi multiplayer ---------- */
+  /* ---------- Indikator jumlah pemain online: kecil, di bawah minimap ---------- */
   #mpStatus {
-    position:fixed; top:14px; left:14px; z-index:30;
-    background:rgba(0,0,0,0.4); color:#fff; border:1px solid rgba(255,255,255,0.25);
-    border-radius:8px; padding:6px 10px; font-size:11px;
-    display:flex; align-items:center; gap:6px;
+    position:fixed; top:120px; left:14px; z-index:30;
+    background:rgba(0,0,0,0.32); color:#fff; border:1px solid rgba(255,255,255,0.15);
+    border-radius:20px; padding:3px 8px 3px 6px; font-size:10px;
+    display:flex; align-items:center; gap:4px;
+    pointer-events:none;
   }
   #mpStatus .dot {
-    width:8px; height:8px; border-radius:50%; background:#ff4757;
+    width:6px; height:6px; border-radius:50%; background:#ff4757;
+    transition: background 0.3s, box-shadow 0.3s;
   }
-  #mpStatus.online .dot { background:#2ed573; }
+  #mpStatus.online .dot { background:#2ed573; box-shadow:0 0 4px rgba(46,213,115,0.8); }
 </style>
 </head>
 <body>
@@ -214,10 +265,21 @@
   <p>Permainan ini dimainkan dalam mode lanskap (miring). Putar layar HP untuk mulai bermain.</p>
 </div>
 
+<!-- ====== Lobby: masukkan nama sebelum masuk game ====== -->
+<div id="lobbyOverlay">
+  <div id="lobbyNamesBg"></div>
+  <div class="lobby-box">
+    <h1>🌾 Petualangan Padang Rumput</h1>
+    <p>Masukkan namamu untuk mulai bermain bersama pemain lain</p>
+    <input type="text" id="lobbyNameInput" placeholder="Nama kamu..." maxlength="16">
+    <button id="lobbyPlayBtn">Mulai Main</button>
+    <div id="lobbyOnlineCount">Menghubungkan...</div>
+  </div>
+</div>
+
 <div id="gameContainer">
   <canvas id="game"></canvas>
-  <div id="hint">Gunakan joystick, tombol LOMPAT, Skill 1/2, & CHAT ✨</div>
-  
+
   <!-- Mic & Chat Buttons near Minimap -->
   <button id="micBtn" title="Mikrofon">🎤</button>
   <button id="chatBtn" title="Chat">✉️</button>
@@ -230,8 +292,8 @@
   <button id="skill1Btn" class="skillBtn" title="Skill 1: Bakar">🔥</button>
   <button id="skill2Btn" class="skillBtn" title="Skill 2: Gamper">🫱</button>
 
-  <button id="fsHint">⛶ Layar penuh & mode lanskap</button>
-  <div id="mpStatus"><span class="dot"></span><span id="mpStatusText">Menghubungkan...</span></div>
+  <button id="fsHint" title="Layar penuh">⛶</button>
+  <div id="mpStatus"><span class="dot"></span><span id="mpStatusText">…</span></div>
 </div>
 
 <!-- Chat Input Modal -->
@@ -254,9 +316,27 @@
     <input type="file" id="playerFile" accept="image/*" style="display:none">
     <button class="fileBtn" id="playerFileBtn">📤 Upload Karakter</button>
     <div class="thumbRow" id="playerThumbRow" style="display:none;">
-      <img id="playerThumb"><span>Karakter aktif</span>
+      <img id="playerThumb"><span>Karakter aktif (tersinkron ke pemain lain)</span>
     </div>
   </div>
+
+  <h3>Gambar Dekorasi Peta</h3>
+  <div class="field">
+    <input type="file" id="treeFile" accept="image/*" style="display:none">
+    <button class="fileBtn" id="treeFileBtn">🌳 Upload Gambar Pohon (PNG)</button>
+  </div>
+  <div class="field">
+    <input type="file" id="rockFile" accept="image/*" style="display:none">
+    <button class="fileBtn" id="rockFileBtn">🪨 Upload Gambar Batu (PNG)</button>
+  </div>
+  <div class="field">
+    <input type="file" id="bushFile" accept="image/*" style="display:none">
+    <button class="fileBtn" id="bushFileBtn">🌿 Upload Gambar Semak (PNG)</button>
+  </div>
+  <div class="field">
+    <button class="fileBtn" id="resetDecorBtn" style="background:rgba(255,255,255,0.15);">↺ Kembalikan Dekorasi Bawaan</button>
+  </div>
+  <p style="font-size:11px; opacity:0.55; margin-top:-6px;">Catatan: gambar dekorasi cuma tampil di layar kamu sendiri, tiap pemain bisa pakai gambarnya masing-masing.</p>
 
   <h3>Posisi Joystick</h3>
   <div class="field">
@@ -280,14 +360,9 @@
    Pastikan Realtime Database sudah dibuat dan rule-nya:
    {
      "rules": {
-       "players": {
-         ".read": "auth != null",
-         ".write": "auth != null"
-       },
-       "kicked": {
-         ".read": "auth != null",
-         ".write": "auth != null"
-       }
+       "players": { ".read": "auth != null", ".write": "auth != null" },
+       "kicked":  { ".read": "auth != null", ".write": "auth != null" },
+       "effects": { ".read": "auth != null", ".write": "auth != null" }
      }
    }
    Dan Authentication → Sign-in method → Anonymous harus di-Enable.
@@ -309,22 +384,55 @@ let myPlayerRef = null;
 let authReady = false;
 let isKicked = false;
 let kickedRef = null;
+let effectsRef = null;
 
 try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.database();
   playersRef = db.ref('players');
   kickedRef = db.ref('kicked');
+  effectsRef = db.ref('effects');
 } catch (err) {
   console.error('Gagal inisialisasi Firebase:', err);
   mpEnabled = false;
 }
+
+// ---------- Fullscreen agresif (poin 5) ----------
+// Fullscreen di browser HANYA boleh dipicu dari sentuhan/klik pengguna (tidak bisa otomatis
+// saat halaman dibuka). Jadi kita pasang: SETIAP sentuhan/klik di mana pun pada halaman
+// (joystick, tombol, nama, dll) otomatis mencoba masuk layar penuh + kunci mode lanskap.
+function ensureFullscreen() {
+  if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  }
+  if (screen.orientation && screen.orientation.lock) {
+    screen.orientation.lock('landscape').catch(() => {});
+  }
+}
+document.addEventListener('pointerdown', e => {
+  const tag = e.target && e.target.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  ensureFullscreen();
+}, { passive: true });
+document.addEventListener('fullscreenchange', () => {
+  const btn = document.getElementById('fsHint');
+  if (btn) btn.style.display = document.fullscreenElement ? 'none' : 'flex';
+});
 
 // ID unik untuk sesi bermain ini (tidak disimpan permanen, dibuat ulang tiap kali halaman dibuka)
 const playerID = (crypto.randomUUID ? crypto.randomUUID() : 'p-' + Date.now() + '-' + Math.floor(Math.random()*100000));
 
 // Data pemain lain yang diterima dari Firebase, key = playerID mereka
 const otherPlayers = {};
+// Cache gambar avatar pemain lain (biar tidak decode base64 ulang tiap frame)
+const avatarImgCache = {};
+// Efek skill (api / dorongan) yang sedang tampil di layar, disinkronkan lewat Firebase
+const activeEffects = [];
+// Serpihan debu saat berjalan
+const dustParticles = [];
+let dustSpawnTimer = 0;
+
+let gameEntered = false;
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -358,11 +466,12 @@ const player = {
   dir: 'down', 
   facing: 'right', 
   moving: false, 
-  frame: 0, 
-  frameTimer: 0, 
   sprite: null,
+  avatarDataURL: null,
+  name: '',
   z: 0,
   vz: 0,
+  walkAnim: 0,
   chatMessage: '',
   chatTimer: 0,
   micActive: false,
@@ -376,38 +485,56 @@ let camera = { x: player.x - W/2, y: player.y - H/2 };
 const mpStatusEl = document.getElementById('mpStatus');
 const mpStatusText = document.getElementById('mpStatusText');
 
-function setMpStatus(online, text) {
+// Indikator online kecil: titik hijau/merah + angka (poin 4)
+function updateMpIndicator(online, count) {
   mpStatusEl.classList.toggle('online', online);
-  mpStatusText.textContent = text;
+  mpStatusText.textContent = online ? String(count) : '…';
+}
+
+// ---------- Lobby: daftar nama pemain sebagai "background" ----------
+const lobbyNamesBg = document.getElementById('lobbyNamesBg');
+const lobbyOnlineCount = document.getElementById('lobbyOnlineCount');
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+function refreshLobbyNames(data) {
+  const names = Object.keys(data || {})
+    .filter(id => id !== playerID)
+    .map(id => data[id] && data[id].name)
+    .filter(Boolean);
+  lobbyOnlineCount.textContent = names.length > 0
+    ? (names.length + ' pemain online sekarang')
+    : 'Jadilah pemain pertama online!';
+  lobbyNamesBg.innerHTML = names.map(n => '<span>' + escapeHtml(n) + '</span>').join('');
+}
+
+// Kirim efek skill (api/dorongan) supaya terlihat oleh SEMUA pemain, bukan cuma yang memakainya
+function broadcastEffect(type, x, y) {
+  if (!mpEnabled || !db || !authReady || !effectsRef) return;
+  const ref = effectsRef.push({
+    type, x: Math.round(x), y: Math.round(y),
+    ts: firebase.database.ServerValue.TIMESTAMP
+  });
+  // Bersihkan sendiri setelah dipakai supaya node "effects" tidak menumpuk jadi sampah
+  setTimeout(() => { ref.remove(); }, 1200);
 }
 
 if (mpEnabled && db && playersRef) {
-  myPlayerRef = playersRef.child(playerID);
-  setMpStatus(false, 'Login...');
+  updateMpIndicator(false, 0);
 
-  // Login anonim dulu — server cuma izinkan baca/tulis kalau sudah login (auth != null)
+  // Login anonim dulu — server cuma izinkan baca/tulis kalau sudah login (auth != null).
+  // Ini dilakukan SEBELUM pemain masuk lobby, supaya daftar nama pemain online bisa
+  // langsung ditampilkan di layar lobby.
   firebase.auth().signInAnonymously().catch(err => {
     console.error('Gagal login anonim:', err);
-    setMpStatus(false, 'Gagal login');
     mpEnabled = false;
   });
 
   firebase.auth().onAuthStateChanged(user => {
     if (!user) return;
     authReady = true;
-
-    // Kirim data awal pemain ke Firebase (baru boleh setelah login berhasil)
-    myPlayerRef.set({
-      x: player.x,
-      y: player.y,
-      dir: player.dir,
-      facing: player.facing,
-      moving: false,
-      lastSeen: firebase.database.ServerValue.TIMESTAMP
-    });
-
-    // Kalau koneksi HP putus / tab ditutup, hapus otomatis data pemain ini dari server
-    myPlayerRef.onDisconnect().remove();
 
     // Dengarkan apakah pemain ini dikeluarkan (kick) oleh pemain lain
     kickedRef.child(playerID).on('value', snap => {
@@ -416,44 +543,69 @@ if (mpEnabled && db && playersRef) {
         mpEnabled = false;
         playersRef.off();
         if (myPlayerRef) { myPlayerRef.off(); myPlayerRef.remove(); }
-        setMpStatus(false, 'Kamu dikeluarkan dari game 🔥');
+        updateMpIndicator(false, 0);
       }
     });
 
     // Pantau status koneksi ke Firebase
     db.ref('.info/connected').on('value', snap => {
-      if (snap.val() === true) {
-        setMpStatus(true, 'Online (' + Object.keys(otherPlayers).length + ' pemain lain)');
-      } else {
-        setMpStatus(false, 'Terputus...');
-      }
+      updateMpIndicator(snap.val() === true, Object.keys(otherPlayers).length);
     });
 
     // Dengarkan perubahan semua pemain di Firebase
     playersRef.on('value', snapshot => {
       const data = snapshot.val() || {};
-      // Hapus pemain lain yang sudah tidak ada di data terbaru
+      // Hapus pemain lain yang sudah tidak ada di data terbaru (juga bersihkan cache avatarnya)
       for (const id in otherPlayers) {
-        if (!data[id] || id === playerID) delete otherPlayers[id];
+        if (!data[id] || id === playerID) {
+          delete otherPlayers[id];
+          delete avatarImgCache[id];
+        }
       }
       // Tambah / update pemain lain (kecuali diri sendiri)
       for (const id in data) {
         if (id === playerID) continue;
         otherPlayers[id] = data[id];
       }
-      const count = Object.keys(otherPlayers).length;
-      setMpStatus(true, 'Online (' + count + ' pemain lain)');
+      updateMpIndicator(true, Object.keys(otherPlayers).length);
+      if (!gameEntered) refreshLobbyNames(data);
+    });
+
+    // Efek skill (api / dorongan) dari siapa pun, dianimasikan di layar semua pemain
+    effectsRef.on('child_added', snap => {
+      const e = snap.val();
+      if (!e) return;
+      activeEffects.push({ type: e.type, x: e.x, y: e.y, life: 0.8 });
     });
   });
+
+  // ---------- Pembersih otomatis ----------
+  // Setiap klien aktif ikut memeriksa: kalau data seorang pemain (lastSeen) tidak
+  // pernah update lebih dari 60 detik (misal koneksi putus mendadak / tab crash
+  // sehingga onDisconnect gagal jalan), datanya akan dihapus otomatis dari server.
+  setInterval(() => {
+    if (!mpEnabled || !db || !authReady) return;
+    const now = Date.now();
+    for (const id in otherPlayers) {
+      const p = otherPlayers[id];
+      if (p && p.lastSeen && (now - p.lastSeen) > 60000) {
+        db.ref('players/' + id).remove();
+        db.ref('kicked/' + id).remove();
+        delete otherPlayers[id];
+        delete avatarImgCache[id];
+      }
+    }
+  }, 5000);
 } else {
-  setMpStatus(false, 'Mode offline');
+  updateMpIndicator(false, 0);
+  lobbyOnlineCount.textContent = 'Mode offline';
 }
 
 // Kirim posisi pemain secara berkala (throttle ~10x per detik agar hemat bandwidth)
 let mpSendTimer = 0;
 const MP_SEND_INTERVAL = 0.1;
 function sendMyPositionIfDue(dt) {
-  if (!mpEnabled || !myPlayerRef || !authReady) return;
+  if (!mpEnabled || !myPlayerRef || !authReady || !gameEntered) return;
   mpSendTimer += dt;
   if (mpSendTimer < MP_SEND_INTERVAL) return;
   mpSendTimer = 0;
@@ -466,6 +618,41 @@ function sendMyPositionIfDue(dt) {
     lastSeen: firebase.database.ServerValue.TIMESTAMP
   });
 }
+
+// ---------- Masuk ke game dari lobby ----------
+function enterGame(name) {
+  player.name = name;
+  gameEntered = true;
+  document.getElementById('lobbyOverlay').style.display = 'none';
+  ensureFullscreen();
+
+  if (mpEnabled && db && playersRef) {
+    myPlayerRef = playersRef.child(playerID);
+    const initData = {
+      x: player.x, y: player.y, dir: player.dir, facing: player.facing,
+      moving: false, name: player.name,
+      lastSeen: firebase.database.ServerValue.TIMESTAMP
+    };
+    // Kalau avatar sudah diupload sebelumnya di sesi ini, ikut kirim
+    if (player.avatarDataURL) initData.avatar = player.avatarDataURL;
+    myPlayerRef.set(initData);
+
+    // Kalau koneksi HP putus / tab ditutup, hapus otomatis data pemain ini dari
+    // server — termasuk field avatar-nya, jadi tidak ada "sampah" gambar tertinggal.
+    myPlayerRef.onDisconnect().remove();
+  }
+}
+
+const lobbyNameInput = document.getElementById('lobbyNameInput');
+const lobbyPlayBtn = document.getElementById('lobbyPlayBtn');
+function submitLobby() {
+  let name = lobbyNameInput.value.trim();
+  if (!name) name = 'Petualang' + Math.floor(Math.random() * 1000);
+  name = name.substring(0, 16);
+  enterGame(name);
+}
+lobbyPlayBtn.addEventListener('click', submitLobby);
+lobbyNameInput.addEventListener('keydown', e => { if (e.key === 'Enter') submitLobby(); });
 
 // ---------- Terrain Generation ----------
 function getTerrain(col, row) {
@@ -484,12 +671,14 @@ function seededRandom(seed) {
   return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
 }
 const rnd = seededRandom(42);
-for (let i=0; i<280; i++) {
-  const type = rnd() < 0.75 ? 'tree' : 'rock';
+for (let i=0; i<300; i++) {
+  const r = rnd();
+  const type = r < 0.55 ? 'tree' : (r < 0.8 ? 'rock' : 'bush');
   const rx = rnd()*WORLD_W, ry = rnd()*WORLD_H;
   const col = Math.floor(rx/TILE), row = Math.floor(ry/TILE);
   if (getTerrain(col, row) === 'river') continue;
-  obstacles.push({ x: rx, y: ry, type, r: type==='tree'? 22 : 14, scale: 0.8 + rnd()*0.6 });
+  const baseR = type === 'tree' ? 22 : (type === 'rock' ? 14 : 11);
+  obstacles.push({ x: rx, y: ry, type, r: baseR, scale: 0.8 + rnd()*0.6 });
 }
 for (let i = obstacles.length-1; i>=0; i--) {
   const o = obstacles[i];
@@ -499,12 +688,14 @@ for (let i = obstacles.length-1; i>=0; i--) {
 // ---------- Input & Mic & Chat & Skills ----------
 const keys = {};
 function triggerJump() {
+  if (!gameEntered) return;
   if (player.z === 0) {
     player.vz = 360;
   }
 }
 
 window.addEventListener('keydown', e => {
+  if (!gameEntered) return;
   if (document.getElementById('chatModal').classList.contains('open')) return;
 
   keys[e.key.toLowerCase()] = true;
@@ -526,6 +717,7 @@ jumpBtn.addEventListener('mousedown', triggerJump);
 // Mic Button logic
 const micBtn = document.getElementById('micBtn');
 micBtn.addEventListener('click', () => {
+  if (!gameEntered) return;
   player.micActive = !player.micActive;
   if (player.micActive) {
     micBtn.classList.add('active');
@@ -538,7 +730,7 @@ micBtn.addEventListener('click', () => {
 // Skill 1: Bakar (🔥) - Pemain lain yang didekati akan dikeluarkan (kick) dari game
 const skill1Btn = document.getElementById('skill1Btn');
 function useSkill1() {
-  // Cari pemain lain (asli, dari Firebase) yang paling dekat dalam jangkauan
+  if (!gameEntered) return;
   if (mpEnabled && db) {
     let nearestId = null, nearestDist = 100;
     for (const id in otherPlayers) {
@@ -547,9 +739,12 @@ function useSkill1() {
       if (d < nearestDist) { nearestDist = d; nearestId = id; }
     }
     if (nearestId) {
+      const target = otherPlayers[nearestId];
+      broadcastEffect('fire', target.x || player.x, target.y || player.y);
       db.ref('kicked/' + nearestId).set(true);
       db.ref('players/' + nearestId).remove();
       delete otherPlayers[nearestId];
+      delete avatarImgCache[nearestId];
     }
   }
 }
@@ -559,6 +754,7 @@ skill1Btn.addEventListener('click', useSkill1);
 // Skill 2: Gamper (🫱) - Dorong pemain lain yang didekati menjauh
 const skill2Btn = document.getElementById('skill2Btn');
 function useSkill2() {
+  if (!gameEntered) return;
   if (!mpEnabled || !db) return;
   let nearestId = null, nearestDist = 100;
   for (const id in otherPlayers) {
@@ -576,6 +772,7 @@ function useSkill2() {
   nx = Math.max(20, Math.min(WORLD_W - 20, nx));
   ny = Math.max(20, Math.min(WORLD_H - 20, ny));
 
+  broadcastEffect('push', target.x || player.x, target.y || player.y);
   db.ref('players/' + nearestId).update({ x: Math.round(nx), y: Math.round(ny) });
   otherPlayers[nearestId] = { ...target, x: nx, y: ny };
 }
@@ -589,6 +786,7 @@ const chatInput = document.getElementById('chatInput');
 const sendChatBtn = document.getElementById('sendChatBtn');
 
 function openChatModal() {
+  if (!gameEntered) return;
   chatModal.classList.add('open');
   setTimeout(() => chatInput.focus(), 100);
 }
@@ -638,6 +836,7 @@ joystickPosSelect.addEventListener('change', e => {
 });
 
 function handleJoystickStart(clientX, clientY, identifier) {
+  if (!gameEntered) return;
   joystick.active = true;
   joystick.id = identifier;
   updateJoystick(clientX, clientY);
@@ -716,11 +915,8 @@ window.addEventListener('mouseup', () => {
   }
 });
 
-// ---------- Fullscreen + landscape lock ----------
-document.getElementById('fsHint').addEventListener('click', async () => {
-  try { await document.documentElement.requestFullscreen(); } catch(e) {}
-  try { await screen.orientation.lock('landscape'); } catch(e) {}
-});
+// ---------- Fullscreen button (cadangan; disembunyikan otomatis kalau sudah fullscreen) ----------
+document.getElementById('fsHint').addEventListener('click', ensureFullscreen);
 
 // ---------- Settings panel ----------
 const gearBtn = document.getElementById('gearBtn');
@@ -742,16 +938,55 @@ function loadImageFromFile(file, onReady) {
   reader.readAsDataURL(file);
 }
 
-document.getElementById('playerFileBtn').addEventListener('click', () => document.getElementById('playerFile').click());
+// ---------- Upload avatar: tetap jernih, cuma diturunkan resolusinya kalau kegedean (poin 1) ----------
 document.getElementById('playerFile').addEventListener('change', e => {
   const file = e.target.files[0];
   if (!file) return;
   loadImageFromFile(file, img => {
-    player.sprite = img;
-    const thumb = document.getElementById('playerThumb');
-    thumb.src = img.src;
-    document.getElementById('playerThumbRow').style.display = 'flex';
+    const original = Math.min(img.naturalWidth, img.naturalHeight);
+    // Kalau foto aslinya sudah kecil/pas, jangan diperkecil lagi (biar tidak makin buram).
+    // Kalau resolusinya tinggi, baru diturunkan ke maksimal 160px supaya hemat data.
+    const targetSize = Math.min(original, 160);
+    const off = document.createElement('canvas');
+    off.width = targetSize; off.height = targetSize;
+    const octx = off.getContext('2d');
+    octx.imageSmoothingEnabled = true;
+    octx.imageSmoothingQuality = 'high';
+    const sx = (img.naturalWidth - original) / 2, sy = (img.naturalHeight - original) / 2;
+    octx.drawImage(img, sx, sy, original, original, 0, 0, targetSize, targetSize);
+    const quality = targetSize > 100 ? 0.9 : 0.95;
+    const dataURL = off.toDataURL('image/jpeg', quality);
+
+    const compressed = new Image();
+    compressed.onload = () => {
+      player.sprite = compressed;
+      player.avatarDataURL = dataURL;
+      const thumb = document.getElementById('playerThumb');
+      thumb.src = dataURL;
+      document.getElementById('playerThumbRow').style.display = 'flex';
+      // Kirim avatar ke Firebase (jadi bagian dari node pemain ini, sehingga otomatis
+      // ikut terhapus saat pemain keluar/kena kick/tidak aktif — tidak ada sampah tersisa)
+      if (mpEnabled && myPlayerRef) myPlayerRef.update({ avatar: dataURL });
+    };
+    compressed.src = dataURL;
   });
+});
+
+// ---------- Upload gambar dekorasi peta: pohon / batu / semak (poin 2) ----------
+let treeImg = null, rockImg = null, bushImg = null;
+function wireDecorUpload(inputId, btnId, setter) {
+  document.getElementById(btnId).addEventListener('click', () => document.getElementById(inputId).click());
+  document.getElementById(inputId).addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    loadImageFromFile(file, img => setter(img));
+  });
+}
+wireDecorUpload('treeFile', 'treeFileBtn', img => { treeImg = img; });
+wireDecorUpload('rockFile', 'rockFileBtn', img => { rockImg = img; });
+wireDecorUpload('bushFile', 'bushFileBtn', img => { bushImg = img; });
+document.getElementById('resetDecorBtn').addEventListener('click', () => {
+  treeImg = null; rockImg = null; bushImg = null;
 });
 
 // ---------- Collision ----------
@@ -761,19 +996,22 @@ function collides(nx, ny) {
     if (Math.hypot(o.x-nx, o.y-ny) < minDist) return true;
   }
   if (nx < player.w/2 || nx > WORLD_W-player.w/2 || ny < player.h/2 || ny > WORLD_H-player.h/2) return true;
-  
-  const col = Math.floor(nx / TILE);
-  const row = Math.floor(ny / TILE);
-  if (getTerrain(col, row) === 'river') return true;
-
+  // Batasan sungai dihilangkan: sungai cuma dekorasi visual, tidak menghalangi jalan.
   return false;
+}
+
+// ---------- Util animasi berjalan untuk pemain lain (biar variatif tiap orang) ----------
+function idPhaseOffset(id) {
+  let h = 0;
+  for (let i=0;i<id.length;i++) h = (h*31 + id.charCodeAt(i)) % 1000;
+  return (h/1000) * Math.PI * 2;
 }
 
 // ---------- Update ----------
 let last = performance.now();
 function update(dt) {
   let dx=0, dy=0;
-  if (!document.getElementById('chatModal').classList.contains('open')) {
+  if (gameEntered && !document.getElementById('chatModal').classList.contains('open')) {
     if (keys['arrowup']||keys['w']) dy -= 1;
     if (keys['arrowdown']||keys['s']) dy += 1;
     if (keys['arrowleft']||keys['a']) dx -= 1;
@@ -817,6 +1055,11 @@ function update(dt) {
     }
   }
 
+  // Animasi berjalan (poin 3): bobbing/squash sederhana berbasis fase sinus
+  if (player.moving) {
+    player.walkAnim += dt * 9;
+  }
+
   // Mic speaking simulation
   if (player.micActive) {
     player.speechAnimTimer += dt;
@@ -836,10 +1079,37 @@ function update(dt) {
     }
   }
 
-  if (player.moving) {
-    player.frameTimer += dt;
-    if (player.frameTimer > 0.12) { player.frame = (player.frame+1)%4; player.frameTimer=0; }
-  } else { player.frame = 0; }
+  // Serpihan debu saat berjalan
+  if (gameEntered && player.moving && player.z === 0) {
+    dustSpawnTimer += dt;
+    if (dustSpawnTimer > 0.09) {
+      dustSpawnTimer = 0;
+      const backAngle = { up: Math.PI/2, down: -Math.PI/2, left: 0, right: Math.PI }[player.dir] || 0;
+      dustParticles.push({
+        x: player.x + Math.cos(backAngle) * 10 + (Math.random()-0.5)*6,
+        y: player.y + Math.sin(backAngle) * 6 + (Math.random()-0.5)*4 + 14,
+        vx: (Math.random()-0.5) * 10,
+        vy: -Math.random() * 6,
+        life: 0.45, maxLife: 0.45,
+        size: 1.5 + Math.random()*1.5
+      });
+    }
+  } else {
+    dustSpawnTimer = 0.05;
+  }
+  for (let i = dustParticles.length - 1; i >= 0; i--) {
+    const d = dustParticles[i];
+    d.life -= dt;
+    d.x += d.vx * dt;
+    d.y += d.vy * dt;
+    if (d.life <= 0) dustParticles.splice(i, 1);
+  }
+
+  // Efek skill yang sedang tampil
+  for (let i = activeEffects.length - 1; i >= 0; i--) {
+    activeEffects[i].life -= dt;
+    if (activeEffects[i].life <= 0) activeEffects.splice(i, 1);
+  }
 
   camera.x = Math.max(0, Math.min(WORLD_W - W, player.x - W/2));
   camera.y = Math.max(0, Math.min(WORLD_H - H, player.y - H/2));
@@ -881,6 +1151,16 @@ function drawGround() {
     }
   }
 
+  // Serpihan debu (digambar sebelum entitas supaya terlihat di bawah kaki)
+  for (const d of dustParticles) {
+    const sx = d.x - camera.x, sy = d.y - camera.y;
+    const alpha = Math.max(0, d.life / d.maxLife) * 0.45;
+    ctx.fillStyle = `rgba(210, 195, 155, ${alpha})`;
+    ctx.beginPath();
+    ctx.arc(sx, sy, d.size, 0, Math.PI*2);
+    ctx.fill();
+  }
+
   const otherDrawables = Object.keys(otherPlayers).map(id => {
     const p = otherPlayers[id];
     return { isOther:true, id, x: p.x||0, y: p.y||0, drawY: p.y||0, data: p };
@@ -897,13 +1177,36 @@ function drawGround() {
     if (d.isPlayer) drawPlayer(sx, sy);
     else if (d.isOther) drawOtherPlayer(sx, sy, d.id, d.data);
     else if (d.type==='tree') drawTree(sx, sy, d.scale);
-    else drawRock(sx, sy, d.scale);
+    else if (d.type==='rock') drawRock(sx, sy, d.scale);
+    else drawBush(sx, sy, d.scale);
+  }
+
+  // Efek skill (api / dorongan) di atas semua entitas
+  for (const ef of activeEffects) {
+    const sx = ef.x - camera.x, sy = ef.y - camera.y;
+    const alpha = Math.max(0, ef.life / 0.8);
+    if (ef.type === 'fire') {
+      ctx.fillStyle = `rgba(255, 100, 30, ${alpha})`;
+      ctx.beginPath(); ctx.arc(sx, sy - 10, 16 * (0.7 + alpha*0.3), 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = `rgba(255, 200, 60, ${alpha*0.85})`;
+      ctx.beginPath(); ctx.arc(sx, sy - 16, 9, 0, Math.PI*2); ctx.fill();
+    } else if (ef.type === 'push') {
+      ctx.strokeStyle = `rgba(120, 200, 255, ${alpha})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(sx, sy, 26 * (1 - alpha) + 6, 0, Math.PI*2); ctx.stroke();
+    }
   }
 
   ctx.restore();
 }
 
+// ---------- Dekorasi peta: pakai gambar PNG upload user, fallback ke gambar vektor bawaan (poin 2) ----------
 function drawTree(x,y,scale) {
+  if (treeImg && treeImg.complete && treeImg.naturalWidth) {
+    const h = 64 * scale, w = h * (treeImg.naturalWidth / treeImg.naturalHeight);
+    ctx.drawImage(treeImg, x - w/2, y - h + 10, w, h);
+    return;
+  }
   ctx.save();
   ctx.translate(x,y); ctx.scale(scale,scale);
   ctx.fillStyle = 'rgba(0,0,0,0.15)';
@@ -919,6 +1222,11 @@ function drawTree(x,y,scale) {
 }
 
 function drawRock(x,y,scale) {
+  if (rockImg && rockImg.complete && rockImg.naturalWidth) {
+    const h = 32 * scale, w = h * (rockImg.naturalWidth / rockImg.naturalHeight);
+    ctx.drawImage(rockImg, x - w/2, y - h + 8, w, h);
+    return;
+  }
   ctx.save();
   ctx.translate(x,y); ctx.scale(scale,scale);
   ctx.fillStyle = 'rgba(0,0,0,0.15)';
@@ -930,6 +1238,39 @@ function drawRock(x,y,scale) {
   ctx.restore();
 }
 
+function drawBush(x,y,scale) {
+  if (bushImg && bushImg.complete && bushImg.naturalWidth) {
+    const h = 26 * scale, w = h * (bushImg.naturalWidth / bushImg.naturalHeight);
+    ctx.drawImage(bushImg, x - w/2, y - h + 6, w, h);
+    return;
+  }
+  ctx.save();
+  ctx.translate(x,y); ctx.scale(scale,scale);
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.beginPath(); ctx.ellipse(0, 4, 11, 4, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#3d9645';
+  ctx.beginPath(); ctx.arc(-5, -2, 8, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(5, -2, 8, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(0, -7, 9, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+function drawNameTag(x, y, text, opts) {
+  opts = opts || {};
+  ctx.save();
+  ctx.font = 'bold 12px Segoe UI';
+  ctx.textAlign = 'center';
+  const tw = ctx.measureText(text).width;
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
+  ctx.beginPath();
+  ctx.roundRect(x - tw/2 - 6, y - 9, tw + 12, 18, 6);
+  ctx.fill();
+  ctx.fillStyle = opts.color || '#fff';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y);
+  ctx.restore();
+}
+
 function drawPlayer(x,y) {
   const shadowScale = Math.max(0.6, 1 - (player.z / 180));
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
@@ -937,7 +1278,12 @@ function drawPlayer(x,y) {
   ctx.ellipse(x, y+16, 14 * shadowScale, 5 * shadowScale, 0, 0, Math.PI*2); 
   ctx.fill();
 
-  const renderY = y - player.z;
+  // Animasi berjalan: bobbing naik-turun + sedikit squash/stretch (poin 3)
+  const bounce = player.moving ? Math.abs(Math.sin(player.walkAnim)) * 5 : 0;
+  const squashX = player.moving ? 1 - Math.abs(Math.sin(player.walkAnim)) * 0.05 : 1;
+  const squashY = player.moving ? 1 + Math.abs(Math.sin(player.walkAnim)) * 0.05 : 1;
+
+  const renderY = y - player.z - bounce;
 
   if (player.sprite) {
     const img = player.sprite;
@@ -945,14 +1291,15 @@ function drawPlayer(x,y) {
     const targetW = targetH * (img.naturalWidth / img.naturalHeight);
     ctx.save();
     ctx.translate(x, renderY);
-    if (player.facing === 'left') {
-      ctx.scale(-1, 1);
-    }
+    if (player.facing === 'left') ctx.scale(-1, 1);
+    ctx.scale(squashX, squashY);
     ctx.drawImage(img, -targetW/2, -targetH + 14, targetW, targetH);
     ctx.restore();
   } else {
     ctx.save();
     ctx.translate(x, renderY);
+    if (player.facing === 'left') ctx.scale(-1, 1);
+    ctx.scale(squashX, squashY);
     ctx.strokeStyle = 'rgba(255,255,255,0.85)';
     ctx.setLineDash([4,4]);
     ctx.lineWidth = 2;
@@ -965,6 +1312,11 @@ function drawPlayer(x,y) {
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('+', 0, -6);
     ctx.restore();
+  }
+
+  // Nama pemain di atas kepala
+  if (player.name) {
+    drawNameTag(x, renderY - 62, player.name, { color: '#ffe27a' });
   }
 
   // Voice Indicator / Audio Wave above head
@@ -1028,31 +1380,57 @@ function drawPlayer(x,y) {
   }
 }
 
-// Gambar pemain lain yang datanya diterima dari Firebase
+// Gambar pemain lain yang datanya diterima dari Firebase (avatar jernih, nama, animasi jalan)
 function drawOtherPlayer(x, y, id, data) {
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
   ctx.beginPath();
   ctx.ellipse(x, y+16, 14, 5, 0, 0, Math.PI*2);
   ctx.fill();
 
-  ctx.save();
-  ctx.translate(x, y);
-  if (data.facing === 'left') ctx.scale(-1, 1);
+  // Animasi berjalan untuk pemain lain, pakai fase acak per-id biar tidak seragam persis
+  const phase = performance.now() / 1000 * 9 + idPhaseOffset(id);
+  const bounce = data.moving ? Math.abs(Math.sin(phase)) * 5 : 0;
+  const squashX = data.moving ? 1 - Math.abs(Math.sin(phase)) * 0.05 : 1;
+  const squashY = data.moving ? 1 + Math.abs(Math.sin(phase)) * 0.05 : 1;
+  const renderY = y - bounce;
 
-  ctx.strokeStyle = 'rgba(74, 144, 226, 0.9)';
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.ellipse(0, -6, 14, 20, 0, 0, Math.PI*2); ctx.stroke();
-  ctx.fillStyle = 'rgba(74, 144, 226, 0.25)';
-  ctx.beginPath(); ctx.ellipse(0, -6, 14, 20, 0, 0, Math.PI*2); ctx.fill();
-  ctx.restore();
+  let avImg = null;
+  if (data.avatar) {
+    const cached = avatarImgCache[id];
+    if (cached && cached.url === data.avatar) {
+      avImg = cached.img;
+    } else {
+      const img = new Image();
+      img.src = data.avatar;
+      avatarImgCache[id] = { url: data.avatar, img };
+      avImg = img;
+    }
+  }
 
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 10px Segoe UI';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('Pemain ' + id.slice(0, 4), 0, -32);
-  ctx.restore();
+  if (avImg && avImg.complete && avImg.naturalWidth) {
+    const targetH = 54;
+    const targetW = targetH * (avImg.naturalWidth / avImg.naturalHeight);
+    ctx.save();
+    ctx.translate(x, renderY);
+    if (data.facing === 'left') ctx.scale(-1, 1);
+    ctx.scale(squashX, squashY);
+    ctx.drawImage(avImg, -targetW/2, -targetH + 14, targetW, targetH);
+    ctx.restore();
+  } else {
+    ctx.save();
+    ctx.translate(x, renderY);
+    if (data.facing === 'left') ctx.scale(-1, 1);
+    ctx.scale(squashX, squashY);
+    ctx.strokeStyle = 'rgba(74, 144, 226, 0.9)';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.ellipse(0, -6, 14, 20, 0, 0, Math.PI*2); ctx.stroke();
+    ctx.fillStyle = 'rgba(74, 144, 226, 0.25)';
+    ctx.beginPath(); ctx.ellipse(0, -6, 14, 20, 0, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  const label = data.name || ('Pemain ' + id.slice(0, 4));
+  drawNameTag(x, renderY - 48, label);
 }
 
 // ---------- Minimap ----------
