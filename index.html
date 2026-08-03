@@ -283,6 +283,10 @@
        "players": {
          ".read": "auth != null",
          ".write": "auth != null"
+       },
+       "kicked": {
+         ".read": "auth != null",
+         ".write": "auth != null"
        }
      }
    }
@@ -303,11 +307,14 @@ let db = null;
 let playersRef = null;
 let myPlayerRef = null;
 let authReady = false;
+let isKicked = false;
+let kickedRef = null;
 
 try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.database();
   playersRef = db.ref('players');
+  kickedRef = db.ref('kicked');
 } catch (err) {
   console.error('Gagal inisialisasi Firebase:', err);
   mpEnabled = false;
@@ -339,7 +346,7 @@ window.addEventListener('orientationchange', () => setTimeout(resize, 300));
 resize();
 
 // ---------- World setup ----------
-const WORLD_W = 2400, WORLD_H = 2400;
+const WORLD_W = 4800, WORLD_H = 4800;
 const TILE = 48;
 
 const player = { 
@@ -361,19 +368,6 @@ const player = {
   micActive: false,
   isSpeaking: false,
   speechAnimTimer: 0
-};
-
-// ---------- Test NPC ----------
-const npc = {
-  x: WORLD_W / 2 + 120,
-  y: WORLD_H / 2,
-  w: 30,
-  h: 36,
-  z: 0,
-  isDead: false,
-  respawnTimer: 0,
-  burnTimer: 0,
-  name: 'NPC Test'
 };
 
 let camera = { x: player.x - W/2, y: player.y - H/2 };
@@ -414,6 +408,17 @@ if (mpEnabled && db && playersRef) {
 
     // Kalau koneksi HP putus / tab ditutup, hapus otomatis data pemain ini dari server
     myPlayerRef.onDisconnect().remove();
+
+    // Dengarkan apakah pemain ini dikeluarkan (kick) oleh pemain lain
+    kickedRef.child(playerID).on('value', snap => {
+      if (snap.val() === true && !isKicked) {
+        isKicked = true;
+        mpEnabled = false;
+        playersRef.off();
+        if (myPlayerRef) { myPlayerRef.off(); myPlayerRef.remove(); }
+        setMpStatus(false, 'Kamu dikeluarkan dari game 🔥');
+      }
+    });
 
     // Pantau status koneksi ke Firebase
     db.ref('.info/connected').on('value', snap => {
@@ -479,7 +484,7 @@ function seededRandom(seed) {
   return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
 }
 const rnd = seededRandom(42);
-for (let i=0; i<70; i++) {
+for (let i=0; i<280; i++) {
   const type = rnd() < 0.75 ? 'tree' : 'rock';
   const rx = rnd()*WORLD_W, ry = rnd()*WORLD_H;
   const col = Math.floor(rx/TILE), row = Math.floor(ry/TILE);
@@ -530,31 +535,49 @@ micBtn.addEventListener('click', () => {
   }
 });
 
-// Skill 1: Burn (Bakar) - NPC disappears and respawns after 2s
+// Skill 1: Bakar (🔥) - Pemain lain yang didekati akan dikeluarkan (kick) dari game
 const skill1Btn = document.getElementById('skill1Btn');
 function useSkill1() {
-  const dist = Math.hypot(npc.x - player.x, npc.y - player.y);
-  if (dist < 100 && !npc.isDead) {
-    npc.isDead = true;
-    npc.respawnTimer = 2.0;
-    npc.burnTimer = 1.0;
+  // Cari pemain lain (asli, dari Firebase) yang paling dekat dalam jangkauan
+  if (mpEnabled && db) {
+    let nearestId = null, nearestDist = 100;
+    for (const id in otherPlayers) {
+      const p = otherPlayers[id];
+      const d = Math.hypot((p.x||0) - player.x, (p.y||0) - player.y);
+      if (d < nearestDist) { nearestDist = d; nearestId = id; }
+    }
+    if (nearestId) {
+      db.ref('kicked/' + nearestId).set(true);
+      db.ref('players/' + nearestId).remove();
+      delete otherPlayers[nearestId];
+    }
   }
 }
 skill1Btn.addEventListener('touchstart', e => { useSkill1(); e.preventDefault(); }, {passive: false});
 skill1Btn.addEventListener('click', useSkill1);
 
-// Skill 2: Slap (Gamper 🫱) - Push target away from player direction
+// Skill 2: Gamper (🫱) - Dorong pemain lain yang didekati menjauh
 const skill2Btn = document.getElementById('skill2Btn');
 function useSkill2() {
-  const dist = Math.hypot(npc.x - player.x, npc.y - player.y);
-  if (dist < 100 && !npc.isDead) {
-    const angle = Math.atan2(npc.y - player.y, npc.x - player.x);
-    const pushDist = 90;
-    npc.x += Math.cos(angle) * pushDist;
-    npc.y += Math.sin(angle) * pushDist;
-    npc.x = Math.max(npc.w, Math.min(WORLD_W - npc.w, npc.x));
-    npc.y = Math.max(npc.h, Math.min(WORLD_H - npc.h, npc.y));
+  if (!mpEnabled || !db) return;
+  let nearestId = null, nearestDist = 100;
+  for (const id in otherPlayers) {
+    const p = otherPlayers[id];
+    const d = Math.hypot((p.x||0) - player.x, (p.y||0) - player.y);
+    if (d < nearestDist) { nearestDist = d; nearestId = id; }
   }
+  if (!nearestId) return;
+
+  const target = otherPlayers[nearestId];
+  const angle = Math.atan2((target.y||0) - player.y, (target.x||0) - player.x);
+  const pushDist = 90;
+  let nx = (target.x||0) + Math.cos(angle) * pushDist;
+  let ny = (target.y||0) + Math.sin(angle) * pushDist;
+  nx = Math.max(20, Math.min(WORLD_W - 20, nx));
+  ny = Math.max(20, Math.min(WORLD_H - 20, ny));
+
+  db.ref('players/' + nearestId).update({ x: Math.round(nx), y: Math.round(ny) });
+  otherPlayers[nearestId] = { ...target, x: nx, y: ny };
 }
 skill2Btn.addEventListener('touchstart', e => { useSkill2(); e.preventDefault(); }, {passive: false});
 skill2Btn.addEventListener('click', useSkill2);
@@ -794,20 +817,6 @@ function update(dt) {
     }
   }
 
-  // NPC Respawn & Burn timer logic
-  if (npc.isDead) {
-    npc.respawnTimer -= dt;
-    if (npc.respawnTimer <= 0) {
-      npc.isDead = false;
-      npc.x = player.x + (Math.random() - 0.5) * 160;
-      npc.y = player.y + (Math.random() - 0.5) * 160;
-    }
-  } else {
-    if (npc.burnTimer > 0) {
-      npc.burnTimer -= dt;
-    }
-  }
-
   // Mic speaking simulation
   if (player.micActive) {
     player.speechAnimTimer += dt;
@@ -878,8 +887,7 @@ function drawGround() {
   });
 
   const drawables = obstacles.map(o=>({...o, drawY:o.y})).concat([
-    { isPlayer:true, x: player.x, y: player.y, drawY: player.y },
-    { isNPC:true, x: npc.x, y: npc.y, drawY: npc.y }
+    { isPlayer:true, x: player.x, y: player.y, drawY: player.y }
   ]).concat(otherDrawables);
   drawables.sort((a,b)=>a.drawY-b.drawY);
 
@@ -887,7 +895,6 @@ function drawGround() {
     const sx = d.x - camera.x, sy = d.y - camera.y;
     if (sx<-80||sx>W+80||sy<-80||sy>H+80) continue;
     if (d.isPlayer) drawPlayer(sx, sy);
-    else if (d.isNPC) drawNPC(sx, sy);
     else if (d.isOther) drawOtherPlayer(sx, sy, d.id, d.data);
     else if (d.type==='tree') drawTree(sx, sy, d.scale);
     else drawRock(sx, sy, d.scale);
@@ -920,34 +927,6 @@ function drawRock(x,y,scale) {
   ctx.beginPath(); ctx.ellipse(0, 0, 13, 9, 0, 0, Math.PI*2); ctx.fill();
   ctx.fillStyle = 'rgba(255,255,255,0.25)';
   ctx.beginPath(); ctx.ellipse(-3,-3,5,3,0,0,Math.PI*2); ctx.fill();
-  ctx.restore();
-}
-
-function drawNPC(x, y) {
-  if (npc.isDead) return;
-
-  ctx.fillStyle = 'rgba(0,0,0,0.25)';
-  ctx.beginPath(); 
-  ctx.ellipse(x, y+16, 14, 5, 0, 0, Math.PI*2); 
-  ctx.fill();
-
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.strokeStyle = 'rgba(255, 165, 2, 0.9)';
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.ellipse(0, -6, 14, 20, 0, 0, Math.PI*2); ctx.stroke();
-  ctx.fillStyle = 'rgba(255, 165, 2, 0.25)';
-  ctx.beginPath(); ctx.ellipse(0, -6, 14, 20, 0, 0, Math.PI*2); ctx.fill();
-
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 11px Segoe UI';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('NPC', 0, -32);
-
-  if (npc.burnTimer > 0) {
-    ctx.font = '16px Segoe UI';
-    ctx.fillText('🔥', 0, -50);
-  }
   ctx.restore();
 }
 
@@ -1109,16 +1088,6 @@ function drawMinimap() {
     else ctx.lineTo(mx, my);
   }
   ctx.stroke();
-
-  // Draw NPC on minimap if alive
-  if (!npc.isDead) {
-    const npx = mapX + npc.x * scaleX;
-    const npy = mapY + npc.y * scaleY;
-    ctx.fillStyle = '#ffa502';
-    ctx.beginPath();
-    ctx.arc(npx, npy, 3, 0, Math.PI * 2);
-    ctx.fill();
-  }
 
   // Draw other players on minimap
   ctx.fillStyle = '#4a90e2';
