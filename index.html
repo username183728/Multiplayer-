@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Petualangan Padang Rumput</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    width:100%; height:100%; overflow:hidden;
+    background:#1b1b1b; font-family: 'Segoe UI', Tahoma, sans-serif;
+    user-select:none;
+  }
+  #gameContainer {
+    position:fixed; inset:0;
+    width:100vw; height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    background:#000;
+  }
+  canvas {
+    display:block;
+    background:#5fae3f;
+  }
+  #hint {
+    position:fixed; bottom:14px; left:50%; transform:translateX(-50%);
+    color:#fff; font-size:13px; text-shadow:0 2px 4px rgba(0,0,0,0.6);
+    background:rgba(0,0,0,0.35); padding:6px 14px; border-radius:8px;
+    pointer-events:none; text-align:center; z-index:20;
+  }
+
+  /* ---------- Mic & Chat Buttons near Minimap ---------- */
+  #micBtn {
+    position: fixed; top: 14px; left: 128px; z-index: 30;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: #ff4757; border: 1px solid rgba(255,255,255,0.3);
+    color: #fff; font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    transition: background 0.2s, transform 0.1s;
+  }
+  #micBtn:active { transform: scale(0.92); }
+  #micBtn.active { background: #2ed573; }
+
+  #chatBtn {
+    position: fixed; top: 58px; left: 128px; z-index: 30;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.3);
+    color: #fff; font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    transition: background 0.2s, transform 0.1s;
+  }
+  #chatBtn:active { transform: scale(0.92); background: rgba(0,0,0,0.6); }
+
+  /* ---------- Virtual Controls (Joystick, Jump, Skills) ---------- */
+  #joystickBase {
+    position: fixed; bottom: 24px; right: 24px;
+    width: 120px; height: 120px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    touch-action: none;
+    z-index: 20;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(2px);
+    transition: left 0.2s, right 0.2s;
+  }
+  #joystickStick {
+    position: absolute;
+    width: 50px; height: 50px;
+    background: rgba(255, 255, 255, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  #jumpBtn {
+    position: fixed; bottom: 24px; left: 24px;
+    width: 80px; height: 80px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    touch-action: none;
+    z-index: 20;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(2px);
+    color: #fff; font-weight: 600; font-size: 14px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    transition: left 0.2s, right 0.2s;
+  }
+  #jumpBtn:active { background: rgba(255, 255, 255, 0.35); }
+
+  .skillBtn {
+    position: fixed; bottom: 156px; z-index: 20;
+    width: 54px; height: 54px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    touch-action: none;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(2px);
+    color: #fff; font-size: 22px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    transition: transform 0.1s, background 0.2s;
+  }
+  .skillBtn:active { transform: scale(0.92); background: rgba(255, 255, 255, 0.35); }
+  #skill1Btn { right: 24px; }
+  #skill2Btn { right: 88px; }
+
+  /* ---------- Chat Modal Overlay ---------- */
+  #chatModal {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    z-index: 100; align-items: center; justify-content: center; padding: 20px;
+  }
+  #chatModal.open { display: flex; }
+  .chat-box {
+    background: rgba(20,22,18,0.95); border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px; padding: 16px; width: 100%; max-width: 320px;
+    display: flex; flex-direction: column; gap: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .chat-box input {
+    width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.1); color: #fff; font-size: 14px; outline: none;
+  }
+  .chat-box button {
+    background: #3d9645; color: #fff; border: none; border-radius: 8px;
+    padding: 10px; font-weight: 600; cursor: pointer; font-size: 14px;
+  }
+  .chat-box button:active { background: #2f7a34; }
+
+  /* ---------- Rotate device overlay ---------- */
+  #rotateOverlay {
+    display:none;
+    position:fixed; inset:0; z-index:9999;
+    background:#111; color:#fff;
+    flex-direction:column; align-items:center; justify-content:center;
+    gap:14px; text-align:center; padding:20px;
+  }
+  .rotate-icon { font-size:52px; animation: rotatePhone 1.6s ease-in-out infinite; }
+  @keyframes rotatePhone { 0%,100% { transform:rotate(0deg); } 50% { transform:rotate(90deg); } }
+  #rotateOverlay p { font-size:15px; opacity:0.85; max-width:280px; }
+  @media (orientation: portrait) and (max-width: 950px) {
+    #rotateOverlay { display:flex; }
+    #gameContainer, #hint, #joystickBase, #jumpBtn, #chatBtn, #gearBtn, #micBtn, #skill1Btn, #skill2Btn { visibility:hidden; }
+  }
+
+  /* ---------- Settings gear ---------- */
+  #gearBtn {
+    position:fixed; top:14px; right:14px; z-index:30;
+    width:42px; height:42px; border-radius:50%;
+    background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.25);
+    color:#fff; font-size:20px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  #gearBtn:active { background:rgba(0,0,0,0.65); }
+
+  #settingsPanel {
+    position:fixed; top:0; right:0; height:100%; width:300px; max-width:86vw;
+    background:rgba(20,22,18,0.95); color:#fff; z-index:40;
+    padding:20px; overflow-y:auto;
+    transform:translateX(100%); transition:transform 0.25s ease;
+    box-shadow:-6px 0 24px rgba(0,0,0,0.4);
+  }
+  #settingsPanel.open { transform:translateX(0); }
+  #settingsPanel h2 { font-size:18px; margin-bottom:16px; }
+  #settingsPanel h3 { font-size:13px; text-transform:uppercase; letter-spacing:0.05em; opacity:0.6; margin:18px 0 8px; }
+  .field { margin-bottom:14px; }
+  .fileBtn {
+    display:inline-block; width:100%; text-align:center;
+    background:#3d9645; color:#fff; border:none; border-radius:8px;
+    padding:10px 12px; font-size:13px; font-weight:600; cursor:pointer;
+  }
+  .fileBtn:active { background:#2f7a34; }
+  .thumbRow { display:flex; align-items:center; gap:8px; margin-top:6px; font-size:12px; opacity:0.8; }
+  .thumbRow img { width:32px; height:32px; object-fit:contain; border-radius:6px; background:rgba(255,255,255,0.08); }
+  select {
+    width:100%; padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.2);
+    background:rgba(255,255,255,0.08); color:#fff; font-size:13px;
+  }
+  #closePanelBtn {
+    position:absolute; top:16px; right:16px; background:none; border:none; color:#fff;
+    font-size:20px; cursor:pointer; opacity:0.7;
+  }
+  #panelBackdrop {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:35;
+  }
+  #panelBackdrop.open { display:block; }
+
+  #fsHint {
+    position:fixed; bottom:14px; left:14px; z-index:20;
+    background:rgba(0,0,0,0.4); color:#fff; border:1px solid rgba(255,255,255,0.3);
+    border-radius:8px; padding:8px 12px; font-size:12px; cursor:pointer;
+  }
+
+  /* ---------- Status koneksi multiplayer ---------- */
+  #mpStatus {
+    position:fixed; top:14px; left:14px; z-index:30;
+    background:rgba(0,0,0,0.4); color:#fff; border:1px solid rgba(255,255,255,0.25);
+    border-radius:8px; padding:6px 10px; font-size:11px;
+    display:flex; align-items:center; gap:6px;
+  }
+  #mpStatus .dot {
+    width:8px; height:8px; border-radius:50%; background:#ff4757;
+  }
+  #mpStatus.online .dot { background:#2ed573; }
+</style>
+</head>
+<body>
+<div id="rotateOverlay">
+  <div class="rotate-icon">📱</div>
+  <div style="font-size:17px; font-weight:600;">Putar HP kamu ya</div>
+  <p>Permainan ini dimainkan dalam mode lanskap (miring). Putar layar HP untuk mulai bermain.</p>
+</div>
+
+<div id="gameContainer">
+  <canvas id="game"></canvas>
+  <div id="hint">Gunakan joystick, tombol LOMPAT, Skill 1/2, & CHAT ✨</div>
+  
+  <!-- Mic & Chat Buttons near Minimap -->
+  <button id="micBtn" title="Mikrofon">🎤</button>
+  <button id="chatBtn" title="Chat">✉️</button>
+
+  <!-- Virtual Joystick & Action Buttons -->
+  <div id="joystickBase">
+    <div id="joystickStick"></div>
+  </div>
+  <div id="jumpBtn">LOMPAT</div>
+  <button id="skill1Btn" class="skillBtn" title="Skill 1: Bakar">🔥</button>
+  <button id="skill2Btn" class="skillBtn" title="Skill 2: Gamper">🫱</button>
+
+  <button id="fsHint">⛶ Layar penuh & mode lanskap</button>
+  <div id="mpStatus"><span class="dot"></span><span id="mpStatusText">Menghubungkan...</span></div>
+</div>
+
+<!-- Chat Input Modal -->
+<div id="chatModal">
+  <div class="chat-box">
+    <h3 style="font-size:15px; margin:0; color:#fff;">Kirim Pesan Chat (Maks 50 Karakter)</h3>
+    <input type="text" id="chatInput" placeholder="Ketik pesan..." maxlength="50">
+    <button id="sendChatBtn">Kirim</button>
+  </div>
+</div>
+
+<button id="gearBtn" title="Pengaturan">⚙️</button>
+<div id="panelBackdrop"></div>
+<div id="settingsPanel">
+  <button id="closePanelBtn">✕</button>
+  <h2>Kustomisasi</h2>
+
+  <h3>Karaktermu</h3>
+  <div class="field">
+    <input type="file" id="playerFile" accept="image/*" style="display:none">
+    <button class="fileBtn" id="playerFileBtn">📤 Upload Karakter</button>
+    <div class="thumbRow" id="playerThumbRow" style="display:none;">
+      <img id="playerThumb"><span>Karakter aktif</span>
+    </div>
+  </div>
+
+  <h3>Posisi Joystick</h3>
+  <div class="field">
+    <select id="joystickPosSelect">
+      <option value="right" selected>Kanan</option>
+      <option value="left">Kiri</option>
+    </select>
+  </div>
+</div>
+
+<!-- ====== Firebase SDK (compat build, tanpa proses build) ====== -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+
+<script>
+/* =====================================================================
+   KONFIGURASI FIREBASE
+   Ganti nilai-nilai di bawah ini dengan config project Firebase kamu
+   sendiri (Firebase Console → Project Settings → General → SDK setup).
+   Pastikan Realtime Database sudah dibuat dan rule-nya:
+   {
+     "rules": {
+       "players": {
+         ".read": "auth != null",
+         ".write": "auth != null"
+       }
+     }
+   }
+   Dan Authentication → Sign-in method → Anonymous harus di-Enable.
+   ===================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyAFeE_-TxXEG5BUguMUyIrs4wpc-DibIHo",
+  authDomain: "multiplayer-1715f.firebaseapp.com",
+  databaseURL: "https://multiplayer-1715f-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "multiplayer-1715f",
+  storageBucket: "multiplayer-1715f.firebasestorage.app",
+  messagingSenderId: "176814092100",
+  appId: "1:176814092100:web:1c6e9d71d75e2c2711f111"
+};
+
+let mpEnabled = true;
+let db = null;
+let playersRef = null;
+let myPlayerRef = null;
+let authReady = false;
+
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+  playersRef = db.ref('players');
+} catch (err) {
+  console.error('Gagal inisialisasi Firebase:', err);
+  mpEnabled = false;
+}
+
+// ID unik untuk sesi bermain ini (tidak disimpan permanen, dibuat ulang tiap kali halaman dibuka)
+const playerID = (crypto.randomUUID ? crypto.randomUUID() : 'p-' + Date.now() + '-' + Math.floor(Math.random()*100000));
+
+// Data pemain lain yang diterima dari Firebase, key = playerID mereka
+const otherPlayers = {};
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+// ---------- Responsive full-screen sizing ----------
+let W = 0, H = 0;
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  W = window.innerWidth;
+  H = window.innerHeight;
+  canvas.width = Math.floor(W * dpr);
+  canvas.height = Math.floor(H * dpr);
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', () => setTimeout(resize, 300));
+resize();
+
+// ---------- World setup ----------
+const WORLD_W = 2400, WORLD_H = 2400;
+const TILE = 48;
+
+const player = { 
+  x: WORLD_W/2, 
+  y: WORLD_H/2, 
+  w: 30, 
+  h: 36, 
+  speed: 220, 
+  dir: 'down', 
+  facing: 'right', 
+  moving: false, 
+  frame: 0, 
+  frameTimer: 0, 
+  sprite: null,
+  z: 0,
+  vz: 0,
+  chatMessage: '',
+  chatTimer: 0,
+  micActive: false,
+  isSpeaking: false,
+  speechAnimTimer: 0
+};
+
+// ---------- Test NPC ----------
+const npc = {
+  x: WORLD_W / 2 + 120,
+  y: WORLD_H / 2,
+  w: 30,
+  h: 36,
+  z: 0,
+  isDead: false,
+  respawnTimer: 0,
+  burnTimer: 0,
+  name: 'NPC Test'
+};
+
+let camera = { x: player.x - W/2, y: player.y - H/2 };
+
+// ---------- Setup koneksi multiplayer (Firebase Realtime Database) ----------
+const mpStatusEl = document.getElementById('mpStatus');
+const mpStatusText = document.getElementById('mpStatusText');
+
+function setMpStatus(online, text) {
+  mpStatusEl.classList.toggle('online', online);
+  mpStatusText.textContent = text;
+}
+
+if (mpEnabled && db && playersRef) {
+  myPlayerRef = playersRef.child(playerID);
+  setMpStatus(false, 'Login...');
+
+  // Login anonim dulu — server cuma izinkan baca/tulis kalau sudah login (auth != null)
+  firebase.auth().signInAnonymously().catch(err => {
+    console.error('Gagal login anonim:', err);
+    setMpStatus(false, 'Gagal login');
+    mpEnabled = false;
+  });
+
+  firebase.auth().onAuthStateChanged(user => {
+    if (!user) return;
+    authReady = true;
+
+    // Kirim data awal pemain ke Firebase (baru boleh setelah login berhasil)
+    myPlayerRef.set({
+      x: player.x,
+      y: player.y,
+      dir: player.dir,
+      facing: player.facing,
+      moving: false,
+      lastSeen: firebase.database.ServerValue.TIMESTAMP
+    });
+
+    // Kalau koneksi HP putus / tab ditutup, hapus otomatis data pemain ini dari server
+    myPlayerRef.onDisconnect().remove();
+
+    // Pantau status koneksi ke Firebase
+    db.ref('.info/connected').on('value', snap => {
+      if (snap.val() === true) {
+        setMpStatus(true, 'Online (' + Object.keys(otherPlayers).length + ' pemain lain)');
+      } else {
+        setMpStatus(false, 'Terputus...');
+      }
+    });
+
+    // Dengarkan perubahan semua pemain di Firebase
+    playersRef.on('value', snapshot => {
+      const data = snapshot.val() || {};
+      // Hapus pemain lain yang sudah tidak ada di data terbaru
+      for (const id in otherPlayers) {
+        if (!data[id] || id === playerID) delete otherPlayers[id];
+      }
+      // Tambah / update pemain lain (kecuali diri sendiri)
+      for (const id in data) {
+        if (id === playerID) continue;
+        otherPlayers[id] = data[id];
+      }
+      const count = Object.keys(otherPlayers).length;
+      setMpStatus(true, 'Online (' + count + ' pemain lain)');
+    });
+  });
+} else {
+  setMpStatus(false, 'Mode offline');
+}
+
+// Kirim posisi pemain secara berkala (throttle ~10x per detik agar hemat bandwidth)
+let mpSendTimer = 0;
+const MP_SEND_INTERVAL = 0.1;
+function sendMyPositionIfDue(dt) {
+  if (!mpEnabled || !myPlayerRef || !authReady) return;
+  mpSendTimer += dt;
+  if (mpSendTimer < MP_SEND_INTERVAL) return;
+  mpSendTimer = 0;
+  myPlayerRef.update({
+    x: Math.round(player.x),
+    y: Math.round(player.y),
+    dir: player.dir,
+    facing: player.facing,
+    moving: player.moving,
+    lastSeen: firebase.database.ServerValue.TIMESTAMP
+  });
+}
+
+// ---------- Terrain Generation ----------
+function getTerrain(col, row) {
+  const riverLine = Math.sin(col * 0.1) * 6 + 25;
+  if (Math.abs(row - riverLine) < 2) return 'river';
+
+  const pathLine = Math.cos(row * 0.08) * 8 + 20;
+  if (Math.abs(col - pathLine) < 1.5) return 'path';
+
+  return 'grass';
+}
+
+const obstacles = [];
+function seededRandom(seed) {
+  let s = seed;
+  return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+}
+const rnd = seededRandom(42);
+for (let i=0; i<70; i++) {
+  const type = rnd() < 0.75 ? 'tree' : 'rock';
+  const rx = rnd()*WORLD_W, ry = rnd()*WORLD_H;
+  const col = Math.floor(rx/TILE), row = Math.floor(ry/TILE);
+  if (getTerrain(col, row) === 'river') continue;
+  obstacles.push({ x: rx, y: ry, type, r: type==='tree'? 22 : 14, scale: 0.8 + rnd()*0.6 });
+}
+for (let i = obstacles.length-1; i>=0; i--) {
+  const o = obstacles[i];
+  if (Math.hypot(o.x-player.x, o.y-player.y) < 140) obstacles.splice(i,1);
+}
+
+// ---------- Input & Mic & Chat & Skills ----------
+const keys = {};
+function triggerJump() {
+  if (player.z === 0) {
+    player.vz = 360;
+  }
+}
+
+window.addEventListener('keydown', e => {
+  if (document.getElementById('chatModal').classList.contains('open')) return;
+
+  keys[e.key.toLowerCase()] = true;
+  if (e.key === ' ' || e.key.toLowerCase() === 'space') {
+    triggerJump();
+    e.preventDefault();
+  }
+  if (['arrowup','arrowdown','arrowleft','arrowright'].includes(e.key.toLowerCase())) e.preventDefault();
+});
+window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+const jumpBtn = document.getElementById('jumpBtn');
+jumpBtn.addEventListener('touchstart', e => {
+  triggerJump();
+  e.preventDefault();
+}, {passive: false});
+jumpBtn.addEventListener('mousedown', triggerJump);
+
+// Mic Button logic
+const micBtn = document.getElementById('micBtn');
+micBtn.addEventListener('click', () => {
+  player.micActive = !player.micActive;
+  if (player.micActive) {
+    micBtn.classList.add('active');
+  } else {
+    micBtn.classList.remove('active');
+    player.isSpeaking = false;
+  }
+});
+
+// Skill 1: Burn (Bakar) - NPC disappears and respawns after 2s
+const skill1Btn = document.getElementById('skill1Btn');
+function useSkill1() {
+  const dist = Math.hypot(npc.x - player.x, npc.y - player.y);
+  if (dist < 100 && !npc.isDead) {
+    npc.isDead = true;
+    npc.respawnTimer = 2.0;
+    npc.burnTimer = 1.0;
+  }
+}
+skill1Btn.addEventListener('touchstart', e => { useSkill1(); e.preventDefault(); }, {passive: false});
+skill1Btn.addEventListener('click', useSkill1);
+
+// Skill 2: Slap (Gamper 🫱) - Push target away from player direction
+const skill2Btn = document.getElementById('skill2Btn');
+function useSkill2() {
+  const dist = Math.hypot(npc.x - player.x, npc.y - player.y);
+  if (dist < 100 && !npc.isDead) {
+    const angle = Math.atan2(npc.y - player.y, npc.x - player.x);
+    const pushDist = 90;
+    npc.x += Math.cos(angle) * pushDist;
+    npc.y += Math.sin(angle) * pushDist;
+    npc.x = Math.max(npc.w, Math.min(WORLD_W - npc.w, npc.x));
+    npc.y = Math.max(npc.h, Math.min(WORLD_H - npc.h, npc.y));
+  }
+}
+skill2Btn.addEventListener('touchstart', e => { useSkill2(); e.preventDefault(); }, {passive: false});
+skill2Btn.addEventListener('click', useSkill2);
+
+// Chat system wiring (max 50 chars enforced)
+const chatBtn = document.getElementById('chatBtn');
+const chatModal = document.getElementById('chatModal');
+const chatInput = document.getElementById('chatInput');
+const sendChatBtn = document.getElementById('sendChatBtn');
+
+function openChatModal() {
+  chatModal.classList.add('open');
+  setTimeout(() => chatInput.focus(), 100);
+}
+
+function closeChatModal() {
+  chatModal.classList.remove('open');
+  chatInput.value = '';
+}
+
+chatBtn.addEventListener('touchstart', e => {
+  openChatModal();
+  e.preventDefault();
+}, {passive: false});
+chatBtn.addEventListener('click', openChatModal);
+
+function sendChat() {
+  let text = chatInput.value.trim();
+  if (text) {
+    if (text.length > 50) text = text.substring(0, 50);
+    player.chatMessage = text;
+    player.chatTimer = 2.0;
+  }
+  closeChatModal();
+}
+
+sendChatBtn.addEventListener('click', sendChat);
+chatInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendChat();
+});
+
+// Joystick implementation
+const joystick = { active: false, dx: 0, dy: 0, id: null };
+const joystickBase = document.getElementById('joystickBase');
+const joystickStick = document.getElementById('joystickStick');
+const joystickPosSelect = document.getElementById('joystickPosSelect');
+
+joystickPosSelect.addEventListener('change', e => {
+  if (e.target.value === 'left') {
+    joystickBase.style.left = '24px';
+    joystickBase.style.right = 'auto';
+    jumpBtn.style.left = 'auto'; jumpBtn.style.right = '24px';
+  } else {
+    joystickBase.style.right = '24px';
+    joystickBase.style.left = 'auto';
+    jumpBtn.style.right = 'auto'; jumpBtn.style.left = '24px';
+  }
+});
+
+function handleJoystickStart(clientX, clientY, identifier) {
+  joystick.active = true;
+  joystick.id = identifier;
+  updateJoystick(clientX, clientY);
+}
+
+function handleJoystickMove(clientX, clientY) {
+  if (!joystick.active) return;
+  updateJoystick(clientX, clientY);
+}
+
+function updateJoystick(x, y) {
+  const rect = joystickBase.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  let dx = x - cx;
+  let dy = y - cy;
+  const dist = Math.hypot(dx, dy);
+  const maxDist = 42;
+  
+  if (dist > maxDist) {
+    dx = (dx / dist) * maxDist;
+    dy = (dy / dist) * maxDist;
+  }
+  
+  joystickStick.style.transform = `translate(${dx}px, ${dy}px)`;
+  joystick.dx = dx / maxDist;
+  joystick.dy = dy / maxDist;
+}
+
+function handleJoystickEnd() {
+  joystick.active = false;
+  joystick.dx = 0;
+  joystick.dy = 0;
+  joystickStick.style.transform = `translate(0px, 0px)`;
+  joystick.id = null;
+}
+
+joystickBase.addEventListener('touchstart', e => {
+  const touch = e.changedTouches[0];
+  handleJoystickStart(touch.clientX, touch.clientY, touch.identifier);
+  e.preventDefault();
+}, {passive: false});
+
+window.addEventListener('touchmove', e => {
+  if (!joystick.active) return;
+  for (let i = 0; i < e.changedTouches.length; i++) {
+    const touch = e.changedTouches[i];
+    if (touch.identifier === joystick.id) {
+      handleJoystickMove(touch.clientX, touch.clientY);
+    }
+  }
+  e.preventDefault();
+}, {passive: false});
+
+window.addEventListener('touchend', e => {
+  if (!joystick.active) return;
+  for (let i = 0; i < e.changedTouches.length; i++) {
+    const touch = e.changedTouches[i];
+    if (touch.identifier === joystick.id) {
+      handleJoystickEnd();
+    }
+  }
+});
+
+joystickBase.addEventListener('mousedown', e => {
+  handleJoystickStart(e.clientX, e.clientY, 'mouse');
+});
+window.addEventListener('mousemove', e => {
+  if (joystick.active && joystick.id === 'mouse') {
+    handleJoystickMove(e.clientX, e.clientY);
+  }
+});
+window.addEventListener('mouseup', () => {
+  if (joystick.active && joystick.id === 'mouse') {
+    handleJoystickEnd();
+  }
+});
+
+// ---------- Fullscreen + landscape lock ----------
+document.getElementById('fsHint').addEventListener('click', async () => {
+  try { await document.documentElement.requestFullscreen(); } catch(e) {}
+  try { await screen.orientation.lock('landscape'); } catch(e) {}
+});
+
+// ---------- Settings panel ----------
+const gearBtn = document.getElementById('gearBtn');
+const panel = document.getElementById('settingsPanel');
+const backdrop = document.getElementById('panelBackdrop');
+function openPanel() { panel.classList.add('open'); backdrop.classList.add('open'); }
+function closePanel() { panel.classList.remove('open'); backdrop.classList.remove('open'); }
+gearBtn.addEventListener('click', openPanel);
+document.getElementById('closePanelBtn').addEventListener('click', closePanel);
+backdrop.addEventListener('click', closePanel);
+
+function loadImageFromFile(file, onReady) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => onReady(img);
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+document.getElementById('playerFileBtn').addEventListener('click', () => document.getElementById('playerFile').click());
+document.getElementById('playerFile').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  loadImageFromFile(file, img => {
+    player.sprite = img;
+    const thumb = document.getElementById('playerThumb');
+    thumb.src = img.src;
+    document.getElementById('playerThumbRow').style.display = 'flex';
+  });
+});
+
+// ---------- Collision ----------
+function collides(nx, ny) {
+  for (const o of obstacles) {
+    const minDist = o.r*o.scale + player.w/2 - 6;
+    if (Math.hypot(o.x-nx, o.y-ny) < minDist) return true;
+  }
+  if (nx < player.w/2 || nx > WORLD_W-player.w/2 || ny < player.h/2 || ny > WORLD_H-player.h/2) return true;
+  
+  const col = Math.floor(nx / TILE);
+  const row = Math.floor(ny / TILE);
+  if (getTerrain(col, row) === 'river') return true;
+
+  return false;
+}
+
+// ---------- Update ----------
+let last = performance.now();
+function update(dt) {
+  let dx=0, dy=0;
+  if (!document.getElementById('chatModal').classList.contains('open')) {
+    if (keys['arrowup']||keys['w']) dy -= 1;
+    if (keys['arrowdown']||keys['s']) dy += 1;
+    if (keys['arrowleft']||keys['a']) dx -= 1;
+    if (keys['arrowright']||keys['d']) dx += 1;
+
+    if (joystick.active) {
+      dx += joystick.dx;
+      dy += joystick.dy;
+    }
+  }
+
+  const mag = Math.hypot(dx, dy);
+  if (mag > 1) { dx /= mag; dy /= mag; }
+
+  player.moving = dx!==0 || dy!==0;
+  
+  if (dx < 0) {
+    player.dir = 'left';
+    player.facing = 'left';
+  } else if (dx > 0) {
+    player.dir = 'right';
+    player.facing = 'right';
+  }
+
+  if (dy < 0 && Math.abs(dy) >= Math.abs(dx)) player.dir = 'up';
+  else if (dy > 0 && Math.abs(dy) >= Math.abs(dx)) player.dir = 'down';
+
+  const nx = player.x + dx*player.speed*dt;
+  const ny = player.y + dy*player.speed*dt;
+  if (!collides(nx, player.y)) player.x = nx;
+  if (!collides(player.x, ny)) player.y = ny;
+
+  // Jump physics
+  const gravity = 1200;
+  if (player.z > 0 || player.vz > 0) {
+    player.vz -= gravity * dt;
+    player.z += player.vz * dt;
+    if (player.z < 0) {
+      player.z = 0;
+      player.vz = 0;
+    }
+  }
+
+  // NPC Respawn & Burn timer logic
+  if (npc.isDead) {
+    npc.respawnTimer -= dt;
+    if (npc.respawnTimer <= 0) {
+      npc.isDead = false;
+      npc.x = player.x + (Math.random() - 0.5) * 160;
+      npc.y = player.y + (Math.random() - 0.5) * 160;
+    }
+  } else {
+    if (npc.burnTimer > 0) {
+      npc.burnTimer -= dt;
+    }
+  }
+
+  // Mic speaking simulation
+  if (player.micActive) {
+    player.speechAnimTimer += dt;
+    if (player.speechAnimTimer > 1.2) {
+      player.isSpeaking = Math.random() < 0.7;
+      player.speechAnimTimer = 0;
+    }
+  } else {
+    player.isSpeaking = false;
+  }
+
+  // Chat timer countdown
+  if (player.chatTimer > 0) {
+    player.chatTimer -= dt;
+    if (player.chatTimer <= 0) {
+      player.chatMessage = '';
+    }
+  }
+
+  if (player.moving) {
+    player.frameTimer += dt;
+    if (player.frameTimer > 0.12) { player.frame = (player.frame+1)%4; player.frameTimer=0; }
+  } else { player.frame = 0; }
+
+  camera.x = Math.max(0, Math.min(WORLD_W - W, player.x - W/2));
+  camera.y = Math.max(0, Math.min(WORLD_H - H, player.y - H/2));
+
+  sendMyPositionIfDue(dt);
+}
+
+function drawGround() {
+  ctx.save();
+  ctx.beginPath(); ctx.rect(0,0,W,H); ctx.clip();
+
+  const startCol = Math.floor(camera.x/TILE);
+  const startRow = Math.floor(camera.y/TILE);
+  const cols = Math.ceil(W/TILE)+2;
+  const rows = Math.ceil(H/TILE)+2;
+
+  for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
+    const wx = (startCol+c)*TILE, wy = (startRow+r)*TILE;
+    const tType = getTerrain(startCol+c, startRow+r);
+    const sx = wx - camera.x, sy = wy - camera.y;
+
+    if (tType === 'river') {
+      ctx.fillStyle = '#4a90e2';
+      ctx.fillRect(sx, sy, TILE, TILE);
+      ctx.fillStyle = 'rgba(255,255,255,0.2)';
+      ctx.fillRect(sx + 8, sy + 16, 16, 4);
+    } else if (tType === 'path') {
+      ctx.fillStyle = '#c29b61';
+      ctx.fillRect(sx, sy, TILE, TILE);
+      ctx.fillStyle = 'rgba(0,0,0,0.08)';
+      ctx.fillRect(sx + 4, sy + 4, TILE - 8, TILE - 8);
+    } else {
+      ctx.fillStyle = '#5fae3f';
+      ctx.fillRect(sx, sy, TILE, TILE);
+      if (((startCol+c)+(startRow+r))%2===0) {
+        ctx.fillStyle = 'rgba(0,0,0,0.05)';
+        ctx.fillRect(sx, sy, TILE, TILE);
+      }
+    }
+  }
+
+  const otherDrawables = Object.keys(otherPlayers).map(id => {
+    const p = otherPlayers[id];
+    return { isOther:true, id, x: p.x||0, y: p.y||0, drawY: p.y||0, data: p };
+  });
+
+  const drawables = obstacles.map(o=>({...o, drawY:o.y})).concat([
+    { isPlayer:true, x: player.x, y: player.y, drawY: player.y },
+    { isNPC:true, x: npc.x, y: npc.y, drawY: npc.y }
+  ]).concat(otherDrawables);
+  drawables.sort((a,b)=>a.drawY-b.drawY);
+
+  for (const d of drawables) {
+    const sx = d.x - camera.x, sy = d.y - camera.y;
+    if (sx<-80||sx>W+80||sy<-80||sy>H+80) continue;
+    if (d.isPlayer) drawPlayer(sx, sy);
+    else if (d.isNPC) drawNPC(sx, sy);
+    else if (d.isOther) drawOtherPlayer(sx, sy, d.id, d.data);
+    else if (d.type==='tree') drawTree(sx, sy, d.scale);
+    else drawRock(sx, sy, d.scale);
+  }
+
+  ctx.restore();
+}
+
+function drawTree(x,y,scale) {
+  ctx.save();
+  ctx.translate(x,y); ctx.scale(scale,scale);
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.beginPath(); ctx.ellipse(0, 6, 16, 6, 0, 0, Math.PI*2); ctx.fill();
+
+  ctx.fillStyle = '#7a4a26';
+  ctx.fillRect(-4, -6, 8, 16);
+  ctx.fillStyle = '#2f7a34';
+  ctx.beginPath(); ctx.arc(0, -18, 20, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#3d9645';
+  ctx.beginPath(); ctx.arc(-7, -24, 14, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+function drawRock(x,y,scale) {
+  ctx.save();
+  ctx.translate(x,y); ctx.scale(scale,scale);
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.beginPath(); ctx.ellipse(0, 5, 12, 4, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#8b8b8b';
+  ctx.beginPath(); ctx.ellipse(0, 0, 13, 9, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.25)';
+  ctx.beginPath(); ctx.ellipse(-3,-3,5,3,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+function drawNPC(x, y) {
+  if (npc.isDead) return;
+
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath(); 
+  ctx.ellipse(x, y+16, 14, 5, 0, 0, Math.PI*2); 
+  ctx.fill();
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.strokeStyle = 'rgba(255, 165, 2, 0.9)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.ellipse(0, -6, 14, 20, 0, 0, Math.PI*2); ctx.stroke();
+  ctx.fillStyle = 'rgba(255, 165, 2, 0.25)';
+  ctx.beginPath(); ctx.ellipse(0, -6, 14, 20, 0, 0, Math.PI*2); ctx.fill();
+
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 11px Segoe UI';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('NPC', 0, -32);
+
+  if (npc.burnTimer > 0) {
+    ctx.font = '16px Segoe UI';
+    ctx.fillText('🔥', 0, -50);
+  }
+  ctx.restore();
+}
+
+function drawPlayer(x,y) {
+  const shadowScale = Math.max(0.6, 1 - (player.z / 180));
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath(); 
+  ctx.ellipse(x, y+16, 14 * shadowScale, 5 * shadowScale, 0, 0, Math.PI*2); 
+  ctx.fill();
+
+  const renderY = y - player.z;
+
+  if (player.sprite) {
+    const img = player.sprite;
+    const targetH = 54;
+    const targetW = targetH * (img.naturalWidth / img.naturalHeight);
+    ctx.save();
+    ctx.translate(x, renderY);
+    if (player.facing === 'left') {
+      ctx.scale(-1, 1);
+    }
+    ctx.drawImage(img, -targetW/2, -targetH + 14, targetW, targetH);
+    ctx.restore();
+  } else {
+    ctx.save();
+    ctx.translate(x, renderY);
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+    ctx.setLineDash([4,4]);
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.ellipse(0, -6, 14, 20, 0, 0, Math.PI*2); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.beginPath(); ctx.ellipse(0, -6, 14, 20, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = 'bold 16px Segoe UI';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('+', 0, -6);
+    ctx.restore();
+  }
+
+  // Voice Indicator / Audio Wave above head
+  if (player.micActive) {
+    ctx.save();
+    const indicatorY = renderY - 44;
+    const color = player.isSpeaking ? '#2ed573' : '#a4b0be';
+    
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    ctx.beginPath();
+    ctx.roundRect(x - 20, indicatorY - 12, 40, 20, 10);
+    ctx.fill();
+
+    ctx.fillStyle = color;
+    if (player.isSpeaking) {
+      const t = performance.now() * 0.015;
+      const h1 = 4 + Math.sin(t) * 4;
+      const h2 = 8 + Math.cos(t * 1.3) * 6;
+      const h3 = 4 + Math.sin(t * 0.8) * 4;
+
+      ctx.fillRect(x - 12, indicatorY - h1/2, 3, h1);
+      ctx.fillRect(x - 4, indicatorY - h2/2, 3, h2);
+      ctx.fillRect(x + 4, indicatorY - h3/2, 3, h3);
+    } else {
+      ctx.fillRect(x - 10, indicatorY - 2, 20, 4);
+    }
+    ctx.restore();
+  }
+
+  // Chat Bubble
+  if (player.chatMessage && player.chatTimer > 0) {
+    ctx.save();
+    ctx.font = '13px Segoe UI';
+    const padding = 8;
+    const textMetrics = ctx.measureText(player.chatMessage);
+    const bubbleW = Math.max(40, textMetrics.width + padding * 2);
+    const bubbleH = 26;
+    const bubbleX = x - bubbleW / 2;
+    const bubbleY = player.micActive ? (renderY - 78) : (renderY - 65);
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(bubbleX, bubbleY, bubbleW, bubbleH, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(x - 5, bubbleY + bubbleH);
+    ctx.lineTo(x + 5, bubbleY + bubbleH);
+    ctx.lineTo(x, bubbleY + bubbleH + 6);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#111';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(player.chatMessage, x, bubbleY + bubbleH / 2);
+    ctx.restore();
+  }
+}
+
+// Gambar pemain lain yang datanya diterima dari Firebase
+function drawOtherPlayer(x, y, id, data) {
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath();
+  ctx.ellipse(x, y+16, 14, 5, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  ctx.save();
+  ctx.translate(x, y);
+  if (data.facing === 'left') ctx.scale(-1, 1);
+
+  ctx.strokeStyle = 'rgba(74, 144, 226, 0.9)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.ellipse(0, -6, 14, 20, 0, 0, Math.PI*2); ctx.stroke();
+  ctx.fillStyle = 'rgba(74, 144, 226, 0.25)';
+  ctx.beginPath(); ctx.ellipse(0, -6, 14, 20, 0, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 10px Segoe UI';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('Pemain ' + id.slice(0, 4), 0, -32);
+  ctx.restore();
+}
+
+// ---------- Minimap ----------
+function drawMinimap() {
+  const mapW = 100, mapH = 100;
+  const mapX = 14, mapY = 14;
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+  ctx.lineWidth = 2;
+  ctx.fillRect(mapX, mapY, mapW, mapH);
+  ctx.strokeRect(mapX, mapY, mapW, mapH);
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(mapX, mapY, mapW, mapH);
+  ctx.clip();
+
+  const scaleX = mapW / WORLD_W;
+  const scaleY = mapH / WORLD_H;
+
+  ctx.strokeStyle = '#4a90e2';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  for (let x = 0; x < WORLD_W; x += 40) {
+    const col = x / TILE;
+    const riverLine = Math.sin(col * 0.1) * 6 + 25;
+    const ry = riverLine * TILE;
+    const mx = mapX + x * scaleX;
+    const my = mapY + ry * scaleY;
+    if (x === 0) ctx.moveTo(mx, my);
+    else ctx.lineTo(mx, my);
+  }
+  ctx.stroke();
+
+  // Draw NPC on minimap if alive
+  if (!npc.isDead) {
+    const npx = mapX + npc.x * scaleX;
+    const npy = mapY + npc.y * scaleY;
+    ctx.fillStyle = '#ffa502';
+    ctx.beginPath();
+    ctx.arc(npx, npy, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Draw other players on minimap
+  ctx.fillStyle = '#4a90e2';
+  for (const id in otherPlayers) {
+    const p = otherPlayers[id];
+    const opx = mapX + (p.x||0) * scaleX;
+    const opy = mapY + (p.y||0) * scaleY;
+    ctx.beginPath();
+    ctx.arc(opx, opy, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Draw player on minimap
+  const px = mapX + player.x * scaleX;
+  const py = mapY + player.y * scaleY;
+  ctx.fillStyle = '#ff4757';
+  ctx.beginPath();
+  ctx.arc(px, py, 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.restore();
+  ctx.restore();
+}
+
+function loop(now) {
+  const dt = Math.min(0.033, (now-last)/1000);
+  last = now;
+  update(dt);
+  ctx.clearRect(0,0,W,H);
+  drawGround();
+  drawMinimap();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
