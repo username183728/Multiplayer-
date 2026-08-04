@@ -102,26 +102,7 @@
     font-family:'Poppins', sans-serif;
   }
 
-  /* ---------- Lobby / Landing overlay (minimalis & premium) ---------- */
-  #lobbyOverlay {
-    position:fixed; inset:0; z-index:200;
-    background:
-      radial-gradient(circle at 15% 15%, rgba(216,181,102,0.08), transparent 55%),
-      radial-gradient(circle at 85% 85%, rgba(61,150,69,0.10), transparent 55%),
-      #0e0f0a;
-    display:flex; align-items:center; justify-content:center;
-    overflow:hidden;
-    opacity:0; transition:opacity 0.7s ease;
-  }
-  #lobbyOverlay.visible { opacity:1; }
-  #lobbyNamesBg {
-    position:absolute; inset:0; z-index:1;
-    display:flex; flex-wrap:wrap; align-content:flex-start; gap:14px;
-    padding:24px; opacity:0.08; pointer-events:none;
-  }
-  #lobbyNamesBg span {
-    color:#d8b566; font-size:22px; font-weight:600; white-space:nowrap;
-  }
+  /* ---------- Login box styling (dipakai juga sebagai style dasar) ---------- */
   .lobby-box {
     position:relative; z-index:2;
     background:rgba(18,19,14,0.72); border:1px solid rgba(216,181,102,0.22);
@@ -154,7 +135,115 @@
     transition:filter 0.15s, transform 0.1s;
   }
   .lobby-box button:active { filter:brightness(0.92); transform:scale(0.99); }
-  #lobbyOnlineCount { color:rgba(242,234,217,0.4); font-size:11px; margin-top:16px; letter-spacing:0.02em; }
+
+  /* ---------- Lobby: panggung karakter ala menu game ---------- */
+  #lobbyOverlay {
+    position:fixed; inset:0; z-index:200;
+    background:
+      radial-gradient(circle at 50% 30%, rgba(216,181,102,0.12), transparent 60%),
+      radial-gradient(circle at 85% 85%, rgba(61,150,69,0.10), transparent 55%),
+      #0e0f0a;
+    overflow:hidden;
+    opacity:0; pointer-events:none; transition:opacity 0.7s ease;
+  }
+  #lobbyOverlay.visible { opacity:1; pointer-events:auto; }
+  #lobbyNamesBg {
+    position:absolute; inset:0; z-index:1;
+    display:flex; flex-wrap:wrap; align-content:flex-start; gap:14px;
+    padding:24px; opacity:0.06; pointer-events:none;
+  }
+  #lobbyNamesBg span {
+    color:#d8b566; font-size:22px; font-weight:600; white-space:nowrap;
+  }
+  .lobby-topbar {
+    position:absolute; top:0; left:0; right:0; z-index:3;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 20px;
+  }
+  .lobby-brand {
+    color:#f2ead9; font-size:14px; font-weight:700; letter-spacing:0.06em;
+    display:flex; align-items:center; gap:8px; text-shadow:0 2px 8px rgba(0,0,0,0.6);
+  }
+  .lobby-brand-mark { font-size:16px; }
+  .lobby-online-pill {
+    background:rgba(18,19,14,0.6); border:1px solid rgba(216,181,102,0.25);
+    color:rgba(242,234,217,0.7); font-size:10.5px; letter-spacing:0.02em;
+    padding:6px 12px; border-radius:20px; backdrop-filter:blur(8px);
+  }
+  .lobby-stage {
+    position:relative; z-index:2; height:100%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:14px;
+  }
+  .lobby-char-wrap {
+    position:relative; width:150px; height:150px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .lobby-char-ring {
+    position:absolute; inset:0; border-radius:50%;
+    border:1px solid rgba(216,181,102,0.35);
+    box-shadow:0 0 40px rgba(216,181,102,0.18), inset 0 0 30px rgba(216,181,102,0.08);
+  }
+  #lobbyCharAvatar {
+    position:relative; z-index:2; width:126px; height:126px; border-radius:50%;
+    object-fit:cover; display:none;
+    box-shadow:0 10px 30px rgba(0,0,0,0.5);
+  }
+  #lobbyCharAvatar.has-photo { display:block; }
+  .lobby-char-fallback {
+    position:relative; z-index:2; width:126px; height:126px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:52px;
+    background:radial-gradient(circle at 35% 30%, rgba(216,181,102,0.25), rgba(216,181,102,0.05));
+    box-shadow:0 10px 30px rgba(0,0,0,0.5);
+  }
+  .lobby-char-fallback.hidden { display:none; }
+  @keyframes charBreathe {
+    0%, 100% { transform:scale(1); }
+    50% { transform:scale(1.06); }
+  }
+  .lobby-char-breathe { animation:charBreathe 2.6s ease-in-out infinite; }
+  .lobby-nickname-input {
+    width:220px; background:none; border:none; outline:none;
+    color:#ffe27a; font-size:19px; font-weight:700; text-align:center;
+    letter-spacing:0.02em; font-family:'Poppins', sans-serif;
+    text-shadow:0 2px 10px rgba(0,0,0,0.6);
+    border-bottom:1px solid rgba(216,181,102,0.3); padding-bottom:6px;
+  }
+  .lobby-nickname-input::placeholder { color:rgba(255,226,122,0.4); }
+  .lobby-account-panel {
+    position:absolute; right:20px; bottom:96px; z-index:3;
+    display:flex; align-items:center; gap:10px;
+    background:rgba(18,19,14,0.6); border:1px solid rgba(216,181,102,0.22);
+    border-radius:14px; padding:9px 14px 9px 9px; backdrop-filter:blur(8px);
+    max-width:190px;
+  }
+  .lobby-account-photo {
+    width:36px; height:36px; border-radius:50%; object-fit:cover;
+    border:1px solid rgba(216,181,102,0.4); display:none; flex-shrink:0;
+  }
+  .lobby-account-photo.has-photo { display:block; }
+  .lobby-account-initial {
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(145deg,#e2c07d,#b5893c); color:#1a1508;
+    font-weight:700; font-size:14px;
+  }
+  .lobby-account-initial.hidden { display:none; }
+  .lobby-account-info { text-align:left; overflow:hidden; }
+  .lobby-account-name {
+    color:#f2ead9; font-size:12.5px; font-weight:600;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:120px;
+  }
+  .lobby-account-sub { color:rgba(242,234,217,0.45); font-size:10px; margin-top:1px; }
+  .lobby-start-btn {
+    position:absolute; right:20px; bottom:24px; z-index:3;
+    background:linear-gradient(145deg,#e2c07d,#b5893c); color:#1a1508; border:none;
+    border-radius:12px; padding:14px 26px; font-weight:700; font-size:15px;
+    letter-spacing:0.05em; cursor:pointer; box-shadow:0 8px 22px rgba(181,137,60,0.4);
+    transition:filter 0.15s, transform 0.1s; display:flex; align-items:center; gap:8px;
+    font-family:'Poppins', sans-serif;
+  }
+  .lobby-start-btn:active { filter:brightness(0.92); transform:scale(0.98); }
+  .lobby-start-arrow { font-size:11px; }
 
   /* ---------- Mic & Chat Buttons near Minimap ---------- */
   #micBtn {
@@ -453,17 +542,34 @@
   </div>
 </div>
 
-<!-- ====== Lobby: masukkan nama sebelum masuk game ====== -->
+<!-- ====== Lobby: character stage + info akun + tombol mulai ====== -->
 <div id="lobbyOverlay">
   <div id="lobbyNamesBg"></div>
-  <div class="lobby-box">
-    <div class="lobby-mark">🌾</div>
-    <h1>Padang Rumput</h1>
-    <p>Masukkan nama untuk mulai bermain bersama pemain lain</p>
-    <input type="text" id="lobbyNameInput" placeholder="Nama kamu" maxlength="16">
-    <button id="lobbyPlayBtn">Mulai Main</button>
-    <div id="lobbyOnlineCount">Menghubungkan...</div>
+
+  <div class="lobby-topbar">
+    <div class="lobby-brand"><span class="lobby-brand-mark">🌾</span> PADANG RUMPUT</div>
+    <div id="lobbyOnlineCount" class="lobby-online-pill">Menghubungkan...</div>
   </div>
+
+  <div class="lobby-stage">
+    <div class="lobby-char-wrap">
+      <div class="lobby-char-ring"></div>
+      <img id="lobbyCharAvatar" class="lobby-char-breathe" alt="Avatar">
+      <div id="lobbyCharFallback" class="lobby-char-fallback lobby-char-breathe">🌾</div>
+    </div>
+    <input type="text" id="lobbyNameInput" class="lobby-nickname-input" placeholder="Nama kamu" maxlength="16">
+  </div>
+
+  <div class="lobby-account-panel">
+    <img id="lobbyAccountPhoto" class="lobby-account-photo" alt="">
+    <div id="lobbyAccountInitial" class="lobby-account-photo lobby-account-initial">?</div>
+    <div class="lobby-account-info">
+      <div id="lobbyAccountName" class="lobby-account-name">Petualang</div>
+      <div class="lobby-account-sub">Masuk dengan Google</div>
+    </div>
+  </div>
+
+  <button id="lobbyPlayBtn" class="lobby-start-btn">MULAI <span class="lobby-start-arrow">▶</span></button>
 </div>
 
 <div id="gameContainer">
@@ -1055,6 +1161,30 @@ if (mpEnabled && db && playersRef) {
     const lobbyNameInputEl = document.getElementById('lobbyNameInput');
     if (lobbyNameInputEl && player.name) lobbyNameInputEl.value = player.name;
 
+    // Tampilkan foto profil Google sebagai avatar karakter di panggung lobby,
+    // dan sebagai foto akun di panel kanan. Kalau tidak ada foto, pakai fallback.
+    const lobbyCharAvatarEl = document.getElementById('lobbyCharAvatar');
+    const lobbyCharFallbackEl = document.getElementById('lobbyCharFallback');
+    const lobbyAccountPhotoEl = document.getElementById('lobbyAccountPhoto');
+    const lobbyAccountInitialEl = document.getElementById('lobbyAccountInitial');
+    const lobbyAccountNameEl = document.getElementById('lobbyAccountName');
+    const displayName = player.name || 'Petualang';
+    if (lobbyAccountNameEl) lobbyAccountNameEl.textContent = displayName;
+    if (player.photoURL) {
+      if (lobbyCharAvatarEl) {
+        lobbyCharAvatarEl.src = player.photoURL;
+        lobbyCharAvatarEl.classList.add('has-photo');
+      }
+      if (lobbyCharFallbackEl) lobbyCharFallbackEl.classList.add('hidden');
+      if (lobbyAccountPhotoEl) {
+        lobbyAccountPhotoEl.src = player.photoURL;
+        lobbyAccountPhotoEl.classList.add('has-photo');
+      }
+      if (lobbyAccountInitialEl) lobbyAccountInitialEl.classList.add('hidden');
+    } else if (lobbyAccountInitialEl) {
+      lobbyAccountInitialEl.textContent = displayName.charAt(0).toUpperCase();
+    }
+
     // Dengarkan apakah pemain ini dikeluarkan (kick) oleh pemain lain
     kickedRef.child(playerID).on('value', snap => {
       if (snap.val() === true && !isKicked) {
@@ -1237,7 +1367,7 @@ function seededRandom(seed) {
   return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
 }
 const rnd = seededRandom(42);
-for (let i=0; i<300; i++) {
+for (let i=0; i<130; i++) {
   const r = rnd();
   const type = r < 0.55 ? 'tree' : (r < 0.8 ? 'rock' : 'bush');
   const rx = rnd()*WORLD_W, ry = rnd()*WORLD_H;
@@ -1961,8 +2091,8 @@ function drawGround() {
         ctx.fillStyle = 'rgba(0,0,0,0.05)';
         ctx.fillRect(sx, sy, TILE, TILE);
       }
-      // Rumpun rumput kecil (lebih sering biar tanah tidak polos)
-      if (n > 0.68) {
+      // Rumpun rumput kecil (dikurangi biar tidak berat & tidak terlalu ramai)
+      if (n > 0.84) {
         ctx.strokeStyle = 'rgba(40,90,30,0.5)';
         ctx.lineWidth = 1.5;
         const bx = sx + 10 + (n*53%28), by = sy + 14 + (n*91%20);
@@ -1972,8 +2102,8 @@ function drawGround() {
         ctx.moveTo(bx, by); ctx.lineTo(bx+3, by-7);
         ctx.stroke();
       }
-      // Bunga kecil sesekali (beberapa warna biar tidak monoton)
-      if (n > 0.9) {
+      // Bunga kecil sesekali (dikurangi biar tidak berat)
+      if (n > 0.96) {
         const fx = sx + 20 + (n*70%10), fy = sy + 26 + (n*40%10);
         const petalColors = ['#fff07a', '#ff9ecf', '#c9a6ff', '#ffffff'];
         ctx.fillStyle = petalColors[Math.floor(n*40)%petalColors.length];
@@ -2099,7 +2229,16 @@ function drawGround() {
     return { isNpc:true, x: npx, y: npy, drawY: npy, name: n.name, color: n.color, phase: n.phase };
   });
 
-  const drawables = obstacles.map(o=>({...o, drawY:o.y})).concat([
+  // Optimasi: filter dulu obstacle yang benar-benar kelihatan di layar SEBELUM
+  // membuat array & mengurutkannya — sebelumnya SEMUA obstacle (ratusan) diproses
+  // ulang tiap frame walau di luar layar, ini yang bikin patah-patah.
+  const visibleObstacles = [];
+  for (const o of obstacles) {
+    const sx = o.x - camera.x, sy = o.y - camera.y;
+    if (sx<-80||sx>W+80||sy<-80||sy>H+80) continue;
+    visibleObstacles.push(o);
+  }
+  const drawables = visibleObstacles.map(o=>({ type:o.type, x:o.x, y:o.y, scale:o.scale, roof:o.roof, drawY:o.y })).concat([
     { isPlayer:true, x: player.x, y: player.y, drawY: player.y }
   ]).concat(otherDrawables).concat(npcDrawables);
   drawables.sort((a,b)=>a.drawY-b.drawY);
