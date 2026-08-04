@@ -5,6 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>Petualangan Padang Rumput</title>
 
+<!-- =====================================================================
+     ====== PENGATURAN GAMBAR LOBI (gampang diganti sendiri lewat PNG) ======
+     Taruh file PNG kamu di folder yang SAMA dengan index.html ini, lalu
+     tulis nama filenya di bawah (atau link https://... kalau gambarnya
+     online). Kosongkan (isi dengan '') kalau tidak mau pakai / mau pakai
+     tampilan bawaan.
+     ===================================================================== -->
+<script>
+  window.LOBBY_VISUAL_CONFIG = {
+    // Gambar latar belakang layar lobi (disarankan ukuran mendatar, mis. 1280x720).
+    backgroundImage: '',
+    // Gambar karakter/player yang tampil di lingkaran tengah panggung lobi,
+    // dipakai SEBELUM pemain login / upload foto sendiri. Disarankan persegi (mis. 300x300).
+    centerCharacterImage: ''
+  };
+</script>
+
 <!-- ====== PWA / Play Store readiness ====== -->
 <meta name="theme-color" content="#14180f">
 <meta name="mobile-web-app-capable" content="yes">
@@ -139,6 +156,9 @@
   /* ---------- Lobby: panggung karakter ala menu game ---------- */
   #lobbyOverlay {
     position:fixed; inset:0; z-index:200;
+    /* Kalau LOBBY_VISUAL_CONFIG.backgroundImage diisi, JS akan menambahkan
+       var(--lobby-bg-image) di sini lewat elemen #lobbyBgImage terpisah
+       supaya gradasi gelap di atasnya tetap bikin teks kebaca jelas. */
     background:
       radial-gradient(circle at 50% 30%, rgba(216,181,102,0.12), transparent 60%),
       radial-gradient(circle at 85% 85%, rgba(61,150,69,0.10), transparent 55%),
@@ -146,6 +166,12 @@
     overflow:hidden;
     opacity:0; pointer-events:none; transition:opacity 0.7s ease;
   }
+  #lobbyBgImage {
+    position:absolute; inset:0; z-index:0;
+    background-size:cover; background-position:center; background-repeat:no-repeat;
+    opacity:0.55; display:none;
+  }
+  #lobbyBgImage.active { display:block; }
   #lobbyOverlay.visible { opacity:1; pointer-events:auto; }
   #lobbyNamesBg {
     position:absolute; inset:0; z-index:1;
@@ -217,6 +243,7 @@
     border-radius:14px; padding:9px 14px 9px 9px; backdrop-filter:blur(8px);
     max-width:190px;
   }
+  .lobby-account-photo-wrap { position:relative; flex-shrink:0; width:36px; height:36px; }
   .lobby-account-photo {
     width:36px; height:36px; border-radius:50%; object-fit:cover;
     border:1px solid rgba(216,181,102,0.4); display:none; flex-shrink:0;
@@ -228,6 +255,15 @@
     font-weight:700; font-size:14px;
   }
   .lobby-account-initial.hidden { display:none; }
+  /* Tombol kecil "kamera" buat upload foto avatar sendiri, nempel di pojok kanan-bawah foto akun */
+  .lobby-avatar-upload-btn {
+    position:absolute; right:-4px; bottom:-4px; z-index:4;
+    width:18px; height:18px; border-radius:50%; border:1.5px solid #0e0f0a;
+    background:linear-gradient(145deg,#e2c07d,#b5893c); color:#1a1508;
+    font-size:9px; line-height:1; display:flex; align-items:center; justify-content:center;
+    padding:0; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.5);
+  }
+  .lobby-avatar-upload-btn:active { filter:brightness(0.9); transform:scale(0.94); }
   .lobby-account-info { text-align:left; overflow:hidden; }
   .lobby-account-name {
     color:#f2ead9; font-size:12.5px; font-weight:600;
@@ -488,21 +524,25 @@
   (function () {
     const start = performance.now();
     const MIN_MS = 900;
+    let revealed = false;
     function reveal() {
+      if (revealed) return; // jangan jalan dua kali (splash minimum + jaring pengaman 4 detik)
       const elapsed = performance.now() - start;
       const wait = Math.max(0, MIN_MS - elapsed);
       setTimeout(() => {
+        if (revealed) return;
+        revealed = true;
         const loading = document.getElementById('loadingScreen');
-        const login = document.getElementById('loginOverlay');
-        const lobby = document.getElementById('lobbyOverlay');
         if (loading) loading.classList.add('fade-out');
-        // Kalau Firebase gagal terkoneksi (mode offline), lewati layar login dan
-        // langsung ke lobby biasa — login Google cuma relevan kalau multiplayer aktif.
-        if (typeof mpEnabled !== 'undefined' && mpEnabled === false) {
-          if (lobby) lobby.classList.add('visible');
-        } else {
-          if (login) login.classList.add('visible');
-        }
+        // PENTING: layar splash ini TIDAK lagi memutuskan sendiri apakah harus
+        // menampilkan layar login atau lobby. Keputusan itu sekarang murni
+        // ditentukan oleh status login Firebase (lihat window.__appLoadingDone
+        // di script utama di bawah). Ini memperbaiki bug "stuck di halaman
+        // login" — sebelumnya splash SELALU memaksa tampilkan layar login
+        // walau pemain sudah pernah login sebelumnya (sesi Google tersimpan),
+        // sehingga kadang menimpa balik layar lobby yang sudah benar tampil.
+        window.__appLoadingDone = true;
+        document.dispatchEvent(new Event('appLoadingDone'));
         setTimeout(() => { if (loading) loading.style.display = 'none'; }, 650);
       }, wait);
     }
@@ -512,7 +552,7 @@
       else window.addEventListener('load', res);
     });
     Promise.all([fontsReady, pageReady]).then(reveal);
-    // Jaring pengaman: kalau ada aset yang gagal/lambat, tetap tampilkan lobby maksimal 4 detik.
+    // Jaring pengaman: kalau ada aset yang gagal/lambat, tetap lanjut maksimal 4 detik.
     setTimeout(reveal, 4000);
   })();
 </script>
@@ -544,6 +584,7 @@
 
 <!-- ====== Lobby: character stage + info akun + tombol mulai ====== -->
 <div id="lobbyOverlay">
+  <div id="lobbyBgImage"></div>
   <div id="lobbyNamesBg"></div>
 
   <div class="lobby-topbar">
@@ -561,8 +602,12 @@
   </div>
 
   <div class="lobby-account-panel">
-    <img id="lobbyAccountPhoto" class="lobby-account-photo" alt="">
-    <div id="lobbyAccountInitial" class="lobby-account-photo lobby-account-initial">?</div>
+    <div class="lobby-account-photo-wrap">
+      <img id="lobbyAccountPhoto" class="lobby-account-photo" alt="">
+      <div id="lobbyAccountInitial" class="lobby-account-photo lobby-account-initial">?</div>
+      <button id="lobbyAvatarUploadBtn" type="button" class="lobby-avatar-upload-btn" title="Ganti foto avatar">📷</button>
+      <input type="file" id="lobbyAvatarFileInput" accept="image/*" style="display:none">
+    </div>
     <div class="lobby-account-info">
       <div id="lobbyAccountName" class="lobby-account-name">Petualang</div>
       <div class="lobby-account-sub">Masuk dengan Google</div>
@@ -726,6 +771,38 @@ let isKicked = false;
 let kickedRef = null;
 let effectsRef = null;
 let pushesRef = null;
+
+// ---------- Penentu layar awal: login vs lobby (perbaikan bug "stuck di login") ----------
+// Sebelumnya splash-screen dan status-login Firebase sama-sama merebut hak untuk
+// menampilkan/menyembunyikan overlay login & lobby, sehingga kalau statusnya datang
+// belakangan (misal saat buka lagi pakai akun yang sama, sesi Google butuh waktu
+// dicek), splash bisa menimpa balik ke layar login walau sebenarnya pemain SUDAH
+// login. Sekarang cuma fungsi initialScreenDecision() di bawah ini yang boleh
+// menentukan overlay mana yang tampil pertama kali, dan cuma jalan sekali.
+let __loadingDone = false;
+let __authChecked = false;
+let __authUser = null;
+let __initialScreenShown = false;
+function initialScreenDecision() {
+  if (!__loadingDone || !__authChecked || __initialScreenShown) return;
+  __initialScreenShown = true;
+  const loginOverlayEl = document.getElementById('loginOverlay');
+  const lobbyOverlayEl = document.getElementById('lobbyOverlay');
+  if (__authUser || mpEnabled === false) {
+    // Sudah pernah login sebelumnya (sesi Google tersimpan), ATAU Firebase tidak
+    // aktif (mode offline, login Google tidak relevan) -> langsung ke lobby.
+    if (loginOverlayEl) loginOverlayEl.classList.remove('visible');
+    if (lobbyOverlayEl) lobbyOverlayEl.classList.add('visible');
+  } else {
+    if (lobbyOverlayEl) lobbyOverlayEl.classList.remove('visible');
+    if (loginOverlayEl) loginOverlayEl.classList.add('visible');
+  }
+}
+if (window.__appLoadingDone) { __loadingDone = true; } // andai splash sudah selesai duluan
+document.addEventListener('appLoadingDone', () => { __loadingDone = true; initialScreenDecision(); });
+// Jaring pengaman: kalau Firebase tidak pernah membalas status login (mis. offline),
+// tetap paksa tampil layar login setelah 5 detik supaya tidak macet di layar hitam.
+setTimeout(() => { if (!__authChecked) { __authChecked = true; initialScreenDecision(); } }, 5000);
 
 try {
   firebase.initializeApp(firebaseConfig);
@@ -927,6 +1004,82 @@ function refreshLobbyNames(data) {
   const countText = MAX_PLAYERS > 0 ? (names.length + '/' + MAX_PLAYERS + ' pemain online') : (names.length + ' pemain online sekarang');
   lobbyOnlineCount.textContent = names.length > 0 ? countText : 'Jadilah pemain pertama online!';
   lobbyNamesBg.innerHTML = names.map(n => '<span>' + escapeHtml(n) + '</span>').join('');
+}
+
+// ---------- Terapkan gambar PNG kustom dari LOBBY_VISUAL_CONFIG (kalau diisi) ----------
+(function applyLobbyVisualConfig() {
+  const cfg = window.LOBBY_VISUAL_CONFIG || {};
+  if (cfg.backgroundImage) {
+    const bgEl = document.getElementById('lobbyBgImage');
+    if (bgEl) {
+      bgEl.style.backgroundImage = "url('" + cfg.backgroundImage + "')";
+      bgEl.classList.add('active');
+    }
+  }
+  if (cfg.centerCharacterImage) {
+    const avatarEl = document.getElementById('lobbyCharAvatar');
+    const fallbackEl = document.getElementById('lobbyCharFallback');
+    if (avatarEl) {
+      avatarEl.src = cfg.centerCharacterImage;
+      avatarEl.classList.add('has-photo');
+    }
+    if (fallbackEl) fallbackEl.classList.add('hidden');
+  }
+})();
+
+// ---------- Upload foto avatar sendiri langsung dari layar lobi (tombol 📷 di kanan) ----------
+// Dipakai sebagai avatar karakter di panggung tengah lobi, foto akun di panel kanan,
+// DAN avatar ekspresi "normal" di dalam permainan (juga dikirim ke pemain lain via Firebase).
+const lobbyAvatarUploadBtn = document.getElementById('lobbyAvatarUploadBtn');
+const lobbyAvatarFileInput = document.getElementById('lobbyAvatarFileInput');
+if (lobbyAvatarUploadBtn && lobbyAvatarFileInput) {
+  lobbyAvatarUploadBtn.addEventListener('click', () => lobbyAvatarFileInput.click());
+  lobbyAvatarFileInput.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        // Potong jadi persegi & kompres, sama seperti upload foto ekspresi di menu gear,
+        // supaya ukurannya hemat data tapi tetap jernih.
+        const original = Math.min(img.naturalWidth, img.naturalHeight);
+        const targetSize = Math.min(original, 200);
+        const off = document.createElement('canvas');
+        off.width = targetSize; off.height = targetSize;
+        const octx = off.getContext('2d');
+        octx.imageSmoothingEnabled = true;
+        octx.imageSmoothingQuality = 'high';
+        const sx = (img.naturalWidth - original) / 2, sy = (img.naturalHeight - original) / 2;
+        octx.drawImage(img, sx, sy, original, original, 0, 0, targetSize, targetSize);
+        const dataURL = off.toDataURL('image/jpeg', 0.9);
+
+        const compressed = new Image();
+        compressed.onload = () => {
+          // Simpan sebagai avatar ekspresi "normal" (dipakai render karakter di dalam game)
+          player.sprites.normal = compressed;
+          player.avatarDataURLs.normal = dataURL;
+          if (player.expr === 'normal') player.sprite = compressed;
+          if (mpEnabled && myPlayerRef) myPlayerRef.child('avatars').update({ normal: dataURL });
+
+          // Update tampilan avatar di panggung tengah lobi
+          const lobbyCharAvatarEl = document.getElementById('lobbyCharAvatar');
+          const lobbyCharFallbackEl = document.getElementById('lobbyCharFallback');
+          if (lobbyCharAvatarEl) { lobbyCharAvatarEl.src = dataURL; lobbyCharAvatarEl.classList.add('has-photo'); }
+          if (lobbyCharFallbackEl) lobbyCharFallbackEl.classList.add('hidden');
+
+          // Update foto akun di panel kanan
+          const lobbyAccountPhotoEl = document.getElementById('lobbyAccountPhoto');
+          const lobbyAccountInitialEl = document.getElementById('lobbyAccountInitial');
+          if (lobbyAccountPhotoEl) { lobbyAccountPhotoEl.src = dataURL; lobbyAccountPhotoEl.classList.add('has-photo'); }
+          if (lobbyAccountInitialEl) lobbyAccountInitialEl.classList.add('hidden');
+        };
+        compressed.src = dataURL;
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 // =====================================================================
@@ -1140,6 +1293,9 @@ if (mpEnabled && db && playersRef) {
   }
 
   firebase.auth().onAuthStateChanged(user => {
+    __authChecked = true;
+    __authUser = user;
+    initialScreenDecision();
     if (!user) return;
     authReady = true;
     setupSignaling();
@@ -1266,6 +1422,9 @@ if (mpEnabled && db && playersRef) {
 } else {
   updateMpIndicator(false, 0);
   lobbyOnlineCount.textContent = 'Mode offline';
+  __authChecked = true;
+  __authUser = null;
+  initialScreenDecision();
 }
 
 // Kirim posisi pemain secara berkala (throttle ~10x per detik agar hemat bandwidth)
