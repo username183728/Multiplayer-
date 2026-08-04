@@ -74,6 +74,34 @@
     100% { transform:translateX(320%); }
   }
 
+  /* ---------- Login overlay (Google Sign-In, tampil sebelum lobby) ---------- */
+  #loginOverlay {
+    position:fixed; inset:0; z-index:210;
+    background:
+      radial-gradient(circle at 15% 15%, rgba(216,181,102,0.08), transparent 55%),
+      radial-gradient(circle at 85% 85%, rgba(61,150,69,0.10), transparent 55%),
+      #0e0f0a;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+    opacity:0; pointer-events:none; transition:opacity 0.7s ease;
+  }
+  #loginOverlay.visible { opacity:1; pointer-events:auto; }
+  .google-btn {
+    width:100%; display:flex; align-items:center; justify-content:center;
+    background:#f2ead9; color:#1a1508; border:none; border-radius:10px;
+    padding:12px 14px; font-weight:600; font-size:14px; cursor:pointer;
+    letter-spacing:0.01em; box-shadow:0 6px 18px rgba(0,0,0,0.3);
+    transition:filter 0.15s, transform 0.1s; font-family:'Poppins', sans-serif;
+  }
+  .google-btn:active { filter:brightness(0.94); transform:scale(0.99); }
+  .google-btn:disabled { opacity:0.6; cursor:default; }
+  #loginStatus { color:rgba(242,234,217,0.5); font-size:11.5px; margin-top:14px; letter-spacing:0.02em; min-height:14px; }
+  .login-guest-link {
+    display:inline-block; margin-top:16px; color:rgba(242,234,217,0.4);
+    font-size:11.5px; text-decoration:underline; cursor:pointer; background:none; border:none;
+    font-family:'Poppins', sans-serif;
+  }
+
   /* ---------- Lobby / Landing overlay (minimalis & premium) ---------- */
   #lobbyOverlay {
     position:fixed; inset:0; z-index:200;
@@ -376,9 +404,16 @@
       const wait = Math.max(0, MIN_MS - elapsed);
       setTimeout(() => {
         const loading = document.getElementById('loadingScreen');
+        const login = document.getElementById('loginOverlay');
         const lobby = document.getElementById('lobbyOverlay');
         if (loading) loading.classList.add('fade-out');
-        if (lobby) lobby.classList.add('visible');
+        // Kalau Firebase gagal terkoneksi (mode offline), lewati layar login dan
+        // langsung ke lobby biasa — login Google cuma relevan kalau multiplayer aktif.
+        if (typeof mpEnabled !== 'undefined' && mpEnabled === false) {
+          if (lobby) lobby.classList.add('visible');
+        } else {
+          if (login) login.classList.add('visible');
+        }
         setTimeout(() => { if (loading) loading.style.display = 'none'; }, 650);
       }, wait);
     }
@@ -397,6 +432,25 @@
   <div class="rotate-icon">📱</div>
   <div style="font-size:17px; font-weight:600;">Putar HP kamu ya</div>
   <p>Permainan ini dimainkan dalam mode lanskap (miring). Putar layar HP untuk mulai bermain.</p>
+</div>
+
+<!-- ====== Login: masuk pakai akun Google agar tiap pemain punya identitas ====== -->
+<div id="loginOverlay">
+  <div class="lobby-box">
+    <div class="lobby-mark">🌾</div>
+    <h1>Padang Rumput</h1>
+    <p>Masuk dulu pakai akun Google untuk mulai bermain</p>
+    <button id="googleLoginBtn" class="google-btn">
+      <svg width="18" height="18" viewBox="0 0 48 48" style="margin-right:9px; flex-shrink:0;">
+        <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 32.5 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 6 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/>
+        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3.1 0 5.8 1.1 8 3l6-6C34.5 6 29.5 4 24 4c-7.6 0-14.1 4.3-17.7 10.7z"/>
+        <path fill="#4CAF50" d="M24 44c5.3 0 10.1-2 13.7-5.4l-6.3-5.3C29.3 34.9 26.8 36 24 36c-5.3 0-9.8-3.4-11.4-8.1l-6.5 5C9.8 39.6 16.4 44 24 44z"/>
+        <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1 3-3.2 5.4-6 6.9l6.3 5.3C39.5 37 44 31 44 24c0-1.3-.1-2.7-.4-3.5z"/>
+      </svg>
+      Masuk dengan Google
+    </button>
+    <div id="loginStatus"></div>
+  </div>
 </div>
 
 <!-- ====== Lobby: masukkan nama sebelum masuk game ====== -->
@@ -669,6 +723,8 @@ const player = {
   sounds: { normal: null, marah: null, senang: null, sedih: null, ketawa: null },
   expr: 'normal',
   name: '',
+  photoURL: null,
+  googlePhotoImg: null,
   z: 0,
   vz: 0,
   walkAnim: 0,
@@ -959,18 +1015,45 @@ function broadcastEffect(type, x, y) {
 if (mpEnabled && db && playersRef) {
   updateMpIndicator(false, 0);
 
-  // Login anonim dulu — server cuma izinkan baca/tulis kalau sudah login (auth != null).
-  // Ini dilakukan SEBELUM pemain masuk lobby, supaya daftar nama pemain online bisa
-  // langsung ditampilkan di layar lobby.
-  firebase.auth().signInAnonymously().catch(err => {
-    console.error('Gagal login anonim:', err);
-    mpEnabled = false;
-  });
+  // Login pakai akun Google — server cuma izinkan baca/tulis kalau sudah login
+  // (auth != null). Login dipicu lewat tombol di layar login (bukan otomatis),
+  // supaya tiap pemain masuk dengan identitas asli (nama & foto akun Google-nya).
+  const googleProvider = new firebase.auth.GoogleAuthProvider();
+  const googleLoginBtn = document.getElementById('googleLoginBtn');
+  const loginStatusEl = document.getElementById('loginStatus');
+  if (googleLoginBtn) {
+    googleLoginBtn.addEventListener('click', () => {
+      googleLoginBtn.disabled = true;
+      if (loginStatusEl) loginStatusEl.textContent = 'Menghubungkan ke Google...';
+      firebase.auth().signInWithPopup(googleProvider).catch(err => {
+        console.error('Gagal login Google:', err);
+        googleLoginBtn.disabled = false;
+        if (loginStatusEl) loginStatusEl.textContent = 'Login gagal, coba lagi ya.';
+      });
+    });
+  }
 
   firebase.auth().onAuthStateChanged(user => {
     if (!user) return;
     authReady = true;
     setupSignaling();
+
+    // Simpan identitas asli dari akun Google (nama & foto profil), lalu pindah
+    // dari layar login ke layar lobby.
+    if (user.displayName) player.name = user.displayName.substring(0, 16);
+    player.photoURL = user.photoURL || null;
+    if (player.photoURL) {
+      const gImg = new Image();
+      gImg.crossOrigin = 'anonymous';
+      gImg.src = player.photoURL;
+      player.googlePhotoImg = gImg;
+    }
+    const loginOverlayEl = document.getElementById('loginOverlay');
+    const lobbyOverlayEl = document.getElementById('lobbyOverlay');
+    if (loginOverlayEl) loginOverlayEl.classList.remove('visible');
+    if (lobbyOverlayEl) lobbyOverlayEl.classList.add('visible');
+    const lobbyNameInputEl = document.getElementById('lobbyNameInput');
+    if (lobbyNameInputEl && player.name) lobbyNameInputEl.value = player.name;
 
     // Dengarkan apakah pemain ini dikeluarkan (kick) oleh pemain lain
     kickedRef.child(playerID).on('value', snap => {
@@ -1091,6 +1174,7 @@ function enterGame(name) {
     const initData = {
       x: player.x, y: player.y, dir: player.dir, facing: player.facing,
       moving: false, name: player.name, expr: player.expr,
+      photoURL: player.photoURL || null,
       lastSeen: firebase.database.ServerValue.TIMESTAMP
     };
     // Kalau foto ekspresi sudah diupload sebelumnya di sesi ini, ikut kirim semua
@@ -2220,6 +2304,17 @@ function drawPlayer(x,y) {
     ctx.scale(squashX, squashY);
     ctx.drawImage(img, -targetW/2, -targetH + 14, targetW, targetH);
     ctx.restore();
+  } else if (player.googlePhotoImg && player.googlePhotoImg.complete && player.googlePhotoImg.naturalWidth) {
+    const img = player.googlePhotoImg;
+    const targetH = 54;
+    const targetW = targetH * (img.naturalWidth / img.naturalHeight);
+    ctx.save();
+    ctx.translate(x, renderY);
+    ctx.rotate(swayAngle);
+    if (player.facing === 'left') ctx.scale(-1, 1);
+    ctx.scale(squashX, squashY);
+    ctx.drawImage(img, -targetW/2, -targetH + 14, targetW, targetH);
+    ctx.restore();
   } else {
     ctx.save();
     ctx.translate(x, renderY);
@@ -2327,7 +2422,7 @@ function drawOtherPlayer(x, y, id, data, z) {
   let avImg = null;
   // Ambil foto sesuai ekspresi yang sedang dipakai pemain itu (fallback ke field 'avatar' lama)
   const exprKey = data.expr || 'normal';
-  const avatarURL = (data.avatars && data.avatars[exprKey]) || data.avatar;
+  const avatarURL = (data.avatars && data.avatars[exprKey]) || data.avatar || data.photoURL;
   if (avatarURL) {
     if (!avatarImgCache[id]) avatarImgCache[id] = {};
     const cached = avatarImgCache[id][exprKey];
