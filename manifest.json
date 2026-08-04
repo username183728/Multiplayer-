@@ -1,6 +1,6 @@
 {
-  "name": "Petualangan Padang Rumput",
-  "short_name": "Padang Rumput",
+  "name": "meworld",
+  "short_name": "Meme",
   "description": "Game multiplayer santai bersama teman di padang rumput.",
   "start_url": "./index.html",
   "scope": "./",
