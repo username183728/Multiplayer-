@@ -378,6 +378,30 @@
   }
   .party-box h3 { font-size: 15px; margin-bottom: 12px; display:flex; align-items:center; justify-content:space-between; }
   .party-box h3 button { background:none; border:none; color:rgba(242,234,217,0.5); font-size:18px; cursor:pointer; }
+  .party-room-row {
+    display:flex; align-items:center; gap:8px; margin-bottom:12px;
+    background:rgba(255,209,102,0.1); border:1px solid rgba(255,209,102,0.35);
+    border-radius:10px; padding:9px 10px;
+  }
+  .party-room-row .prc-label { font-size:10.5px; color:rgba(242,234,217,0.55); white-space:nowrap; }
+  .party-room-row .prc-code { flex:1; font-size:16px; font-weight:700; letter-spacing:0.14em; color:#ffd166; text-align:center; }
+  .party-room-row .prc-copy {
+    background:rgba(255,209,102,0.18); color:#ffd166; border:none; border-radius:7px;
+    padding:7px 11px; font-size:11px; font-weight:600; cursor:pointer; font-family:'Poppins', sans-serif;
+  }
+  .party-join-row { display:flex; gap:8px; margin-bottom:10px; }
+  .party-join-row input {
+    flex:1; min-width:0; padding:11px 10px; border-radius:10px; border:1px solid rgba(255,255,255,0.14);
+    background:rgba(255,255,255,0.04); color:#f2ead9; font-size:13.5px; text-align:center;
+    letter-spacing:0.14em; text-transform:uppercase; outline:none; font-family:'Poppins', sans-serif;
+  }
+  .party-join-row input::placeholder { text-transform:none; letter-spacing:normal; color:rgba(242,234,217,0.32); }
+  .party-join-row button {
+    flex:0 0 auto; padding:11px 16px; border-radius:10px; border:none; font-weight:600; font-size:13px;
+    cursor:pointer; font-family:'Poppins', sans-serif;
+    background: linear-gradient(145deg,#ffd166,#e63e8c); color:#1a1508;
+  }
+  .party-or-sep { text-align:center; color:rgba(242,234,217,0.35); font-size:10.5px; margin:2px 0 10px; }
   .party-member-row {
     display:flex; align-items:center; gap:10px; padding:9px 6px; border-radius:10px;
     background: rgba(255,255,255,0.04); margin-bottom:7px;
@@ -427,7 +451,7 @@
 
   /* ---------- 5 Tombol Ekspresi (foto+suara), kecil-kecil, deket tombol Lompat ---------- */
   #exprWheel {
-    position: fixed; bottom: 112px; right: 20px; z-index: 20;
+    position: fixed; bottom: 146px; right: 20px; z-index: 20;
     display: flex; gap: 6px;
   }
   .exprSelBtn {
@@ -487,25 +511,35 @@
   }
   #jumpBtn:active { filter:brightness(1.2); transform:scale(0.96); }
 
+  /* Tombol skill dirapikan jadi grid 2x2 yang ringkas di atas tombol Lompat,
+     supaya tidak melebar jauh ke kiri layar seperti sebelumnya (satu baris 4 tombol). */
   .skillBtn {
-    position: fixed; bottom: 156px; z-index: 20;
-    width: 54px; height: 54px;
+    position: fixed; z-index: 20;
+    width: 48px; height: 48px;
     background: linear-gradient(145deg, rgba(255,255,255,0.26), rgba(255,255,255,0.06));
     border: 2px solid rgba(255, 255, 255, 0.28);
     border-radius: 50%;
     touch-action: none;
     display: flex; align-items: center; justify-content: center;
     backdrop-filter: blur(3px);
-    color: #fff; font-size: 22px;
+    color: #fff; font-size: 20px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 2px 6px rgba(255,255,255,0.15);
     transition: transform 0.1s, background 0.2s;
   }
   .skillBtn:active { transform: scale(0.9); filter:brightness(1.2); }
-  #skill1Btn { right: 24px; }
-  #skill2Btn { right: 88px; }
-  #emoteBtn { right: 152px; }
+  /* Baris bawah (dekat tombol Lompat): skill utama */
+  #skill1Btn { right: 112px; bottom: 26px; }
+  #skill2Btn { right: 168px; bottom: 26px; }
+  /* Baris atas: aksi sosial (emote, duel) */
+  #emoteBtn { right: 112px; bottom: 82px; }
   #emoteBtn:active { animation: none; }
-  #duelBtn { right: 216px; }
+  #duelBtn { right: 168px; bottom: 82px; }
+
+  /* ---------- Ikon PNG kustom (ganti file PNG-nya sendiri di assets/icons/) ---------- */
+  .icon-img { width:18px; height:18px; object-fit:contain; vertical-align:-3px; }
+  .icon-img-sm { width:13px; height:13px; object-fit:contain; vertical-align:-2px; }
+  .icon-img-lg { width:30px; height:30px; object-fit:contain; }
+  .icon-img-btn { width:22px; height:22px; object-fit:contain; }
 
   /* ---------- HUD: Coin / Diamond / Level ---------- */
   #hudCurrency {
@@ -754,7 +788,7 @@
 
   /* ---------- Tombol layar penuh: kecil, ikon saja ---------- */
   #fsHint {
-    position:fixed; bottom:14px; left:14px; z-index:20;
+    position:fixed; bottom:154px; left:14px; z-index:20;
     width:36px; height:36px; border-radius:50%;
     background: linear-gradient(145deg, #3d3d3d, #1c1c1c);
     color:#fff; border:1px solid rgba(255,255,255,0.18);
@@ -899,14 +933,14 @@
 
   <button id="lobbyPlayBtn" class="lobby-start-btn">MULAI <span class="lobby-start-arrow">▶</span></button>
   <button id="lobbyPartyBtn" type="button">👥 <span id="lobbyPartyBtnText">Party</span></button>
-  <button id="lobbySelectedMapBtn" type="button">🗺️ <span id="lobbySelectedMapText">Meme City</span></button>
+  <button id="lobbySelectedMapBtn" type="button"><img src="assets/icons/map.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"> <span id="lobbySelectedMapText">Meme City</span></button>
 
   <div id="lobbyQuickMenu">
-    <button id="lobbyShopBtn" title="Shop">🛒<span class="lqm-label">Shop</span></button>
-    <button id="lobbyLeaderboardBtn" title="Leaderboard">🏆<span class="lqm-label">Ranking</span></button>
-    <button id="lobbyAchievementBtn" title="Achievement">🏅<span class="lqm-label">Misi</span></button>
-    <button id="lobbyDailyBtn" title="Daily Reward">🎁<span class="lqm-label">Harian</span></button>
-    <button id="lobbySpinBtn" title="Lucky Spin">🎡<span class="lqm-label">Spin</span></button>
+    <button id="lobbyShopBtn" title="Shop"><img src="assets/icons/shop.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"><span class="lqm-label">Shop</span></button>
+    <button id="lobbyLeaderboardBtn" title="Leaderboard"><img src="assets/icons/leaderboard.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"><span class="lqm-label">Ranking</span></button>
+    <button id="lobbyAchievementBtn" title="Achievement"><img src="assets/icons/achievement.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"><span class="lqm-label">Misi</span></button>
+    <button id="lobbyDailyBtn" title="Daily Reward"><img src="assets/icons/gift.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"><span class="lqm-label">Harian</span></button>
+    <button id="lobbySpinBtn" title="Lucky Spin"><img src="assets/icons/spin.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"><span class="lqm-label">Spin</span></button>
   </div>
 </div>
 
@@ -936,7 +970,7 @@
   <button id="skill1Btn" class="skillBtn" title="Skill 1: Bakar (Admin: Kick)" style="display:none;">🔥</button>
   <button id="skill2Btn" class="skillBtn" title="Skill 2: Gamper">🫱</button>
   <button id="emoteBtn" class="skillBtn" title="Emote: Joget Meme">😂</button>
-  <button id="duelBtn" class="skillBtn" title="Ajak Duel pemain terdekat">⚔️</button>
+  <button id="duelBtn" class="skillBtn" title="Ajak Duel pemain terdekat"><img src="assets/icons/duel.png" class="icon-img-btn" alt="⚔" onerror="this.outerHTML='⚔️'"></button>
 
   <button id="fsHint" title="Layar penuh">⛶</button>
   <div id="mpStatus"><span class="dot"></span><span id="mpStatusText">…</span></div>
@@ -945,8 +979,8 @@
   <div id="hudCurrency">
     <div class="hud-row"><span class="hud-lvl" id="hudLevel">Lv.1</span></div>
     <div id="hudExpBarWrap"><div id="hudExpBar"></div></div>
-    <div class="hud-row">🪙 <span id="hudCoin">0</span></div>
-    <div class="hud-row">💎 <span id="hudDiamond">0</span></div>
+    <div class="hud-row"><img src="assets/icons/coin.png" class="icon-img-sm" alt="" onerror="this.style.display='none'"> <span id="hudCoin">0</span></div>
+    <div class="hud-row"><img src="assets/icons/diamond.png" class="icon-img-sm" alt="" onerror="this.style.display='none'"> <span id="hudDiamond">0</span></div>
   </div>
 </div>
 
@@ -964,7 +998,19 @@
 <div id="partyPanelBackdrop">
   <div class="party-box">
     <h3>👥 Party <button id="closePartyPanelBtn">✕</button></h3>
+    <div id="partyRoomCodeRow" class="party-room-row" style="display:none;">
+      <span class="prc-label">ROOM ID</span>
+      <span class="prc-code" id="partyRoomCodeText">------</span>
+      <button id="partyCopyCodeBtn" class="prc-copy" type="button">Salin</button>
+    </div>
     <div id="partyMemberList"></div>
+    <div id="partyJoinBlock">
+      <div class="party-join-row">
+        <input type="text" id="partyJoinCodeInput" maxlength="6" placeholder="Masukkan Room ID teman">
+        <button id="partyJoinCodeBtn" type="button">Gabung</button>
+      </div>
+      <div class="party-or-sep">— atau —</div>
+    </div>
     <button id="partyInviteOpenBtn" class="party-action primary" style="display:none;">+ Undang Pemain</button>
     <button id="partyCreateBtn" class="party-action primary">Buat Party</button>
     <button id="partyReadyBtn" class="party-action" style="display:none;">Siap</button>
@@ -997,7 +1043,7 @@
 <!-- Duel Battle Modal -->
 <div id="duelBattleBackdrop">
   <div class="duel-box">
-    <h3 style="font-size:15px; margin-bottom:12px;">⚔️ Duel</h3>
+    <h3 style="font-size:15px; margin-bottom:12px;"><img src="assets/icons/duel.png" class="icon-img" alt="" onerror="this.style.display='none'"> Duel</h3>
     <div class="duel-vs">
       <div class="duel-side">
         <div class="ds-name" id="duelMeName">Kamu</div>
@@ -1021,7 +1067,7 @@
 <!-- Map Selection Panel -->
 <div id="mapBackdrop" class="panel-backdrop">
   <div class="panel-box">
-    <h3>🗺️ Pilih Map <button id="closeMapBtn">✕</button></h3>
+    <h3><img src="assets/icons/map.png" class="icon-img" alt="" onerror="this.style.display='none'"> Pilih Map <button id="closeMapBtn">✕</button></h3>
     <div class="panel-sub">Kalau map penuh, kamu otomatis dipindah ke instance baru.</div>
     <div id="mapList"></div>
   </div>
@@ -1030,7 +1076,7 @@
 <!-- Shop Panel -->
 <div id="shopBackdrop" class="panel-backdrop">
   <div class="panel-box">
-    <h3>🛒 Shop <button id="closeShopBtn">✕</button></h3>
+    <h3><img src="assets/icons/shop.png" class="icon-img" alt="" onerror="this.style.display='none'"> Shop <button id="closeShopBtn">✕</button></h3>
     <div class="panel-sub">Semua item kosmetik, tidak menambah kekuatan.</div>
     <div class="shop-grid" id="shopGrid"></div>
   </div>
@@ -1039,7 +1085,7 @@
 <!-- Leaderboard Panel -->
 <div id="leaderboardBackdrop" class="panel-backdrop">
   <div class="panel-box">
-    <h3>🏆 Leaderboard <button id="closeLeaderboardBtn">✕</button></h3>
+    <h3><img src="assets/icons/leaderboard.png" class="icon-img" alt="" onerror="this.style.display='none'"> Leaderboard <button id="closeLeaderboardBtn">✕</button></h3>
     <div class="panel-sub">20 pemain dengan level & EXP tertinggi.</div>
     <div id="leaderboardList"></div>
   </div>
@@ -1048,7 +1094,7 @@
 <!-- Achievement Panel -->
 <div id="achievementBackdrop" class="panel-backdrop">
   <div class="panel-box">
-    <h3>🏅 Achievement <button id="closeAchievementBtn">✕</button></h3>
+    <h3><img src="assets/icons/achievement.png" class="icon-img" alt="" onerror="this.style.display='none'"> Achievement <button id="closeAchievementBtn">✕</button></h3>
     <div class="panel-sub">Selesaikan misi untuk hadiah koin.</div>
     <div id="achievementList"></div>
   </div>
@@ -1057,7 +1103,7 @@
 <!-- Daily Reward Panel -->
 <div id="dailyBackdrop" class="panel-backdrop">
   <div class="panel-box">
-    <h3>🎁 Daily Reward <button id="closeDailyBtn">✕</button></h3>
+    <h3><img src="assets/icons/gift.png" class="icon-img" alt="" onerror="this.style.display='none'"> Daily Reward <button id="closeDailyBtn">✕</button></h3>
     <div class="panel-sub">Login tiap hari, hadiah makin besar sampai hari ke-7.</div>
     <div class="daily-grid" id="dailyGrid"></div>
     <button id="claimDailyBtn" class="panel-action">Klaim Hadiah</button>
@@ -1067,7 +1113,7 @@
 <!-- Lucky Spin Panel -->
 <div id="spinBackdrop" class="panel-backdrop">
   <div class="panel-box">
-    <h3>🎡 Lucky Spin <button id="closeSpinBtn">✕</button></h3>
+    <h3><img src="assets/icons/spin.png" class="icon-img" alt="" onerror="this.style.display='none'"> Lucky Spin <button id="closeSpinBtn">✕</button></h3>
     <div class="panel-sub">50 koin per putaran. Menangkan koin, diamond, atau EXP!</div>
     <div id="spinWheelWrap">
       <div style="position:relative;">
@@ -1075,7 +1121,7 @@
         <div id="spinWheel"></div>
       </div>
       <div id="spinResultText" style="font-size:12.5px; min-height:16px;"></div>
-      <button id="doSpinBtn" class="panel-action" style="margin-top:0;">Putar (50 🪙)</button>
+      <button id="doSpinBtn" class="panel-action" style="margin-top:0;">Putar (50 <img src="assets/icons/coin.png" class="icon-img-sm" alt="" onerror="this.style.display='none'">)</button>
     </div>
   </div>
 </div>
@@ -1088,15 +1134,15 @@
 
   <h3>Menu</h3>
   <div class="field" style="display:flex; flex-wrap:wrap; gap:8px;">
-    <button id="gearShopBtn" class="fileBtn" style="width:auto; flex:1;">🛒 Shop</button>
-    <button id="gearLeaderboardBtn" class="fileBtn" style="width:auto; flex:1;">🏆 Ranking</button>
-    <button id="gearAchievementBtn" class="fileBtn" style="width:auto; flex:1;">🏅 Misi</button>
-    <button id="gearDailyBtn" class="fileBtn" style="width:auto; flex:1;">🎁 Harian</button>
-    <button id="gearSpinBtn" class="fileBtn" style="width:auto; flex:1;">🎡 Spin</button>
+    <button id="gearShopBtn" class="fileBtn" style="width:auto; flex:1;"><img src="assets/icons/shop.png" class="icon-img" alt="" onerror="this.style.display='none'"> Shop</button>
+    <button id="gearLeaderboardBtn" class="fileBtn" style="width:auto; flex:1;"><img src="assets/icons/leaderboard.png" class="icon-img" alt="" onerror="this.style.display='none'"> Ranking</button>
+    <button id="gearAchievementBtn" class="fileBtn" style="width:auto; flex:1;"><img src="assets/icons/achievement.png" class="icon-img" alt="" onerror="this.style.display='none'"> Misi</button>
+    <button id="gearDailyBtn" class="fileBtn" style="width:auto; flex:1;"><img src="assets/icons/gift.png" class="icon-img" alt="" onerror="this.style.display='none'"> Harian</button>
+    <button id="gearSpinBtn" class="fileBtn" style="width:auto; flex:1;"><img src="assets/icons/spin.png" class="icon-img" alt="" onerror="this.style.display='none'"> Spin</button>
   </div>
 
   <div class="field" id="creatorStudioField" style="display:none;">
-    <h3 style="margin-top:0;">🎨 Creator Studio</h3>
+    <h3 style="margin-top:0;"><img src="assets/icons/creator_pass.png" class="icon-img" alt="" onerror="this.style.display='none'"> Creator Studio</h3>
     <div style="font-size:11px; opacity:0.7; margin-bottom:8px;">Kamu punya Creator Pass! Pilih warna aura bebas untuk karaktermu.</div>
     <div style="display:flex; gap:8px; flex-wrap:wrap;">
       <button class="fileBtn creatorAuraBtn" data-color="#4a90e2" style="width:auto; flex:1; background:#4a90e2;">Biru</button>
@@ -1194,7 +1240,7 @@
           "effects": { ".read": "auth != null", ".write": "auth != null" },
           "signals": { ".read": "auth != null", ".write": "auth != null" },
           "pushes":  { ".read": "auth != null", ".write": "auth != null" },
-          "parties": { ".read": "auth != null", ".write": "auth != null" },
+          "parties": { ".read": "auth != null", ".write": "auth != null", ".indexOn": ["code"] },
           "partyInvites": { ".read": "auth != null", ".write": "auth != null" }
         }
       }
@@ -1413,7 +1459,7 @@ function addExp(amount) {
   saveProfileFields({ exp: player.exp, level: player.level });
   updateHudCurrency();
   if (leveledUp) {
-    showToast('⭐ Naik ke Level ' + player.level + '!');
+    showToast('Naik ke Level ' + player.level + '!');
     if (player.level >= 5) unlockAchievement('ach_level5');
   }
 }
@@ -1512,18 +1558,43 @@ let isAdmin = false;
 const MAX_PLAYERS = 5;
 
 // ---------- Sistem Multi-Map + Queue ----------
+
+// ---------- Konfigurasi Ikon PNG (ganti file di folder ini dengan logo kamu sendiri) ----------
+// Semua ikon menu (Shop, Leaderboard, Achievement, Daily, Spin, Map, Duel, HUD) memakai
+// file PNG dari folder ini, BUKAN emoji lagi. Tinggal timpa file dengan nama yang sama
+// di folder "assets/icons/" pakai logo kamu sendiri — otomatis kepakai di semua tempat.
+const ICON_BASE = 'assets/icons/';
+const ICONS = {
+  shop: 'shop.png', leaderboard: 'leaderboard.png', achievement: 'achievement.png',
+  daily: 'daily.png', spin: 'spin.png', map: 'map.png', duel: 'duel.png',
+  coin: 'coin.png', diamond: 'diamond.png', gift: 'gift.png', check: 'check.png',
+  rank1: 'rank1.png', rank2: 'rank2.png', rank3: 'rank3.png', trophy: 'trophy.png', skull: 'skull.png',
+  creator_pass: 'item_creator_pass.png', battle_pass: 'item_battle_pass.png',
+  frame_gold: 'item_frame_gold.png', aura_blue: 'item_aura_blue.png', aura_red: 'item_aura_red.png',
+  name_gold: 'item_name_gold.png', name_rainbow: 'item_name_rainbow.png', sticker_pack: 'item_sticker_pack.png',
+  ach_first_login: 'ach_first_login.png', ach_first_chat: 'ach_first_chat.png', ach_first_party: 'ach_first_party.png',
+  ach_level5: 'ach_level5.png', ach_first_duel_win: 'ach_first_duel_win.png', ach_shopper: 'ach_shopper.png', ach_daily_7: 'ach_daily_7.png',
+  map_meme_city: 'map_meme_city.png', map_beach: 'map_beach.png', map_school: 'map_school.png',
+  map_space: 'map_space.png', map_horror: 'map_horror.png', map_christmas: 'map_christmas.png'
+};
+// Bikin tag <img> untuk sebuah ikon. Kalau file PNG belum ada / belum diganti, ikon otomatis
+// disembunyikan (bukan tampil rusak/kotak patah) supaya UI tetap rapi sebelum kamu isi logonya.
+function iconImg(key, cls) {
+  const file = ICONS[key] || (key + '.png');
+  return '<img src="' + ICON_BASE + file + '" class="' + (cls || 'icon-img') + '" alt="" onerror="this.style.display=\'none\'">';
+}
 // Setiap pemain punya field "mapId" di data realtime-nya. Klien HANYA menampilkan
 // & berinteraksi dengan pemain lain yang mapId-nya SAMA dengan currentMapId (jadi
 // dunia terasa terpisah per map walau masih 1 node Firebase "players").
 // Kalau map yang dipilih sudah penuh (>= MAX_PLAYERS), otomatis dialihkan ke
 // instance map berikutnya (map_2, map_3, dst) — sesuai skema "Map baru dibuat".
 const MAP_LIST = [
-  { id: 'meme_city', name: 'Meme City', icon: '🏙️', tint: null },
-  { id: 'beach',      name: 'Beach',     icon: '🏖️', tint: 'rgba(255,214,120,0.10)' },
-  { id: 'school',     name: 'School',    icon: '🏫', tint: 'rgba(120,160,255,0.10)' },
-  { id: 'space',      name: 'Space',     icon: '🚀', tint: 'rgba(15,10,45,0.5)' },
-  { id: 'horror',     name: 'Horror',    icon: '👻', tint: 'rgba(40,0,15,0.42)' },
-  { id: 'christmas',  name: 'Christmas', icon: '🎄', tint: 'rgba(140,205,255,0.16)' }
+  { id: 'meme_city', name: 'Meme City', icon: 'map_meme_city', tint: null },
+  { id: 'beach',      name: 'Beach',     icon: 'map_beach', tint: 'rgba(255,214,120,0.10)' },
+  { id: 'school',     name: 'School',    icon: 'map_school', tint: 'rgba(120,160,255,0.10)' },
+  { id: 'space',      name: 'Space',     icon: 'map_space', tint: 'rgba(15,10,45,0.5)' },
+  { id: 'horror',     name: 'Horror',    icon: 'map_horror', tint: 'rgba(40,0,15,0.42)' },
+  { id: 'christmas',  name: 'Christmas', icon: 'map_christmas', tint: 'rgba(140,205,255,0.16)' }
 ];
 let currentMapId = 'meme_city';
 let desiredMapId = 'meme_city';
@@ -2322,7 +2393,7 @@ function submitLobby() {
   if (mpEnabled && db && MAX_PLAYERS > 0 && !isAdmin) {
     const assigned = resolveMapAssignment(desiredMapId);
     if (assigned !== desiredMapId) {
-      showToast('🗺️ ' + mapBaseInfo(desiredMapId).name + ' penuh, dipindah ke ' + mapDisplayName(assigned));
+      showToast(mapBaseInfo(desiredMapId).name + ' penuh, dipindah ke ' + mapDisplayName(assigned));
     }
     currentMapId = assigned;
     rebuildOtherPlayersForCurrentMap();
@@ -2347,6 +2418,20 @@ const PLACEHOLDER_COLORS = {
   river: '#4a90e2',
   lake:  '#3f7fd1'
 };
+// ---------- Peta jadi terasa beda tiap tema: warna tanah/jalan/air diganti sesuai map yang dipilih ----------
+// (lapisan-lapisannya sama, cuma "kulit" warnanya beda-beda per tema — Beach jadi pasir, Space jadi
+// permukaan gelap, Christmas jadi salju, dst. Ini dipakai bareng tint overlay yang sudah ada.)
+const MAP_PALETTES = {
+  meme_city: { grass: '#5fae3f', path: '#c29b61', river: '#4a90e2', lake: '#3f7fd1' },
+  beach:     { grass: '#e8d89a', path: '#dcc686', river: '#33b6c9', lake: '#2aa1c4' },
+  school:    { grass: '#8fae7a', path: '#b9b2a1', river: '#5aa7d6', lake: '#4f96c2' },
+  space:     { grass: '#231a3d', path: '#392a5c', river: '#5b3fa0', lake: '#4a2f8a' },
+  horror:    { grass: '#22301f', path: '#3a2a22', river: '#345942', lake: '#1f3a2c' },
+  christmas: { grass: '#eef4fb', path: '#dbe6f2', river: '#6fb7e8', lake: '#5aa6da' }
+};
+function currentPalette() {
+  return MAP_PALETTES[mapBaseInfo(currentMapId).id] || MAP_PALETTES.meme_city;
+}
 const TILE_TEXTURES = {};
 (function loadTileTextures() {
   const cfg = window.MAP_TILE_CONFIG || {};
@@ -2706,6 +2791,22 @@ const partyInviteToast = document.getElementById('partyInviteToast');
 const partyInviteToastText = document.getElementById('partyInviteToastText');
 const partyInviteAcceptBtn = document.getElementById('partyInviteAcceptBtn');
 const partyInviteDeclineBtn = document.getElementById('partyInviteDeclineBtn');
+const partyRoomCodeRow = document.getElementById('partyRoomCodeRow');
+const partyRoomCodeText = document.getElementById('partyRoomCodeText');
+const partyCopyCodeBtn = document.getElementById('partyCopyCodeBtn');
+const partyJoinBlock = document.getElementById('partyJoinBlock');
+const partyJoinCodeInput = document.getElementById('partyJoinCodeInput');
+const partyJoinCodeBtn = document.getElementById('partyJoinCodeBtn');
+const PARTY_MAX_MEMBERS = 6;
+
+// Bikin Room ID pendek (6 karakter, tanpa huruf/angka yang gampang ketuker) supaya
+// gampang dibacakan/diketik pemain lain untuk gabung party secara langsung.
+function genRoomCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s = '';
+  for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return s;
+}
 
 function myPartyMemberInfo() {
   return { name: player.name || 'Petualang', photoURL: player.photoURL || null, ready: false };
@@ -2724,14 +2825,20 @@ function renderPartyPanel() {
   const isLeader = inParty && myPartyData.leader === playerID;
 
   if (!inParty) {
-    partyMemberList.innerHTML = '<div class="party-empty">Kamu belum punya party. Buat satu untuk main bareng teman!</div>';
+    partyMemberList.innerHTML = '<div class="party-empty">Kamu belum punya party. Buat satu atau masukkan Room ID teman untuk gabung!</div>';
+    partyRoomCodeRow.style.display = 'none';
+    partyJoinBlock.style.display = 'block';
     partyCreateBtn.style.display = 'block';
+    partyCreateBtn.textContent = 'Buat Party Baru';
     partyInviteOpenBtn.style.display = 'none';
     partyReadyBtn.style.display = 'none';
     partyLeaveBtn.style.display = 'none';
     return;
   }
 
+  partyRoomCodeText.textContent = myPartyData.code || '------';
+  partyRoomCodeRow.style.display = 'flex';
+  partyJoinBlock.style.display = 'none';
   partyCreateBtn.style.display = 'none';
   partyInviteOpenBtn.style.display = 'block';
   partyReadyBtn.style.display = 'block';
@@ -2800,11 +2907,54 @@ async function createParty() {
   const ref = partiesRef.push();
   await ref.set({
     leader: playerID,
+    code: genRoomCode(),
     createdAt: firebase.database.ServerValue.TIMESTAMP,
     members: { [playerID]: myPartyMemberInfo() }
   });
   listenToMyParty(ref.key);
   unlockAchievement('ach_first_party');
+}
+
+// Yang punya party (leader) kasih Room ID-nya ke teman, teman tinggal ketik Room ID
+// itu di sini untuk langsung gabung — tanpa perlu ketemu dulu di map yang sama.
+async function joinPartyByCode() {
+  if (!mpEnabled || !authReady) return;
+  const code = (partyJoinCodeInput.value || '').trim().toUpperCase();
+  if (!code) { showToast('Masukkan Room ID dulu'); return; }
+  if (myPartyId) { showToast('Kamu sudah punya party'); return; }
+  partyJoinCodeBtn.disabled = true;
+  try {
+    const snap = await partiesRef.orderByChild('code').equalTo(code).once('value');
+    const val = snap.val();
+    if (!val) { showToast('Room ID tidak ditemukan'); return; }
+    const partyId = Object.keys(val)[0];
+    const partyData = val[partyId];
+    const memberCount = Object.keys(partyData.members || {}).length;
+    if (partyData.members && partyData.members[playerID]) {
+      listenToMyParty(partyId);
+      return;
+    }
+    if (memberCount >= PARTY_MAX_MEMBERS) { showToast('Party sudah penuh'); return; }
+    await partiesRef.child(partyId).child('members').child(playerID).set(myPartyMemberInfo());
+    listenToMyParty(partyId);
+    partyJoinCodeInput.value = '';
+    showToast('Berhasil gabung party!');
+    unlockAchievement('ach_first_party');
+  } catch (e) {
+    showToast('Gagal gabung, coba lagi');
+  } finally {
+    partyJoinCodeBtn.disabled = false;
+  }
+}
+
+function copyRoomCode() {
+  const code = (myPartyData && myPartyData.code) || '';
+  if (!code) return;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(() => showToast('Room ID disalin')).catch(() => showToast(code));
+  } else {
+    showToast(code);
+  }
 }
 
 async function kickPartyMember(targetId) {
@@ -2909,6 +3059,12 @@ partyLeaveBtn.addEventListener('click', leaveParty);
 document.getElementById('closePartyInviteBtn').addEventListener('click', closePartyInviteList);
 partyInviteAcceptBtn.addEventListener('click', () => respondToInvite(true));
 partyInviteDeclineBtn.addEventListener('click', () => respondToInvite(false));
+partyCopyCodeBtn.addEventListener('click', copyRoomCode);
+partyJoinCodeBtn.addEventListener('click', joinPartyByCode);
+partyJoinCodeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') joinPartyByCode(); });
+partyJoinCodeInput.addEventListener('input', () => {
+  partyJoinCodeInput.value = partyJoinCodeInput.value.toUpperCase();
+});
 // ================= END PARTY SYSTEM =================
 
 // ================= MULTI-MAP + QUEUE SYSTEM =================
@@ -2923,7 +3079,7 @@ function renderMapList() {
     row.className = 'map-row' + (isFull ? ' full' : '') + (desiredMapId === m.id ? ' selected' : '');
     row.dataset.mapId = m.id;
     const subText = MAX_PLAYERS > 0 ? (count + '/' + MAX_PLAYERS + ' pemain' + (isFull ? ' • Penuh, otomatis ke instance baru' : '')) : (count + ' pemain online');
-    row.innerHTML = `<div class="mr-icon">${m.icon}</div>
+    row.innerHTML = `<div class="mr-icon">${iconImg(m.icon, 'icon-img-lg')}</div>
       <div class="mr-info">
         <div class="mr-name">${escapeHtml(m.name)}</div>
         <div class="mr-sub">${subText}</div>
@@ -2971,13 +3127,13 @@ document.getElementById('lobbySelectedMapBtn').addEventListener('click', openMap
 
 // ================= ACHIEVEMENT SYSTEM =================
 const ACHIEVEMENTS = {
-  ach_first_login: { name: 'Petualang Baru', desc: 'Buat akun pertama kali', icon: '🌱', coin: 50 },
-  ach_first_chat:  { name: 'Bicara Pertama', desc: 'Kirim 1 pesan chat', icon: '💬', coin: 30 },
-  ach_first_party: { name: 'Tim Kompak', desc: 'Buat atau gabung Party', icon: '👥', coin: 40 },
-  ach_level5:      { name: 'Naik Level 5', desc: 'Capai Level 5', icon: '⭐', coin: 100 },
-  ach_first_duel_win: { name: 'Juara Duel', desc: 'Menangkan 1 kali duel', icon: '🥇', coin: 100 },
-  ach_shopper:     { name: 'Kolektor', desc: 'Beli 1 item di Shop', icon: '🛍️', coin: 60 },
-  ach_daily_7:     { name: 'Rajin Login', desc: 'Klaim Daily Reward 7 hari', icon: '📅', coin: 150 }
+  ach_first_login: { name: 'Petualang Baru', desc: 'Buat akun pertama kali', icon: 'ach_first_login', coin: 50 },
+  ach_first_chat:  { name: 'Bicara Pertama', desc: 'Kirim 1 pesan chat', icon: 'ach_first_chat', coin: 30 },
+  ach_first_party: { name: 'Tim Kompak', desc: 'Buat atau gabung Party', icon: 'ach_first_party', coin: 40 },
+  ach_level5:      { name: 'Naik Level 5', desc: 'Capai Level 5', icon: 'ach_level5', coin: 100 },
+  ach_first_duel_win: { name: 'Juara Duel', desc: 'Menangkan 1 kali duel', icon: 'ach_first_duel_win', coin: 100 },
+  ach_shopper:     { name: 'Kolektor', desc: 'Beli 1 item di Shop', icon: 'ach_shopper', coin: 60 },
+  ach_daily_7:     { name: 'Rajin Login', desc: 'Klaim Daily Reward 7 hari', icon: 'ach_daily_7', coin: 150 }
 };
 function unlockAchievement(id, silent) {
   if (!ACHIEVEMENTS[id]) return;
@@ -2987,7 +3143,7 @@ function unlockAchievement(id, silent) {
   const reward = ACHIEVEMENTS[id].coin || 0;
   if (reward) addCurrency(reward, 0);
   saveProfileFields({ achievements: player.achievements });
-  if (!silent) showToast('🏅 Achievement: ' + ACHIEVEMENTS[id].name + ' (+' + reward + ' 🪙)');
+  if (!silent) showToast('Achievement: ' + ACHIEVEMENTS[id].name + ' (+' + reward + ' koin)');
 }
 function renderAchievements() {
   const list = document.getElementById('achievementList');
@@ -2999,12 +3155,12 @@ function renderAchievements() {
     const unlocked = owned.includes(id);
     const row = document.createElement('div');
     row.className = 'ach-row' + (unlocked ? ' unlocked' : '');
-    row.innerHTML = `<div class="ach-icon">${a.icon}</div>
+    row.innerHTML = `<div class="ach-icon">${iconImg(a.icon, 'icon-img-lg')}</div>
       <div class="ach-info">
         <div class="ach-name">${escapeHtml(a.name)}</div>
         <div class="ach-desc">${escapeHtml(a.desc)}</div>
       </div>
-      <div class="ach-reward">${unlocked ? '✔️' : '+' + a.coin + ' 🪙'}</div>`;
+      <div class="ach-reward">${unlocked ? iconImg('check', 'icon-img') : '+' + a.coin + ' ' + iconImg('coin', 'icon-img-sm')}</div>`;
     list.appendChild(row);
   }
 }
@@ -3017,14 +3173,14 @@ document.getElementById('gearAchievementBtn').addEventListener('click', openAchi
 
 // ================= SHOP SYSTEM =================
 const SHOP_ITEMS = [
-  { id: 'creator_pass', name: 'Creator Pass', icon: '🎨', price: 300, currency: 'diamond', type: 'pass' },
-  { id: 'battle_pass',  name: 'Battle Pass',   icon: '🎫', price: 300, currency: 'coin', type: 'pass' },
-  { id: 'frame_gold',   name: 'Bingkai Emas',  icon: '🖼️', price: 150, currency: 'coin', type: 'frame', value: 'gold' },
-  { id: 'aura_blue',    name: 'Aura Biru',     icon: '🔵', price: 200, currency: 'coin', type: 'aura', value: '#4a90e2' },
-  { id: 'aura_red',     name: 'Aura Merah',    icon: '🔴', price: 200, currency: 'coin', type: 'aura', value: '#ff4757' },
-  { id: 'name_gold',    name: 'Nama Emas',     icon: '✨', price: 120, currency: 'coin', type: 'nameColor', value: 'gold' },
-  { id: 'name_rainbow', name: 'Nama Pelangi',  icon: '🌈', price: 150, currency: 'diamond', type: 'nameColor', value: 'rainbow' },
-  { id: 'sticker_pack', name: 'Paket Stiker',  icon: '💬', price: 100, currency: 'coin', type: 'sticker' }
+  { id: 'creator_pass', name: 'Creator Pass', icon: 'creator_pass', price: 300, currency: 'diamond', type: 'pass' },
+  { id: 'battle_pass',  name: 'Battle Pass',   icon: 'battle_pass', price: 300, currency: 'coin', type: 'pass' },
+  { id: 'frame_gold',   name: 'Bingkai Emas',  icon: 'frame_gold', price: 150, currency: 'coin', type: 'frame', value: 'gold' },
+  { id: 'aura_blue',    name: 'Aura Biru',     icon: 'aura_blue', price: 200, currency: 'coin', type: 'aura', value: '#4a90e2' },
+  { id: 'aura_red',     name: 'Aura Merah',    icon: 'aura_red', price: 200, currency: 'coin', type: 'aura', value: '#ff4757' },
+  { id: 'name_gold',    name: 'Nama Emas',     icon: 'name_gold', price: 120, currency: 'coin', type: 'nameColor', value: 'gold' },
+  { id: 'name_rainbow', name: 'Nama Pelangi',  icon: 'name_rainbow', price: 150, currency: 'diamond', type: 'nameColor', value: 'rainbow' },
+  { id: 'sticker_pack', name: 'Paket Stiker',  icon: 'sticker_pack', price: 100, currency: 'coin', type: 'sticker' }
 ];
 function ownsItem(id) { return Array.isArray(player.inventory) && player.inventory.includes(id); }
 function buyItem(id) {
@@ -3066,9 +3222,9 @@ function renderShop() {
     );
     const el = document.createElement('div');
     el.className = 'shop-item';
-    el.innerHTML = `<div class="si-icon">${item.icon}</div>
+    el.innerHTML = `<div class="si-icon">${iconImg(item.icon, 'icon-img-lg')}</div>
       <div class="si-name">${escapeHtml(item.name)}</div>
-      <div class="si-price">${owned ? 'Dimiliki' : item.price + (item.currency === 'diamond' ? ' 💎' : ' 🪙')}</div>
+      <div class="si-price">${owned ? 'Dimiliki' : item.price + ' ' + iconImg(item.currency, 'icon-img-sm')}</div>
       <button class="${equipped ? 'equipped' : (owned ? 'equip' : 'buy')}">${equipped ? 'Terpakai' : (owned ? 'Pakai' : 'Beli')}</button>`;
     el.querySelector('button').addEventListener('click', () => buyItem(item.id));
     grid.appendChild(el);
@@ -3110,11 +3266,11 @@ async function loadLeaderboard() {
       const row = document.createElement('div');
       row.className = 'lb-row';
       const photoHtml = d.photoURL ? `<img src="${d.photoURL}">` : `<div class="lb-fallback">${escapeHtml((d.name||'?').charAt(0).toUpperCase())}</div>`;
-      row.innerHTML = `<div class="lb-rank">${rank <= 3 ? ['🥇','🥈','🥉'][rank-1] : rank}</div>
+      row.innerHTML = `<div class="lb-rank">${rank <= 3 ? iconImg('rank' + rank, 'icon-img') : rank}</div>
         ${photoHtml}
         <div class="lb-info">
           <div class="lb-name">${escapeHtml(d.name || 'Petualang')}</div>
-          <div class="lb-sub">Level ${d.level || 1} • ${d.coin || 0} 🪙</div>
+          <div class="lb-sub">Level ${d.level || 1} • ${d.coin || 0} ${iconImg('coin', 'icon-img-sm')}</div>
         </div>`;
       list.appendChild(row);
     });
@@ -3150,7 +3306,7 @@ function renderDailyPanel() {
     const isToday = !claimedToday && i === streak + 1;
     const el = document.createElement('div');
     el.className = 'daily-day' + (isPast ? ' claimed' : '') + (isToday ? ' today' : '');
-    el.innerHTML = `<span class="dd-icon">${isPast ? '✅' : '🎁'}</span>Hari ${i}<br>${DAILY_REWARDS[i-1]} 🪙`;
+    el.innerHTML = `<span class="dd-icon">${isPast ? iconImg('check', 'icon-img') : iconImg('gift', 'icon-img')}</span>Hari ${i}<br>${DAILY_REWARDS[i-1]} ${iconImg('coin', 'icon-img-sm')}`;
     grid.appendChild(el);
   }
   if (claimBtn) {
@@ -3171,7 +3327,7 @@ function claimDailyReward() {
   player.dailyStreak = streak;
   player.lastDailyClaim = now.getTime();
   saveProfileFields({ dailyStreak: streak, lastDailyClaim: player.lastDailyClaim });
-  showToast('🎁 Hadiah harian: +' + reward + ' 🪙');
+  showToast('Hadiah harian: +' + reward + ' koin');
   if (streak >= 7) unlockAchievement('ach_daily_7');
   renderDailyPanel();
 }
@@ -3185,14 +3341,14 @@ document.getElementById('claimDailyBtn').addEventListener('click', claimDailyRew
 
 // ================= LUCKY SPIN =================
 const SPIN_SEGMENTS = [
-  { label: '10 🪙', coin: 10 }, { label: '5 💎', diamond: 5 }, { label: '30 🪙', coin: 30 }, { label: '50 EXP', exp: 50 },
-  { label: '20 🪙', coin: 20 }, { label: '10 💎', diamond: 10 }, { label: '80 🪙', coin: 80 }, { label: '100 🪙', coin: 100 }
+  { label: '10 Koin', coin: 10 }, { label: '5 Diamond', diamond: 5 }, { label: '30 Koin', coin: 30 }, { label: '50 EXP', exp: 50 },
+  { label: '20 Koin', coin: 20 }, { label: '10 Diamond', diamond: 10 }, { label: '80 Koin', coin: 80 }, { label: '100 Koin', coin: 100 }
 ];
 let spinning = false;
 let spinRotation = 0;
 function spinWheel() {
   if (spinning) return;
-  if ((player.coin || 0) < 50) { showToast('Koin tidak cukup untuk spin (butuh 50 🪙)'); return; }
+  if ((player.coin || 0) < 50) { showToast('Koin tidak cukup untuk spin (butuh 50 koin)'); return; }
   spinning = true;
   addCurrency(-50, 0);
   const segCount = SPIN_SEGMENTS.length;
@@ -3213,7 +3369,7 @@ function spinWheel() {
     if (seg.diamond) addCurrency(0, seg.diamond);
     if (seg.exp) addExp(seg.exp);
     if (resultEl) resultEl.textContent = 'Kamu dapat: ' + seg.label + '!';
-    showToast('🎡 Hasil Spin: ' + seg.label);
+    showToast('Hasil Spin: ' + seg.label);
     spinning = false;
     if (spinBtn) spinBtn.disabled = false;
   }, 3300);
@@ -3351,7 +3507,7 @@ function finishDuel(b, isP1) {
   const myId = playerID;
   const iWon = b.winner === myId;
   document.getElementById('duelAttackBtn').disabled = true;
-  document.getElementById('duelStatusText').textContent = iWon ? '🏆 Kamu Menang!' : '💀 Kamu Kalah';
+  document.getElementById('duelStatusText').textContent = iWon ? 'Kamu Menang!' : 'Kamu Kalah';
   document.getElementById('duelTimerText').textContent = '';
   if (!window.__duelRewardGiven || window.__duelRewardGiven !== b.startedAt) {
     window.__duelRewardGiven = b.startedAt;
@@ -3788,7 +3944,8 @@ function drawGround() {
     if (tex && tex.complete && tex.naturalWidth) {
       ctx.drawImage(tex, sx, sy, TILE, TILE);
     } else {
-      ctx.fillStyle = PLACEHOLDER_COLORS[tType] || PLACEHOLDER_COLORS.grass;
+      const palette = currentPalette();
+      ctx.fillStyle = palette[tType] || palette.grass;
       ctx.fillRect(sx, sy, TILE, TILE);
       ctx.strokeStyle = 'rgba(0,0,0,0.08)';
       ctx.lineWidth = 1;
@@ -4071,17 +4228,27 @@ function drawFrameRing(x, renderY, frameType) {
   });
   ctx.restore();
 }
+// Preload ikon canvas (dipakai lewat drawImage, bukan fillText emoji lagi).
+// Kalau file PNG-nya belum diganti/belum ada, badge otomatis tidak digambar (tidak error).
+const canvasIcons = {};
+function loadCanvasIcon(key) {
+  const img = new Image();
+  img.src = ICON_BASE + (ICONS[key] || (key + '.png'));
+  canvasIcons[key] = img;
+}
+['battle_pass'].forEach(loadCanvasIcon);
+
 function drawBattlePassBadge(x, tagY, hasBattlePass) {
   if (!hasBattlePass) return;
+  const icon = canvasIcons.battle_pass;
   ctx.save();
-  ctx.font = '11px Segoe UI';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
   ctx.fillStyle = 'rgba(0,0,0,0.45)';
   ctx.beginPath();
   ctx.arc(x, tagY, 8, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillText('🎫', x, tagY + 0.5);
+  if (icon && icon.complete && icon.naturalWidth > 0) {
+    ctx.drawImage(icon, x - 6, tagY - 6, 12, 12);
+  }
   ctx.restore();
 }
 function drawAuraRing(x, renderY, color) {
@@ -4421,8 +4588,9 @@ function drawMinimap() {
 
   const scaleX = mapW / WORLD_W;
   const scaleY = mapH / WORLD_H;
+  const miniPalette = currentPalette();
 
-  ctx.strokeStyle = '#4a90e2';
+  ctx.strokeStyle = miniPalette.river;
   ctx.lineWidth = 3;
   ctx.beginPath();
   for (let x = 0; x < WORLD_W; x += 40) {
@@ -4437,7 +4605,7 @@ function drawMinimap() {
   ctx.stroke();
 
   // Danau di minimap
-  ctx.fillStyle = '#4a90e2';
+  ctx.fillStyle = miniPalette.lake;
   ctx.beginPath();
   ctx.arc(mapX + LAKE.x * scaleX, mapY + LAKE.y * scaleY, Math.max(3, LAKE.r * scaleX), 0, Math.PI * 2);
   ctx.fill();
