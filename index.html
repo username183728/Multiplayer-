@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>Petualangan Padang Rumput</title>
+<title>Memeverse Online</title>
 
 <!-- =====================================================================
      ====== PENGATURAN GAMBAR LOBI (gampang diganti sendiri lewat PNG) ======
@@ -20,6 +20,20 @@
     // dipakai SEBELUM pemain login / upload foto sendiri. Disarankan persegi (mis. 300x300).
     centerCharacterImage: ''
   };
+
+  // =====================================================================
+  // ====== ASET TEKSTUR PETA (gampang diganti sendiri lewat PNG) ======
+  // Taruh file PNG tile kamu (ukuran disarankan 32x32 atau kelipatannya, tanpa
+  // transparansi kalau bisa) di folder yang sama dengan index.html ini, lalu
+  // tulis nama file/URL-nya di bawah. Kosongkan (isi dengan '') kalau belum
+  // punya asetnya — sementara akan dipakai kotak warna polos sebagai placeholder.
+  // =====================================================================
+  window.MAP_TILE_CONFIG = {
+    grass: '',
+    path: '',
+    river: '',
+    lake: ''
+  };
 </script>
 
 <!-- ====== PWA / Play Store readiness ====== -->
@@ -27,8 +41,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Padang Rumput">
-<meta name="description" content="Petualangan Padang Rumput — game multiplayer santai bersama teman.">
+<meta name="apple-mobile-web-app-title" content="Memeverse Online">
+<meta name="description" content="Memeverse Online — game multiplayer 2D bertema meme bareng teman.">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -83,7 +97,7 @@
   }
   .loading-bar-fill {
     height:100%; width:30%; border-radius:2px;
-    background:linear-gradient(90deg, rgba(216,181,102,0.2), #d8b566, rgba(216,181,102,0.2));
+    background:linear-gradient(90deg, rgba(216,181,102,0.2), #ff5fa2, rgba(216,181,102,0.2));
     animation: barSlide 1.3s ease-in-out infinite;
   }
   @keyframes barSlide {
@@ -146,7 +160,7 @@
   .lobby-box input::placeholder { color:rgba(242,234,217,0.32); }
   .lobby-box input:focus { border-color:rgba(216,181,102,0.6); background:rgba(216,181,102,0.06); }
   .lobby-box button {
-    width:100%; background:linear-gradient(145deg,#e2c07d,#b5893c); color:#1a1508; border:none; border-radius:10px;
+    width:100%; background:linear-gradient(145deg,#ffd166,#e63e8c); color:#1a1508; border:none; border-radius:10px;
     padding:13px; font-weight:600; font-size:14px; cursor:pointer; letter-spacing:0.03em;
     box-shadow:0 6px 18px rgba(181,137,60,0.3); margin-top:6px;
     transition:filter 0.15s, transform 0.1s;
@@ -179,7 +193,7 @@
     padding:24px; opacity:0.06; pointer-events:none;
   }
   #lobbyNamesBg span {
-    color:#d8b566; font-size:22px; font-weight:600; white-space:nowrap;
+    color:#ff5fa2; font-size:22px; font-weight:600; white-space:nowrap;
   }
   .lobby-topbar {
     position:absolute; top:0; left:0; right:0; z-index:3;
@@ -251,7 +265,7 @@
   .lobby-account-photo.has-photo { display:block; }
   .lobby-account-initial {
     display:flex; align-items:center; justify-content:center;
-    background:linear-gradient(145deg,#e2c07d,#b5893c); color:#1a1508;
+    background:linear-gradient(145deg,#ffd166,#e63e8c); color:#1a1508;
     font-weight:700; font-size:14px;
   }
   .lobby-account-initial.hidden { display:none; }
@@ -259,7 +273,7 @@
   .lobby-avatar-upload-btn {
     position:absolute; right:-4px; bottom:-4px; z-index:4;
     width:18px; height:18px; border-radius:50%; border:1.5px solid #0e0f0a;
-    background:linear-gradient(145deg,#e2c07d,#b5893c); color:#1a1508;
+    background:linear-gradient(145deg,#ffd166,#e63e8c); color:#1a1508;
     font-size:9px; line-height:1; display:flex; align-items:center; justify-content:center;
     padding:0; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.5);
   }
@@ -272,7 +286,7 @@
   .lobby-account-sub { color:rgba(242,234,217,0.45); font-size:10px; margin-top:1px; }
   .lobby-start-btn {
     position:absolute; right:20px; bottom:24px; z-index:3;
-    background:linear-gradient(145deg,#e2c07d,#b5893c); color:#1a1508; border:none;
+    background:linear-gradient(145deg,#ffd166,#e63e8c); color:#1a1508; border:none;
     border-radius:12px; padding:14px 26px; font-weight:700; font-size:15px;
     letter-spacing:0.05em; cursor:pointer; box-shadow:0 8px 22px rgba(181,137,60,0.4);
     transition:filter 0.15s, transform 0.1s; display:flex; align-items:center; gap:8px;
@@ -309,6 +323,107 @@
     transition: background 0.2s, transform 0.1s;
   }
   #chatBtn:active { transform: scale(0.92); filter:brightness(1.3); }
+
+  /* ---------- Party Button + Panel ---------- */
+  #partyBtn {
+    position: fixed; top: 102px; left: 128px; z-index: 30;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(145deg, #3d3d3d, #1c1c1c);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: #fff; font-size: 15px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12);
+    transition: background 0.2s, transform 0.1s;
+  }
+  #partyBtn:active { transform: scale(0.92); filter:brightness(1.3); }
+  #partyBtn.in-party {
+    background: linear-gradient(145deg, #ff5fa2, #e63e8c);
+    box-shadow: 0 0 14px rgba(255,95,162,0.55), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+  #partyBadge {
+    position: absolute; top: -4px; right: -4px; min-width: 16px; height: 16px;
+    border-radius: 8px; background: #ffd166; color: #1a1508; font-size: 10px;
+    font-weight: 700; display: none; align-items: center; justify-content: center;
+    padding: 0 3px; border: 1px solid rgba(0,0,0,0.2);
+  }
+  #partyBadge.visible { display: flex; }
+
+  #lobbyPartyBtn {
+    position:absolute; left:20px; bottom:24px; z-index:3;
+    background: rgba(24,25,18,0.55); border: 1px solid rgba(255,95,162,0.5); color: #f2ead9;
+    border-radius:12px; padding:14px 18px; font-weight:600; font-size:13px; cursor:pointer;
+    font-family: 'Poppins', sans-serif; display:flex; align-items:center; justify-content:center; gap:6px;
+    backdrop-filter: blur(8px);
+  }
+  #lobbyPartyBtn:active { filter: brightness(1.2); }
+
+  #lobbySelectedMapBtn {
+    position:absolute; right:20px; bottom:24px; z-index:3;
+    background: rgba(24,25,18,0.55); border: 1px solid rgba(255,209,102,0.5); color: #f2ead9;
+    border-radius:12px; padding:14px 18px; font-weight:600; font-size:13px; cursor:pointer;
+    font-family: 'Poppins', sans-serif; display:flex; align-items:center; justify-content:center; gap:6px;
+    backdrop-filter: blur(8px);
+  }
+  #lobbySelectedMapBtn:active { filter: brightness(1.2); }
+
+  #partyPanelBackdrop, #partyInviteBackdrop {
+    position: fixed; inset: 0; z-index: 400; background: rgba(0,0,0,0.55);
+    display: none; align-items: center; justify-content: center;
+  }
+  #partyPanelBackdrop.visible, #partyInviteBackdrop.visible { display: flex; }
+  .party-box {
+    width: 92%; max-width: 340px; max-height: 78vh; overflow-y: auto;
+    background: rgba(24,25,18,0.96); border: 1px solid rgba(255,95,162,0.3);
+    border-radius: 16px; padding: 18px; color: #f2ead9; font-family:'Poppins', sans-serif;
+  }
+  .party-box h3 { font-size: 15px; margin-bottom: 12px; display:flex; align-items:center; justify-content:space-between; }
+  .party-box h3 button { background:none; border:none; color:rgba(242,234,217,0.5); font-size:18px; cursor:pointer; }
+  .party-member-row {
+    display:flex; align-items:center; gap:10px; padding:9px 6px; border-radius:10px;
+    background: rgba(255,255,255,0.04); margin-bottom:7px;
+  }
+  .party-member-row .pm-name { flex:1; font-size:13.5px; font-weight:500; }
+  .party-member-row .pm-crown { font-size:13px; }
+  .party-member-row .pm-ready { font-size:11px; padding:3px 8px; border-radius:8px; }
+  .party-member-row .pm-ready.yes { background: rgba(46,213,115,0.2); color:#2ed573; }
+  .party-member-row .pm-ready.no { background: rgba(255,255,255,0.08); color:rgba(242,234,217,0.45); }
+  .party-member-row .pm-kick {
+    background:none; border:none; color:rgba(255,71,87,0.85); font-size:15px; cursor:pointer; padding:2px 4px;
+  }
+  .party-box button.party-action {
+    width:100%; padding:11px; border-radius:10px; border:none; font-weight:600; font-size:13.5px;
+    cursor:pointer; margin-top:8px; font-family:'Poppins', sans-serif;
+  }
+  .party-action.primary { background: linear-gradient(145deg,#ffd166,#e63e8c); color:#1a1508; }
+  .party-action.ready-on { background: linear-gradient(145deg,#3ddc7f,#1f9e52); color:#fff; }
+  .party-action.danger { background: rgba(255,71,87,0.16); color:#ff4757; border:1px solid rgba(255,71,87,0.35); }
+  .party-empty { text-align:center; color:rgba(242,234,217,0.4); font-size:12.5px; padding:14px 0; }
+
+  .invite-row {
+    display:flex; align-items:center; gap:10px; padding:9px 6px; border-radius:10px;
+    background: rgba(255,255,255,0.04); margin-bottom:7px;
+  }
+  .invite-row .inv-name { flex:1; font-size:13.5px; }
+  .invite-row button {
+    background: linear-gradient(145deg,#ffd166,#e63e8c); color:#1a1508; border:none;
+    border-radius:8px; padding:7px 12px; font-size:12px; font-weight:600; cursor:pointer;
+  }
+
+  #partyInviteToast {
+    position: fixed; top: 16px; left: 50%; transform: translateX(-50%) translateY(-140%);
+    z-index: 600; background: rgba(24,25,18,0.96); border: 1px solid rgba(255,95,162,0.4);
+    border-radius: 14px; padding: 12px 14px; color:#f2ead9; font-family:'Poppins', sans-serif;
+    display:flex; align-items:center; gap:10px; box-shadow:0 10px 30px rgba(0,0,0,0.5);
+    transition: transform 0.35s ease; max-width: 88vw;
+  }
+  #partyInviteToast.visible { transform: translateX(-50%) translateY(0); }
+  #partyInviteToast .pit-text { font-size:12.5px; flex:1; }
+  #partyInviteToast button {
+    border:none; border-radius:8px; padding:7px 10px; font-size:11.5px; font-weight:600; cursor:pointer;
+  }
+  #partyInviteToast .pit-accept { background: linear-gradient(145deg,#3ddc7f,#1f9e52); color:#fff; }
+  #partyInviteToast .pit-decline { background: rgba(255,255,255,0.08); color:#f2ead9; }
+
 
   /* ---------- 5 Tombol Ekspresi (foto+suara), kecil-kecil, deket tombol Lompat ---------- */
   #exprWheel {
@@ -390,6 +505,174 @@
   #skill2Btn { right: 88px; }
   #emoteBtn { right: 152px; }
   #emoteBtn:active { animation: none; }
+  #duelBtn { right: 216px; }
+
+  /* ---------- HUD: Coin / Diamond / Level ---------- */
+  #hudCurrency {
+    position: fixed; top: 60px; right: 14px; z-index: 30;
+    background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 14px; padding: 6px 10px; display: flex; flex-direction: column; gap: 4px;
+    font-family:'Poppins', sans-serif; pointer-events: none;
+  }
+  #hudCurrency .hud-row { display:flex; align-items:center; gap:5px; font-size:11.5px; font-weight:600; color:#fff; white-space:nowrap; }
+  #hudCurrency .hud-lvl {
+    background: linear-gradient(145deg,#ffd166,#e63e8c); color:#1a1508; border-radius:8px;
+    padding:1px 6px; font-size:10.5px; font-weight:700;
+  }
+  #hudExpBarWrap { width:100%; height:4px; background:rgba(255,255,255,0.15); border-radius:3px; overflow:hidden; margin-top:1px; }
+  #hudExpBar { height:100%; background: linear-gradient(90deg,#3ddc7f,#1f9e52); width:0%; transition:width 0.3s; }
+
+  /* ---------- Lobby quick-menu row ---------- */
+  #lobbyQuickMenu { position:fixed; bottom:22px; left:50%; transform:translateX(-50%); z-index:30; display:flex; gap:10px; }
+  #lobbyQuickMenu button {
+    width:46px; height:46px; border-radius:50%; border:1px solid rgba(255,255,255,0.22);
+    background: rgba(20,22,15,0.7); color:#fff; font-size:19px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; backdrop-filter: blur(6px);
+    box-shadow:0 3px 10px rgba(0,0,0,0.4);
+  }
+  #lobbyQuickMenu button:active { filter:brightness(1.3); transform:scale(0.94); }
+  #lobbyQuickMenu .lqm-label {
+    position:absolute; bottom:-15px; left:50%; transform:translateX(-50%);
+    font-size:8.5px; opacity:0.75; white-space:nowrap;
+  }
+  #lobbyQuickMenu button { position:relative; }
+
+  /* ---------- Generic modal panel (Shop / Leaderboard / Achievement / Daily / Spin) ---------- */
+  .panel-backdrop {
+    position: fixed; inset: 0; z-index: 450; background: rgba(0,0,0,0.6);
+    display: none; align-items: center; justify-content: center; padding: 16px;
+  }
+  .panel-backdrop.visible { display: flex; }
+  .panel-box {
+    width: 100%; max-width: 380px; max-height: 82vh; overflow-y: auto;
+    background: rgba(24,25,18,0.97); border: 1px solid rgba(255,209,102,0.3);
+    border-radius: 16px; padding: 18px; color: #f2ead9; font-family:'Poppins', sans-serif;
+  }
+  .panel-box h3 { font-size: 16px; margin-bottom: 4px; display:flex; align-items:center; justify-content:space-between; }
+  .panel-box h3 button { background:none; border:none; color:rgba(242,234,217,0.5); font-size:19px; cursor:pointer; }
+  .panel-sub { font-size:11.5px; opacity:0.6; margin-bottom:14px; }
+
+  /* Shop */
+  .shop-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+  .shop-item {
+    background: rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px;
+    padding:10px; text-align:center;
+  }
+  .shop-item .si-icon { font-size:26px; margin-bottom:4px; }
+  .shop-item .si-name { font-size:11.5px; font-weight:600; margin-bottom:2px; min-height:28px; }
+  .shop-item .si-price { font-size:11px; opacity:0.75; margin-bottom:6px; }
+  .shop-item button {
+    width:100%; padding:7px; border-radius:8px; border:none; font-size:11px; font-weight:700; cursor:pointer;
+    font-family:'Poppins', sans-serif;
+  }
+  .shop-item button.buy { background: linear-gradient(145deg,#ffd166,#e63e8c); color:#1a1508; }
+  .shop-item button.equip { background: rgba(255,255,255,0.1); color:#f2ead9; }
+  .shop-item button.equipped { background: rgba(46,213,115,0.22); color:#2ed573; }
+
+  /* Leaderboard */
+  .lb-row { display:flex; align-items:center; gap:10px; padding:8px 6px; border-radius:10px; background:rgba(255,255,255,0.04); margin-bottom:6px; }
+  .lb-rank { width:22px; font-weight:700; font-size:13px; text-align:center; opacity:0.8; }
+  .lb-row img, .lb-row .lb-fallback { width:32px; height:32px; border-radius:50%; object-fit:cover; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-size:14px; }
+  .lb-info { flex:1; }
+  .lb-name { font-size:13px; font-weight:600; }
+  .lb-sub { font-size:10.5px; opacity:0.6; }
+
+  /* Achievement */
+  .ach-row { display:flex; align-items:center; gap:10px; padding:9px 6px; border-radius:10px; background:rgba(255,255,255,0.04); margin-bottom:6px; }
+  .ach-row.unlocked { background: rgba(46,213,115,0.1); }
+  .ach-icon { font-size:22px; width:32px; text-align:center; opacity:0.5; }
+  .ach-row.unlocked .ach-icon { opacity:1; }
+  .ach-info { flex:1; }
+  .ach-name { font-size:13px; font-weight:600; }
+  .ach-desc { font-size:10.5px; opacity:0.6; }
+  .ach-reward { font-size:10.5px; color:#ffd166; font-weight:600; }
+
+  /* Daily Reward */
+  .daily-grid { display:grid; grid-template-columns: repeat(4,1fr); gap:8px; margin-bottom:14px; }
+  .daily-day { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:8px 4px; text-align:center; font-size:10.5px; }
+  .daily-day.claimed { background:rgba(46,213,115,0.15); border-color:rgba(46,213,115,0.4); }
+  .daily-day.today { border-color:#ffd166; box-shadow:0 0 8px rgba(255,209,102,0.4); }
+  .daily-day .dd-icon { font-size:18px; display:block; margin-bottom:3px; }
+
+  /* Lucky Spin */
+  #spinWheelWrap { display:flex; flex-direction:column; align-items:center; gap:14px; padding:6px 0 4px; }
+  #spinWheel {
+    width:200px; height:200px; border-radius:50%; position:relative;
+    background: conic-gradient(#ffd166 0deg 45deg, #e63e8c 45deg 90deg, #4a90e2 90deg 135deg, #3ddc7f 135deg 180deg, #ffd166 180deg 225deg, #e63e8c 225deg 270deg, #4a90e2 270deg 315deg, #3ddc7f 315deg 360deg);
+    border: 4px solid rgba(255,255,255,0.25); transition: transform 3.2s cubic-bezier(0.15,0.7,0.2,1);
+  }
+  #spinWheelPointer { position:absolute; top:-6px; left:50%; transform:translateX(-50%); font-size:20px; z-index:2; }
+  .spin-labels { position:absolute; inset:0; }
+  .spin-labels span { position:absolute; font-size:10px; font-weight:700; color:#1a1508; }
+
+  /* Map selection */
+  .map-row { display:flex; align-items:center; gap:10px; padding:10px 8px; border-radius:10px; background:rgba(255,255,255,0.04); margin-bottom:7px; }
+  .map-row.full { opacity:0.55; }
+  .map-row .mr-icon { font-size:24px; width:32px; text-align:center; }
+  .map-row .mr-info { flex:1; }
+  .map-row .mr-name { font-size:13px; font-weight:600; }
+  .map-row .mr-sub { font-size:10.5px; opacity:0.6; }
+  .map-row button {
+    background: linear-gradient(145deg,#ffd166,#e63e8c); color:#1a1508; border:none;
+    border-radius:8px; padding:8px 14px; font-size:11.5px; font-weight:700; cursor:pointer;
+  }
+  .map-row.selected { border:1px solid #ffd166; background:rgba(255,209,102,0.1); }
+
+  /* Generic panel action button */
+  .panel-action {
+    width:100%; padding:11px; border-radius:10px; border:none; font-weight:700; font-size:13.5px;
+    cursor:pointer; margin-top:10px; font-family:'Poppins', sans-serif;
+    background: linear-gradient(145deg,#ffd166,#e63e8c); color:#1a1508;
+  }
+  .panel-action:disabled { opacity:0.4; cursor:not-allowed; filter:grayscale(0.4); }
+
+  /* Duel */
+  #duelInviteToast {
+    position: fixed; top: 16px; left: 50%; transform: translateX(-50%) translateY(-140%);
+    z-index: 620; background: rgba(24,25,18,0.96); border: 1px solid rgba(255,71,87,0.5);
+    border-radius: 14px; padding: 12px 14px; color:#f2ead9; font-family:'Poppins', sans-serif;
+    display:flex; align-items:center; gap:10px; box-shadow:0 10px 30px rgba(0,0,0,0.5);
+    transition: transform 0.35s ease; max-width: 88vw;
+  }
+  #duelInviteToast.visible { transform: translateX(-50%) translateY(0); }
+  #duelInviteToast .dit-text { font-size:12.5px; flex:1; }
+  #duelInviteToast button { border:none; border-radius:8px; padding:7px 10px; font-size:11.5px; font-weight:600; cursor:pointer; }
+  #duelInviteToast .dit-accept { background: linear-gradient(145deg,#3ddc7f,#1f9e52); color:#fff; }
+  #duelInviteToast .dit-decline { background: rgba(255,255,255,0.08); color:#f2ead9; }
+
+  #duelBattleBackdrop {
+    position: fixed; inset:0; z-index: 700; background: rgba(0,0,0,0.75);
+    display:none; align-items:center; justify-content:center; padding:16px;
+  }
+  #duelBattleBackdrop.visible { display:flex; }
+  .duel-box { width:100%; max-width:360px; background:rgba(20,10,10,0.97); border:1px solid rgba(255,71,87,0.4); border-radius:18px; padding:20px; color:#f2ead9; font-family:'Poppins', sans-serif; text-align:center; }
+  .duel-vs { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  .duel-side { flex:1; }
+  .duel-side .ds-name { font-size:12.5px; font-weight:700; margin-bottom:6px; }
+  .duel-hp-wrap { height:12px; background:rgba(255,255,255,0.12); border-radius:8px; overflow:hidden; }
+  .duel-hp-bar { height:100%; background: linear-gradient(90deg,#3ddc7f,#1f9e52); width:100%; transition: width 0.25s; }
+  .duel-hp-bar.enemy { background: linear-gradient(90deg,#ff6b6b,#e63e2c); }
+  .duel-vs-mark { font-size:18px; font-weight:800; color:#ff4757; }
+  #duelStatusText { font-size:13px; font-weight:600; margin-bottom:12px; min-height:18px; }
+  #duelTimerText { font-size:11px; opacity:0.65; margin-bottom:10px; }
+  #duelAttackBtn {
+    width:110px; height:110px; border-radius:50%; border:3px solid rgba(255,255,255,0.3);
+    background: radial-gradient(circle at 35% 30%, #ff8a8a, #d62828);
+    color:#fff; font-size:16px; font-weight:800; cursor:pointer;
+    box-shadow:0 6px 20px rgba(214,40,40,0.5);
+  }
+  #duelAttackBtn:active { transform:scale(0.92); filter:brightness(1.15); }
+  #duelAttackBtn:disabled { opacity:0.35; cursor:not-allowed; }
+
+  /* Achievement/coin toast */
+  #genericToast {
+    position: fixed; top: 16px; left: 50%; transform: translateX(-50%) translateY(-140%);
+    z-index: 650; background: rgba(24,25,18,0.96); border: 1px solid rgba(255,209,102,0.5);
+    border-radius: 14px; padding: 10px 16px; color:#f2ead9; font-family:'Poppins', sans-serif;
+    font-size:12.5px; font-weight:600; box-shadow:0 10px 30px rgba(0,0,0,0.5);
+    transition: transform 0.35s ease; max-width: 88vw; text-align:center;
+  }
+  #genericToast.visible { transform: translateX(-50%) translateY(0); }
 
   /* ---------- Chat Modal Overlay ---------- */
   #chatModal {
@@ -412,22 +695,15 @@
     padding: 10px; font-weight: 600; cursor: pointer; font-size: 14px;
   }
   .chat-box button:active { filter:brightness(0.9); }
+  .sticker-btn {
+    width:38px; height:38px; border-radius:8px; border:1px solid rgba(255,255,255,0.2);
+    background:rgba(255,255,255,0.08); font-size:19px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .sticker-btn:active { filter:brightness(1.3); transform:scale(0.92); }
 
-  /* ---------- Rotate device overlay ---------- */
-  #rotateOverlay {
-    display:none;
-    position:fixed; inset:0; z-index:9999;
-    background:#111; color:#fff;
-    flex-direction:column; align-items:center; justify-content:center;
-    gap:14px; text-align:center; padding:20px;
-  }
-  .rotate-icon { font-size:52px; animation: rotatePhone 1.6s ease-in-out infinite; }
-  @keyframes rotatePhone { 0%,100% { transform:rotate(0deg); } 50% { transform:rotate(90deg); } }
-  #rotateOverlay p { font-size:15px; opacity:0.85; max-width:280px; }
-  @media (orientation: portrait) and (max-width: 950px) {
-    #rotateOverlay { display:flex; }
-    #gameContainer, #joystickBase, #jumpBtn, #chatBtn, #gearBtn, #micBtn, #exprWheel, #skill1Btn, #skill2Btn, #emoteBtn, #lobbyOverlay, #fsHint, #mpStatus, #timeBadge { visibility:hidden; }
-  }
+  /* ---------- (Layar "putar HP" dihapus — game langsung tampil & mencoba
+       mengunci mode lanskap otomatis di background, tanpa memblokir pemain) ---------- */
 
   /* ---------- Settings gear ---------- */
   #gearBtn {
@@ -514,8 +790,8 @@
 <body>
 <!-- ====== Loading / Splash Screen ====== -->
 <div id="loadingScreen">
-  <div class="loading-mark">🌾</div>
-  <div class="loading-title">PADANG RUMPUT</div>
+  <div class="loading-mark">😂</div>
+  <div class="loading-title">MEMEVERSE ONLINE</div>
   <div class="loading-bar-track"><div class="loading-bar-fill"></div></div>
 </div>
 <script>
@@ -557,18 +833,12 @@
   })();
 </script>
 
-<div id="rotateOverlay">
-  <div class="rotate-icon">📱</div>
-  <div style="font-size:17px; font-weight:600;">Putar HP kamu ya</div>
-  <p>Permainan ini dimainkan dalam mode lanskap (miring). Putar layar HP untuk mulai bermain.</p>
-</div>
-
-<!-- ====== Login: masuk pakai akun Google agar tiap pemain punya identitas ====== -->
+<!-- ====== Login: Google atau Email/Password, tiap pemain punya identitas ====== -->
 <div id="loginOverlay">
   <div class="lobby-box">
-    <div class="lobby-mark">🌾</div>
-    <h1>Padang Rumput</h1>
-    <p>Masuk dulu pakai akun Google untuk mulai bermain</p>
+    <div class="lobby-mark">😂</div>
+    <h1>Memeverse Online</h1>
+    <p>Masuk untuk mulai bermain</p>
     <button id="googleLoginBtn" class="google-btn">
       <svg width="18" height="18" viewBox="0 0 48 48" style="margin-right:9px; flex-shrink:0;">
         <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 32.5 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 6 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/>
@@ -578,6 +848,19 @@
       </svg>
       Masuk dengan Google
     </button>
+
+    <div style="display:flex; align-items:center; gap:10px; margin:16px 0 12px;">
+      <div style="flex:1; height:1px; background:rgba(255,255,255,0.12);"></div>
+      <span style="color:rgba(242,234,217,0.35); font-size:11px;">atau</span>
+      <div style="flex:1; height:1px; background:rgba(255,255,255,0.12);"></div>
+    </div>
+
+    <input id="emailInput" type="email" placeholder="Email" autocomplete="email" />
+    <input id="passwordInput" type="password" placeholder="Password" autocomplete="current-password" />
+
+    <button id="emailLoginBtn" class="google-btn" style="background:linear-gradient(145deg,#ffd166,#e63e8c); color:#1a1508;">Masuk</button>
+    <button id="emailRegisterBtn" class="google-btn" style="background:transparent; border:1px solid rgba(216,181,102,0.4); color:#f2ead9; box-shadow:none; margin-top:8px;">Daftar Akun Baru</button>
+
     <div id="loginStatus"></div>
   </div>
 </div>
@@ -588,7 +871,7 @@
   <div id="lobbyNamesBg"></div>
 
   <div class="lobby-topbar">
-    <div class="lobby-brand"><span class="lobby-brand-mark">🌾</span> PADANG RUMPUT</div>
+    <div class="lobby-brand"><span class="lobby-brand-mark">😂</span> MEMEVERSE ONLINE</div>
     <div id="lobbyOnlineCount" class="lobby-online-pill">Menghubungkan...</div>
   </div>
 
@@ -596,7 +879,7 @@
     <div class="lobby-char-wrap">
       <div class="lobby-char-ring"></div>
       <img id="lobbyCharAvatar" class="lobby-char-breathe" alt="Avatar">
-      <div id="lobbyCharFallback" class="lobby-char-fallback lobby-char-breathe">🌾</div>
+      <div id="lobbyCharFallback" class="lobby-char-fallback lobby-char-breathe">😂</div>
     </div>
     <input type="text" id="lobbyNameInput" class="lobby-nickname-input" placeholder="Nama kamu" maxlength="16">
   </div>
@@ -615,6 +898,16 @@
   </div>
 
   <button id="lobbyPlayBtn" class="lobby-start-btn">MULAI <span class="lobby-start-arrow">▶</span></button>
+  <button id="lobbyPartyBtn" type="button">👥 <span id="lobbyPartyBtnText">Party</span></button>
+  <button id="lobbySelectedMapBtn" type="button">🗺️ <span id="lobbySelectedMapText">Meme City</span></button>
+
+  <div id="lobbyQuickMenu">
+    <button id="lobbyShopBtn" title="Shop">🛒<span class="lqm-label">Shop</span></button>
+    <button id="lobbyLeaderboardBtn" title="Leaderboard">🏆<span class="lqm-label">Ranking</span></button>
+    <button id="lobbyAchievementBtn" title="Achievement">🏅<span class="lqm-label">Misi</span></button>
+    <button id="lobbyDailyBtn" title="Daily Reward">🎁<span class="lqm-label">Harian</span></button>
+    <button id="lobbySpinBtn" title="Lucky Spin">🎡<span class="lqm-label">Spin</span></button>
+  </div>
 </div>
 
 <div id="gameContainer">
@@ -623,6 +916,7 @@
   <!-- Mic & Chat Buttons near Minimap -->
   <button id="micBtn" title="Mikrofon">🎤</button>
   <button id="chatBtn" title="Chat">✉️</button>
+  <button id="partyBtn" title="Party">👥<span id="partyBadge"></span></button>
 
   <!-- Virtual Joystick & Action Buttons -->
   <div id="joystickBase">
@@ -641,19 +935,148 @@
 
   <button id="skill1Btn" class="skillBtn" title="Skill 1: Bakar (Admin: Kick)" style="display:none;">🔥</button>
   <button id="skill2Btn" class="skillBtn" title="Skill 2: Gamper">🫱</button>
-  <button id="emoteBtn" class="skillBtn" title="Emote: Goyang Rumput">🌾</button>
+  <button id="emoteBtn" class="skillBtn" title="Emote: Joget Meme">😂</button>
+  <button id="duelBtn" class="skillBtn" title="Ajak Duel pemain terdekat">⚔️</button>
 
   <button id="fsHint" title="Layar penuh">⛶</button>
   <div id="mpStatus"><span class="dot"></span><span id="mpStatusText">…</span></div>
   <div id="timeBadge"><span id="timeBadgeIcon">🌅</span><span id="timeBadgeText">Pagi</span></div>
+
+  <div id="hudCurrency">
+    <div class="hud-row"><span class="hud-lvl" id="hudLevel">Lv.1</span></div>
+    <div id="hudExpBarWrap"><div id="hudExpBar"></div></div>
+    <div class="hud-row">🪙 <span id="hudCoin">0</span></div>
+    <div class="hud-row">💎 <span id="hudDiamond">0</span></div>
+  </div>
 </div>
 
 <!-- Chat Input Modal -->
 <div id="chatModal">
   <div class="chat-box">
     <h3 style="font-size:15px; margin:0; color:#fff;">Kirim Pesan Chat (Maks 50 Karakter)</h3>
+    <div id="stickerRow" style="display:none; gap:6px; flex-wrap:wrap;"></div>
     <input type="text" id="chatInput" placeholder="Ketik pesan..." maxlength="50">
     <button id="sendChatBtn">Kirim</button>
+  </div>
+</div>
+
+<!-- Party Panel Modal -->
+<div id="partyPanelBackdrop">
+  <div class="party-box">
+    <h3>👥 Party <button id="closePartyPanelBtn">✕</button></h3>
+    <div id="partyMemberList"></div>
+    <button id="partyInviteOpenBtn" class="party-action primary" style="display:none;">+ Undang Pemain</button>
+    <button id="partyCreateBtn" class="party-action primary">Buat Party</button>
+    <button id="partyReadyBtn" class="party-action" style="display:none;">Siap</button>
+    <button id="partyLeaveBtn" class="party-action danger" style="display:none;">Keluar dari Party</button>
+  </div>
+</div>
+
+<!-- Party Invite List Modal -->
+<div id="partyInviteBackdrop">
+  <div class="party-box">
+    <h3>Undang Pemain <button id="closePartyInviteBtn">✕</button></h3>
+    <div id="partyInviteList"></div>
+  </div>
+</div>
+
+<!-- Party Invite Toast (undangan masuk) -->
+<div id="partyInviteToast">
+  <div class="pit-text" id="partyInviteToastText"></div>
+  <button class="pit-accept" id="partyInviteAcceptBtn">Gabung</button>
+  <button class="pit-decline" id="partyInviteDeclineBtn">Tolak</button>
+</div>
+
+<!-- Duel Incoming Toast -->
+<div id="duelInviteToast">
+  <div class="dit-text" id="duelInviteToastText"></div>
+  <button class="dit-accept" id="duelInviteAcceptBtn">Terima</button>
+  <button class="dit-decline" id="duelInviteDeclineBtn">Tolak</button>
+</div>
+
+<!-- Duel Battle Modal -->
+<div id="duelBattleBackdrop">
+  <div class="duel-box">
+    <h3 style="font-size:15px; margin-bottom:12px;">⚔️ Duel</h3>
+    <div class="duel-vs">
+      <div class="duel-side">
+        <div class="ds-name" id="duelMeName">Kamu</div>
+        <div class="duel-hp-wrap"><div class="duel-hp-bar" id="duelMeHp"></div></div>
+      </div>
+      <div class="duel-vs-mark">VS</div>
+      <div class="duel-side">
+        <div class="ds-name" id="duelEnemyName">Lawan</div>
+        <div class="duel-hp-wrap"><div class="duel-hp-bar enemy" id="duelEnemyHp"></div></div>
+      </div>
+    </div>
+    <div id="duelStatusText">Bersiap...</div>
+    <div id="duelTimerText"></div>
+    <button id="duelAttackBtn">PUKUL!</button>
+  </div>
+</div>
+
+<!-- Generic toast (achievement / reward) -->
+<div id="genericToast"></div>
+
+<!-- Map Selection Panel -->
+<div id="mapBackdrop" class="panel-backdrop">
+  <div class="panel-box">
+    <h3>🗺️ Pilih Map <button id="closeMapBtn">✕</button></h3>
+    <div class="panel-sub">Kalau map penuh, kamu otomatis dipindah ke instance baru.</div>
+    <div id="mapList"></div>
+  </div>
+</div>
+
+<!-- Shop Panel -->
+<div id="shopBackdrop" class="panel-backdrop">
+  <div class="panel-box">
+    <h3>🛒 Shop <button id="closeShopBtn">✕</button></h3>
+    <div class="panel-sub">Semua item kosmetik, tidak menambah kekuatan.</div>
+    <div class="shop-grid" id="shopGrid"></div>
+  </div>
+</div>
+
+<!-- Leaderboard Panel -->
+<div id="leaderboardBackdrop" class="panel-backdrop">
+  <div class="panel-box">
+    <h3>🏆 Leaderboard <button id="closeLeaderboardBtn">✕</button></h3>
+    <div class="panel-sub">20 pemain dengan level & EXP tertinggi.</div>
+    <div id="leaderboardList"></div>
+  </div>
+</div>
+
+<!-- Achievement Panel -->
+<div id="achievementBackdrop" class="panel-backdrop">
+  <div class="panel-box">
+    <h3>🏅 Achievement <button id="closeAchievementBtn">✕</button></h3>
+    <div class="panel-sub">Selesaikan misi untuk hadiah koin.</div>
+    <div id="achievementList"></div>
+  </div>
+</div>
+
+<!-- Daily Reward Panel -->
+<div id="dailyBackdrop" class="panel-backdrop">
+  <div class="panel-box">
+    <h3>🎁 Daily Reward <button id="closeDailyBtn">✕</button></h3>
+    <div class="panel-sub">Login tiap hari, hadiah makin besar sampai hari ke-7.</div>
+    <div class="daily-grid" id="dailyGrid"></div>
+    <button id="claimDailyBtn" class="panel-action">Klaim Hadiah</button>
+  </div>
+</div>
+
+<!-- Lucky Spin Panel -->
+<div id="spinBackdrop" class="panel-backdrop">
+  <div class="panel-box">
+    <h3>🎡 Lucky Spin <button id="closeSpinBtn">✕</button></h3>
+    <div class="panel-sub">50 koin per putaran. Menangkan koin, diamond, atau EXP!</div>
+    <div id="spinWheelWrap">
+      <div style="position:relative;">
+        <div id="spinWheelPointer">🔻</div>
+        <div id="spinWheel"></div>
+      </div>
+      <div id="spinResultText" style="font-size:12.5px; min-height:16px;"></div>
+      <button id="doSpinBtn" class="panel-action" style="margin-top:0;">Putar (50 🪙)</button>
+    </div>
   </div>
 </div>
 
@@ -662,6 +1085,27 @@
 <div id="settingsPanel">
   <button id="closePanelBtn">✕</button>
   <h2>Kustomisasi</h2>
+
+  <h3>Menu</h3>
+  <div class="field" style="display:flex; flex-wrap:wrap; gap:8px;">
+    <button id="gearShopBtn" class="fileBtn" style="width:auto; flex:1;">🛒 Shop</button>
+    <button id="gearLeaderboardBtn" class="fileBtn" style="width:auto; flex:1;">🏆 Ranking</button>
+    <button id="gearAchievementBtn" class="fileBtn" style="width:auto; flex:1;">🏅 Misi</button>
+    <button id="gearDailyBtn" class="fileBtn" style="width:auto; flex:1;">🎁 Harian</button>
+    <button id="gearSpinBtn" class="fileBtn" style="width:auto; flex:1;">🎡 Spin</button>
+  </div>
+
+  <div class="field" id="creatorStudioField" style="display:none;">
+    <h3 style="margin-top:0;">🎨 Creator Studio</h3>
+    <div style="font-size:11px; opacity:0.7; margin-bottom:8px;">Kamu punya Creator Pass! Pilih warna aura bebas untuk karaktermu.</div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <button class="fileBtn creatorAuraBtn" data-color="#4a90e2" style="width:auto; flex:1; background:#4a90e2;">Biru</button>
+      <button class="fileBtn creatorAuraBtn" data-color="#ff4757" style="width:auto; flex:1; background:#ff4757;">Merah</button>
+      <button class="fileBtn creatorAuraBtn" data-color="#3ddc7f" style="width:auto; flex:1; background:#3ddc7f;">Hijau</button>
+      <button class="fileBtn creatorAuraBtn" data-color="#ffd166" style="width:auto; flex:1; background:#ffd166; color:#1a1508;">Emas</button>
+      <button class="fileBtn creatorAuraBtn" data-color="" style="width:auto; flex:1;">Matikan</button>
+    </div>
+  </div>
 
   <h3>Foto Karaktermu (maks 5 ekspresi)</h3>
   <div class="field expr-field" data-expr="normal">
@@ -734,23 +1178,49 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-storage-compat.js"></script>
 
 <script>
 /* =====================================================================
-   KONFIGURASI FIREBASE
-   Ganti nilai-nilai di bawah ini dengan config project Firebase kamu
-   sendiri (Firebase Console → Project Settings → General → SDK setup).
-   Pastikan Realtime Database sudah dibuat dan rule-nya:
-   {
-     "rules": {
-       "players": { ".read": "auth != null", ".write": "auth != null" },
-       "kicked":  { ".read": "auth != null", ".write": "auth != null" },
-       "effects": { ".read": "auth != null", ".write": "auth != null" },
-       "signals": { ".read": "auth != null", ".write": "auth != null" },
-       "pushes":  { ".read": "auth != null", ".write": "auth != null" }
-     }
-   }
-   Dan Authentication → Sign-in method → Anonymous harus di-Enable.
+   KONFIGURASI FIREBASE — checklist setup di Firebase Console:
+
+   1) Authentication → Sign-in method: Enable "Google" dan "Email/Password".
+   2) Realtime Database → buat database, lalu pasang rules:
+      {
+        "rules": {
+          "players": { ".read": "auth != null", ".write": "auth != null" },
+          "kicked":  { ".read": "auth != null", ".write": "auth != null" },
+          "effects": { ".read": "auth != null", ".write": "auth != null" },
+          "signals": { ".read": "auth != null", ".write": "auth != null" },
+          "pushes":  { ".read": "auth != null", ".write": "auth != null" },
+          "parties": { ".read": "auth != null", ".write": "auth != null" },
+          "partyInvites": { ".read": "auth != null", ".write": "auth != null" }
+        }
+      }
+   3) Firestore Database → buat database (mode production), lalu pasang rules:
+      rules_version = '2';
+      service cloud.firestore {
+        match /databases/{database}/documents {
+          match /players/{uid} {
+            allow read: if request.auth != null;
+            allow write: if request.auth != null && request.auth.uid == uid;
+          }
+        }
+      }
+   4) Storage → buat bucket, lalu pasang rules:
+      rules_version = '2';
+      service firebase.storage {
+        match /b/{bucket}/o {
+          match /uploads/avatar/{uid}/{fileName} {
+            allow read: if true;
+            allow write: if request.auth != null && request.auth.uid == uid
+                         && request.resource.size < 2 * 1024 * 1024;
+          }
+        }
+      }
+   5) Ganti nilai firebaseConfig di bawah dengan punya project kamu sendiri
+      (Firebase Console → Project Settings → General → SDK setup).
    ===================================================================== */
 const firebaseConfig = {
   apiKey: "AIzaSyAFeE_-TxXEG5BUguMUyIrs4wpc-DibIHo",
@@ -764,6 +1234,8 @@ const firebaseConfig = {
 
 let mpEnabled = true;
 let db = null;
+let firestore = null;
+let storage = null;
 let playersRef = null;
 let myPlayerRef = null;
 let authReady = false;
@@ -771,6 +1243,8 @@ let isKicked = false;
 let kickedRef = null;
 let effectsRef = null;
 let pushesRef = null;
+let partiesRef = null;
+let partyInvitesRef = null;
 
 // ---------- Penentu layar awal: login vs lobby (perbaikan bug "stuck di login") ----------
 // Sebelumnya splash-screen dan status-login Firebase sama-sama merebut hak untuk
@@ -807,13 +1281,183 @@ setTimeout(() => { if (!__authChecked) { __authChecked = true; initialScreenDeci
 try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.database();
+  firestore = firebase.firestore();
+  storage = firebase.storage();
   playersRef = db.ref('players');
   kickedRef = db.ref('kicked');
   effectsRef = db.ref('effects');
   pushesRef = db.ref('pushes');
+  partiesRef = db.ref('parties');
+  partyInvitesRef = db.ref('partyInvites');
 } catch (err) {
   console.error('Gagal inisialisasi Firebase:', err);
   mpEnabled = false;
+}
+
+// ---------- Profil akun permanen (Firestore) ----------
+// Data akun pemain (koin, diamond, level, exp, teman, inventory) disimpan di
+// Firestore, koleksi "players", satu dokumen per UID. Ini terpisah dari
+// Realtime Database ("players" di atas) yang cuma dipakai untuk posisi/status
+// pemain yang sedang online SEKARANG (real-time, sementara).
+async function ensurePlayerProfile(user) {
+  if (!firestore || !user) return;
+  const ref = firestore.collection('players').doc(user.uid);
+  try {
+    const snap = await ref.get();
+    if (!snap.exists) {
+      // Akun baru: buat dokumen dengan nilai default
+      await ref.set({
+        uid: user.uid,
+        name: user.displayName || player.name || 'Petualang',
+        email: user.email || null,
+        photoURL: user.photoURL || null,
+        coin: 100,
+        diamond: 10,
+        level: 1,
+        exp: 0,
+        friends: [],
+        achievements: [],
+        inventory: [],
+        nameColor: null,
+        activeAura: null,
+        activeFrame: null,
+        creatorPass: false,
+        battlePass: false,
+        duelWins: 0,
+        duelLosses: 0,
+        dailyStreak: 0,
+        lastDailyClaim: null,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      Object.assign(player, {
+        coin: 100, diamond: 10, level: 1, exp: 0, achievements: [], inventory: [],
+        nameColor: null, activeAura: null, activeFrame: null, creatorPass: false, battlePass: false,
+        duelWins: 0, duelLosses: 0, dailyStreak: 0, lastDailyClaim: null
+      });
+      unlockAchievement('ach_first_login', true);
+    } else {
+      // Akun lama: ambil data tersimpan, lalu update waktu login terakhir
+      const data = snap.data();
+      Object.assign(player, {
+        coin: data.coin || 0,
+        diamond: data.diamond || 0,
+        level: data.level || 1,
+        exp: data.exp || 0,
+        achievements: data.achievements || [],
+        inventory: data.inventory || [],
+        nameColor: data.nameColor || null,
+        activeAura: data.activeAura || null,
+        activeFrame: data.activeFrame || null,
+        creatorPass: data.creatorPass || false,
+        battlePass: data.battlePass || false,
+        duelWins: data.duelWins || 0,
+        duelLosses: data.duelLosses || 0,
+        dailyStreak: data.dailyStreak || 0,
+        lastDailyClaim: data.lastDailyClaim || null
+      });
+      await ref.update({
+        name: user.displayName || player.name || data.name,
+        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+  } catch (err) {
+    console.error('Gagal sinkron profil Firestore:', err);
+  }
+  updateHudCurrency();
+  refreshCreatorStudioVisibility();
+}
+
+// ---------- Helper simpan field profil ke Firestore ----------
+function saveProfileFields(fields) {
+  if (!firestore || !__authUser) return;
+  firestore.collection('players').doc(__authUser.uid).set(fields, { merge: true }).catch(err => {
+    console.error('Gagal simpan profil:', err);
+  });
+}
+
+// ---------- HUD Coin / Diamond / Level ----------
+function expNeeded(level) { return level * 100; }
+function updateHudCurrency() {
+  const lvlEl = document.getElementById('hudLevel');
+  const coinEl = document.getElementById('hudCoin');
+  const diaEl = document.getElementById('hudDiamond');
+  const barEl = document.getElementById('hudExpBar');
+  if (lvlEl) lvlEl.textContent = 'Lv.' + (player.level || 1);
+  if (coinEl) coinEl.textContent = (player.coin || 0);
+  if (diaEl) diaEl.textContent = (player.diamond || 0);
+  if (barEl) {
+    const need = expNeeded(player.level || 1);
+    const pct = Math.max(0, Math.min(100, ((player.exp || 0) / need) * 100));
+    barEl.style.width = pct + '%';
+  }
+}
+
+// ---------- Tambah / kurangi koin & diamond ----------
+function addCurrency(coinDelta, diamondDelta) {
+  player.coin = Math.max(0, (player.coin || 0) + (coinDelta || 0));
+  player.diamond = Math.max(0, (player.diamond || 0) + (diamondDelta || 0));
+  saveProfileFields({ coin: player.coin, diamond: player.diamond });
+  updateHudCurrency();
+}
+
+// ---------- Tambah EXP + cek naik level ----------
+function addExp(amount) {
+  player.exp = (player.exp || 0) + amount;
+  let leveledUp = false;
+  while (player.exp >= expNeeded(player.level || 1)) {
+    player.exp -= expNeeded(player.level || 1);
+    player.level = (player.level || 1) + 1;
+    leveledUp = true;
+  }
+  saveProfileFields({ exp: player.exp, level: player.level });
+  updateHudCurrency();
+  if (leveledUp) {
+    showToast('⭐ Naik ke Level ' + player.level + '!');
+    if (player.level >= 5) unlockAchievement('ach_level5');
+  }
+}
+
+// ---------- Toast generik (achievement / reward) ----------
+let __toastTimer = null;
+function showToast(text) {
+  const el = document.getElementById('genericToast');
+  if (!el) return;
+  el.textContent = text;
+  el.classList.add('visible');
+  clearTimeout(__toastTimer);
+  __toastTimer = setTimeout(() => el.classList.remove('visible'), 2600);
+}
+
+// ---------- Upload avatar ke Firebase Storage ----------
+// dataURL (base64 hasil kompresi foto) diunggah ke Storage supaya tidak
+// membebani Realtime Database, lalu URL hasil upload disimpan di Firestore
+// pada dokumen profil pemain (folder uploads/avatar/{uid}/{ekspresi}.jpg).
+function dataURLToBlob(dataURL) {
+  const [meta, b64] = dataURL.split(',');
+  const mime = meta.match(/:(.*?);/)[1];
+  const bin = atob(b64);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+async function uploadAvatarToStorage(uid, exprKey, dataURL) {
+  if (!storage || !uid) return null;
+  try {
+    const blob = dataURLToBlob(dataURL);
+    const ref = storage.ref().child(`uploads/avatar/${uid}/${exprKey}.jpg`);
+    await ref.put(blob, { contentType: 'image/jpeg' });
+    const url = await ref.getDownloadURL();
+    if (firestore) {
+      firestore.collection('players').doc(uid)
+        .set({ avatars: { [exprKey]: url } }, { merge: true })
+        .catch(err => console.error('Gagal simpan URL avatar ke Firestore:', err));
+    }
+    return url;
+  } catch (err) {
+    console.error('Gagal upload avatar ke Storage:', err);
+    return null;
+  }
 }
 
 // ---------- Fullscreen agresif (poin 5) ----------
@@ -867,6 +1511,52 @@ let isAdmin = false;
 // Admin (kode di atas cocok) selalu boleh masuk walau room sudah penuh.
 const MAX_PLAYERS = 5;
 
+// ---------- Sistem Multi-Map + Queue ----------
+// Setiap pemain punya field "mapId" di data realtime-nya. Klien HANYA menampilkan
+// & berinteraksi dengan pemain lain yang mapId-nya SAMA dengan currentMapId (jadi
+// dunia terasa terpisah per map walau masih 1 node Firebase "players").
+// Kalau map yang dipilih sudah penuh (>= MAX_PLAYERS), otomatis dialihkan ke
+// instance map berikutnya (map_2, map_3, dst) — sesuai skema "Map baru dibuat".
+const MAP_LIST = [
+  { id: 'meme_city', name: 'Meme City', icon: '🏙️', tint: null },
+  { id: 'beach',      name: 'Beach',     icon: '🏖️', tint: 'rgba(255,214,120,0.10)' },
+  { id: 'school',     name: 'School',    icon: '🏫', tint: 'rgba(120,160,255,0.10)' },
+  { id: 'space',      name: 'Space',     icon: '🚀', tint: 'rgba(15,10,45,0.5)' },
+  { id: 'horror',     name: 'Horror',    icon: '👻', tint: 'rgba(40,0,15,0.42)' },
+  { id: 'christmas',  name: 'Christmas', icon: '🎄', tint: 'rgba(140,205,255,0.16)' }
+];
+let currentMapId = 'meme_city';
+let desiredMapId = 'meme_city';
+let lastPlayersSnapshot = {};
+function mapBaseInfo(mapId) {
+  const baseId = (mapId || 'meme_city').split('_instance_')[0];
+  return MAP_LIST.find(m => m.id === baseId) || MAP_LIST[0];
+}
+function mapDisplayName(mapId) {
+  const base = mapBaseInfo(mapId);
+  const parts = (mapId || '').split('_instance_');
+  return parts[1] ? (base.name + ' #' + parts[1]) : base.name;
+}
+function countPlayersInMap(mapId) {
+  let c = 0;
+  for (const id in lastPlayersSnapshot) {
+    const d = lastPlayersSnapshot[id];
+    if (d && (d.mapId || 'meme_city') === mapId) c++;
+  }
+  return c;
+}
+// Cari instance map yang masih ada slot kosong; kalau semua penuh, buat instance baru.
+function resolveMapAssignment(baseMapId) {
+  if (MAX_PLAYERS <= 0) return baseMapId;
+  if (countPlayersInMap(baseMapId) < MAX_PLAYERS) return baseMapId;
+  let n = 2;
+  while (countPlayersInMap(baseMapId + '_instance_' + n) >= MAX_PLAYERS) {
+    n++;
+    if (n > 999) break; // pengaman
+  }
+  return baseMapId + '_instance_' + n;
+}
+
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
@@ -919,7 +1609,22 @@ const player = {
   hitFlashTimer: 0,
   emoting: false,
   emoteTimer: 0,
-  emotePhase: 0
+  emotePhase: 0,
+  coin: 0,
+  diamond: 0,
+  level: 1,
+  exp: 0,
+  achievements: [],
+  inventory: [],
+  nameColor: null,
+  activeAura: null,
+  activeFrame: null,
+  creatorPass: false,
+  battlePass: false,
+  duelWins: 0,
+  duelLosses: 0,
+  dailyStreak: 0,
+  lastDailyClaim: null
 };
 
 // Daftar ekspresi foto yang bisa diunggah pemain (maks 5, siklus lewat tombol 🙂)
@@ -969,6 +1674,56 @@ function drawDayNightOverlay(info) {
   ctx.fillRect(0, 0, W, H);
   ctx.restore();
 }
+
+// ---------- Nuansa visual per Map (tint warna + partikel ambient) ----------
+function drawMapTintOverlay() {
+  const info = mapBaseInfo(currentMapId);
+  if (!info.tint) return;
+  ctx.save();
+  ctx.fillStyle = info.tint;
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+}
+const ambientParticles = [];
+let ambientParticlesForMap = null;
+function ensureAmbientParticles(target) {
+  if (ambientParticlesForMap === currentMapId && ambientParticles.length === target) return;
+  ambientParticlesForMap = currentMapId;
+  ambientParticles.length = 0;
+  for (let i = 0; i < target; i++) {
+    ambientParticles.push({
+      x: Math.random() * W, y: Math.random() * H,
+      speed: 20 + Math.random() * 40, size: 1 + Math.random() * 2.4, phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+function updateAndDrawAmbientParticles(dt) {
+  const baseId = mapBaseInfo(currentMapId).id;
+  if (baseId === 'christmas') {
+    ensureAmbientParticles(45);
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    for (const p of ambientParticles) {
+      p.y += p.speed * dt;
+      p.x += Math.sin(p.phase + p.y / 40) * 8 * dt;
+      if (p.y > H) { p.y = -5; p.x = Math.random() * W; }
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  } else if (baseId === 'space') {
+    ensureAmbientParticles(60);
+    ctx.save();
+    for (const p of ambientParticles) {
+      const tw = 0.4 + Math.sin(performance.now() / 400 + p.phase) * 0.4;
+      ctx.fillStyle = `rgba(255,255,255,${(0.3 + tw * 0.5).toFixed(2)})`;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  } else if (ambientParticles.length) {
+    ambientParticles.length = 0;
+    ambientParticlesForMap = null;
+  }
+}
 let lastBadgeLabel = '';
 function updateTimeBadge(info) {
   if (info.label !== lastBadgeLabel) {
@@ -985,7 +1740,7 @@ const mpStatusText = document.getElementById('mpStatusText');
 // Indikator online kecil: titik hijau/merah + angka (poin 4)
 function updateMpIndicator(online, count) {
   mpStatusEl.classList.toggle('online', online);
-  mpStatusText.textContent = online ? String(count) : '…';
+  mpStatusText.textContent = online ? (count + ' • ' + mapDisplayName(currentMapId)) : '…';
 }
 
 // ---------- Lobby: daftar nama pemain sebagai "background" ----------
@@ -999,6 +1754,7 @@ function escapeHtml(s) {
 function refreshLobbyNames(data) {
   const names = Object.keys(data || {})
     .filter(id => id !== playerID)
+    .filter(id => (data[id] && (data[id].mapId || 'meme_city')) === desiredMapId)
     .map(id => data[id] && data[id].name)
     .filter(Boolean);
   const countText = MAX_PLAYERS > 0 ? (names.length + '/' + MAX_PLAYERS + ' pemain online') : (names.length + ' pemain online sekarang');
@@ -1292,6 +2048,57 @@ if (mpEnabled && db && playersRef) {
     });
   }
 
+  // ---------- Login / Daftar pakai Email & Password ----------
+  const emailInputEl = document.getElementById('emailInput');
+  const passwordInputEl = document.getElementById('passwordInput');
+  const emailLoginBtn = document.getElementById('emailLoginBtn');
+  const emailRegisterBtn = document.getElementById('emailRegisterBtn');
+
+  function friendlyAuthError(err) {
+    switch (err.code) {
+      case 'auth/invalid-email': return 'Format email tidak valid.';
+      case 'auth/email-already-in-use': return 'Email ini sudah terdaftar, coba Masuk.';
+      case 'auth/weak-password': return 'Password minimal 6 karakter.';
+      case 'auth/user-not-found':
+      case 'auth/wrong-password':
+      case 'auth/invalid-credential': return 'Email atau password salah.';
+      default: return 'Gagal: ' + (err.message || 'coba lagi ya.');
+    }
+  }
+
+  if (emailLoginBtn) {
+    emailLoginBtn.addEventListener('click', () => {
+      const email = (emailInputEl && emailInputEl.value || '').trim();
+      const pass = (passwordInputEl && passwordInputEl.value) || '';
+      if (!email || !pass) {
+        if (loginStatusEl) loginStatusEl.textContent = 'Isi email dan password dulu ya.';
+        return;
+      }
+      emailLoginBtn.disabled = true;
+      if (loginStatusEl) loginStatusEl.textContent = 'Masuk...';
+      firebase.auth().signInWithEmailAndPassword(email, pass).catch(err => {
+        console.error('Gagal login email:', err);
+        if (loginStatusEl) loginStatusEl.textContent = friendlyAuthError(err);
+      }).finally(() => { emailLoginBtn.disabled = false; });
+    });
+  }
+  if (emailRegisterBtn) {
+    emailRegisterBtn.addEventListener('click', () => {
+      const email = (emailInputEl && emailInputEl.value || '').trim();
+      const pass = (passwordInputEl && passwordInputEl.value) || '';
+      if (!email || !pass) {
+        if (loginStatusEl) loginStatusEl.textContent = 'Isi email dan password dulu ya.';
+        return;
+      }
+      emailRegisterBtn.disabled = true;
+      if (loginStatusEl) loginStatusEl.textContent = 'Membuat akun...';
+      firebase.auth().createUserWithEmailAndPassword(email, pass).catch(err => {
+        console.error('Gagal daftar:', err);
+        if (loginStatusEl) loginStatusEl.textContent = friendlyAuthError(err);
+      }).finally(() => { emailRegisterBtn.disabled = false; });
+    });
+  }
+
   firebase.auth().onAuthStateChanged(user => {
     __authChecked = true;
     __authUser = user;
@@ -1299,10 +2106,12 @@ if (mpEnabled && db && playersRef) {
     if (!user) return;
     authReady = true;
     setupSignaling();
+    ensurePlayerProfile(user);
 
     // Simpan identitas asli dari akun Google (nama & foto profil), lalu pindah
     // dari layar login ke layar lobby.
     if (user.displayName) player.name = user.displayName.substring(0, 16);
+    else if (user.email) player.name = user.email.split('@')[0].substring(0, 16);
     player.photoURL = user.photoURL || null;
     if (player.photoURL) {
       const gImg = new Image();
@@ -1352,6 +2161,9 @@ if (mpEnabled && db && playersRef) {
       }
     });
 
+    // Dengarkan undangan party yang masuk untuk pemain ini
+    setupPartyInviteListener();
+
     // Dengarkan kalau AKU yang didorong pemain lain (skill Gamper) — posisi baru
     // diterapkan ke player.x/y milikKU sendiri, supaya tidak "balik lagi" saat
     // aku mengirim update posisiku sendiri berikutnya (poin: dorongan sekarang menetap).
@@ -1374,24 +2186,29 @@ if (mpEnabled && db && playersRef) {
     // Dengarkan perubahan semua pemain di Firebase
     playersRef.on('value', snapshot => {
       const data = snapshot.val() || {};
-      // Hapus pemain lain yang sudah tidak ada di data terbaru (juga bersihkan cache avatarnya)
+      lastPlayersSnapshot = data;
+      // Hapus pemain lain yang sudah tidak ada di data terbaru ATAU sudah pindah map
+      // (juga bersihkan cache avatarnya)
       for (const id in otherPlayers) {
-        if (!data[id] || id === playerID) {
+        const stillHere = data[id] && (data[id].mapId || 'meme_city') === currentMapId;
+        if (!stillHere || id === playerID) {
           delete otherPlayers[id];
           delete avatarImgCache[id];
           delete otherPlayersRender[id];
           closePeerConnection(id);
         }
       }
-      // Tambah / update pemain lain (kecuali diri sendiri)
+      // Tambah / update pemain lain (kecuali diri sendiri) — hanya yang ada di map yang sama
       for (const id in data) {
         if (id === playerID) continue;
+        if ((data[id].mapId || 'meme_city') !== currentMapId) continue;
         const isNewPlayer = !otherPlayers[id];
         otherPlayers[id] = data[id];
         if (isNewPlayer && gameEntered) maybeConnectPeer(id);
       }
       updateMpIndicator(true, Object.keys(otherPlayers).length);
       if (!gameEntered) refreshLobbyNames(data);
+      refreshMapPanelCounts();
     });
 
     // Efek skill (api / dorongan) dari siapa pun, dianimasikan di layar semua pemain
@@ -1463,7 +2280,12 @@ function enterGame(name) {
     const initData = {
       x: player.x, y: player.y, dir: player.dir, facing: player.facing,
       moving: false, name: player.name, expr: player.expr,
+      mapId: currentMapId,
       photoURL: player.photoURL || null,
+      nameColor: player.nameColor || null,
+      activeAura: player.activeAura || null,
+      activeFrame: player.activeFrame || null,
+      battlePass: player.battlePass || false,
       lastSeen: firebase.database.ServerValue.TIMESTAMP
     };
     // Kalau foto ekspresi sudah diupload sebelumnya di sesi ini, ikut kirim semua
@@ -1480,7 +2302,11 @@ function enterGame(name) {
 
     // Coba sambungkan jalur suara ke semua pemain yang sudah ada di dalam game
     for (const id in otherPlayers) maybeConnectPeer(id);
+
+    setupDuelListeners();
   }
+  updateHudCurrency();
+  refreshCreatorStudioVisibility();
 }
 
 const lobbyNameInput = document.getElementById('lobbyNameInput');
@@ -1490,13 +2316,19 @@ function submitLobby() {
   if (!name) name = 'Petualang' + Math.floor(Math.random() * 1000);
   name = name.substring(0, 16);
 
-  // Batas jumlah pemain: kalau room sudah penuh, pemain ditolak masuk.
-  if (mpEnabled && db && MAX_PLAYERS > 0) {
-    const currentCount = Object.keys(otherPlayers).length;
-    if (currentCount >= MAX_PLAYERS) {
-      alert('Maaf, room sudah penuh (maksimal ' + MAX_PLAYERS + ' pemain). Coba lagi nanti ya!');
-      return;
+  // Tentukan map final: kalau map pilihan penuh, otomatis geser ke instance baru
+  // (Map 1 penuh -> Map 2 penuh -> ... -> instance map baru dibuat), kecuali admin
+  // yang selalu boleh masuk ke map pilihannya walau penuh.
+  if (mpEnabled && db && MAX_PLAYERS > 0 && !isAdmin) {
+    const assigned = resolveMapAssignment(desiredMapId);
+    if (assigned !== desiredMapId) {
+      showToast('🗺️ ' + mapBaseInfo(desiredMapId).name + ' penuh, dipindah ke ' + mapDisplayName(assigned));
     }
+    currentMapId = assigned;
+    rebuildOtherPlayersForCurrentMap();
+  } else {
+    currentMapId = desiredMapId;
+    rebuildOtherPlayersForCurrentMap();
   }
 
   enterGame(name);
@@ -1507,6 +2339,25 @@ lobbyNameInput.addEventListener('keydown', e => { if (e.key === 'Enter') submitL
 // ---------- Terrain Generation ----------
 // Danau tetap (statis) di dalam map supaya tidak terasa sepi
 const LAKE = { x: WORLD_W * 0.72, y: WORLD_H * 0.26, r: 260 };
+
+// ---------- Placeholder tanah & kotak (siap diganti PNG kamu lewat MAP_TILE_CONFIG) ----------
+const PLACEHOLDER_COLORS = {
+  grass: '#5fae3f',
+  path:  '#c29b61',
+  river: '#4a90e2',
+  lake:  '#3f7fd1'
+};
+const TILE_TEXTURES = {};
+(function loadTileTextures() {
+  const cfg = window.MAP_TILE_CONFIG || {};
+  for (const key in PLACEHOLDER_COLORS) {
+    if (cfg[key]) {
+      const img = new Image();
+      img.src = cfg[key];
+      TILE_TEXTURES[key] = img;
+    }
+  }
+})();
 function getTerrain(col, row) {
   const wx = col * TILE, wy = row * TILE;
   if (Math.hypot(wx - LAKE.x, wy - LAKE.y) < LAKE.r) return 'lake';
@@ -1774,10 +2625,34 @@ const chatBtn = document.getElementById('chatBtn');
 const chatModal = document.getElementById('chatModal');
 const chatInput = document.getElementById('chatInput');
 const sendChatBtn = document.getElementById('sendChatBtn');
+const stickerRow = document.getElementById('stickerRow');
+const STICKER_SET = ['😂', '🔥', '💯', '👍', '❤️', '😭'];
+
+function renderStickerRow() {
+  if (!stickerRow) return;
+  if (!ownsItem('sticker_pack')) { stickerRow.style.display = 'none'; return; }
+  if (stickerRow.childElementCount === 0) {
+    STICKER_SET.forEach(s => {
+      const btn = document.createElement('button');
+      btn.className = 'sticker-btn';
+      btn.textContent = s;
+      btn.addEventListener('click', () => sendSticker(s));
+      stickerRow.appendChild(btn);
+    });
+  }
+  stickerRow.style.display = 'flex';
+}
+function sendSticker(s) {
+  player.chatMessage = s;
+  player.chatTimer = 2.2;
+  unlockAchievement('ach_first_chat');
+  closeChatModal();
+}
 
 function openChatModal() {
   if (!gameEntered) return;
   chatModal.classList.add('open');
+  renderStickerRow();
   setTimeout(() => chatInput.focus(), 100);
 }
 
@@ -1798,6 +2673,7 @@ function sendChat() {
     if (text.length > 50) text = text.substring(0, 50);
     player.chatMessage = text;
     player.chatTimer = 2.0;
+    unlockAchievement('ach_first_chat');
   }
   closeChatModal();
 }
@@ -1806,6 +2682,707 @@ sendChatBtn.addEventListener('click', sendChat);
 chatInput.addEventListener('keydown', e => {
   if (e.key === 'Enter') sendChat();
 });
+
+// ================= PARTY SYSTEM (invite, leader, kick, ready) =================
+// Disimpan di Realtime Database node "parties/{partyId}" dan "partyInvites/{targetPlayerID}".
+// Anggota diidentifikasi lewat playerID (ID sesi, sama dengan yang dipakai node "players").
+let myPartyId = null;
+let myPartyData = null;
+let myPartyUnsub = null;
+let pendingInvite = null; // { key, partyId, fromId, fromName }
+
+const partyBtn = document.getElementById('partyBtn');
+const lobbyPartyBtn = document.getElementById('lobbyPartyBtn');
+const partyBadge = document.getElementById('partyBadge');
+const partyPanelBackdrop = document.getElementById('partyPanelBackdrop');
+const partyMemberList = document.getElementById('partyMemberList');
+const partyCreateBtn = document.getElementById('partyCreateBtn');
+const partyInviteOpenBtn = document.getElementById('partyInviteOpenBtn');
+const partyReadyBtn = document.getElementById('partyReadyBtn');
+const partyLeaveBtn = document.getElementById('partyLeaveBtn');
+const partyInviteBackdrop = document.getElementById('partyInviteBackdrop');
+const partyInviteList = document.getElementById('partyInviteList');
+const partyInviteToast = document.getElementById('partyInviteToast');
+const partyInviteToastText = document.getElementById('partyInviteToastText');
+const partyInviteAcceptBtn = document.getElementById('partyInviteAcceptBtn');
+const partyInviteDeclineBtn = document.getElementById('partyInviteDeclineBtn');
+
+function myPartyMemberInfo() {
+  return { name: player.name || 'Petualang', photoURL: player.photoURL || null, ready: false };
+}
+
+function openPartyPanel() {
+  if (!mpEnabled || !authReady) return;
+  renderPartyPanel();
+  partyPanelBackdrop.classList.add('visible');
+}
+function closePartyPanel() { partyPanelBackdrop.classList.remove('visible'); }
+
+function renderPartyPanel() {
+  partyMemberList.innerHTML = '';
+  const inParty = !!(myPartyId && myPartyData && myPartyData.members);
+  const isLeader = inParty && myPartyData.leader === playerID;
+
+  if (!inParty) {
+    partyMemberList.innerHTML = '<div class="party-empty">Kamu belum punya party. Buat satu untuk main bareng teman!</div>';
+    partyCreateBtn.style.display = 'block';
+    partyInviteOpenBtn.style.display = 'none';
+    partyReadyBtn.style.display = 'none';
+    partyLeaveBtn.style.display = 'none';
+    return;
+  }
+
+  partyCreateBtn.style.display = 'none';
+  partyInviteOpenBtn.style.display = 'block';
+  partyReadyBtn.style.display = 'block';
+  partyLeaveBtn.style.display = 'block';
+
+  const members = myPartyData.members || {};
+  const myReady = (members[playerID] && members[playerID].ready) || false;
+  partyReadyBtn.textContent = myReady ? '✓ Siap' : 'Siap';
+  partyReadyBtn.classList.toggle('ready-on', myReady);
+
+  for (const id in members) {
+    const m = members[id];
+    const row = document.createElement('div');
+    row.className = 'party-member-row';
+    const isL = id === myPartyData.leader;
+    row.innerHTML = `
+      <span class="pm-crown">${isL ? '👑' : ''}</span>
+      <span class="pm-name">${escapeHtml(m.name || 'Petualang')}${id === playerID ? ' (kamu)' : ''}</span>
+      <span class="pm-ready ${m.ready ? 'yes' : 'no'}">${m.ready ? 'Siap' : 'Belum'}</span>
+      ${(isLeader && id !== playerID) ? '<button class="pm-kick" title="Kick">✕</button>' : ''}
+    `;
+    if (isLeader && id !== playerID) {
+      row.querySelector('.pm-kick').addEventListener('click', () => kickPartyMember(id));
+    }
+    partyMemberList.appendChild(row);
+  }
+}
+
+function updatePartyBadge() {
+  const inParty = !!(myPartyId && myPartyData && myPartyData.members);
+  const count = inParty ? Object.keys(myPartyData.members).length : 0;
+  partyBtn.classList.toggle('in-party', inParty);
+  if (lobbyPartyBtn) {
+    document.getElementById('lobbyPartyBtnText').textContent = inParty ? `Party (${count})` : 'Party';
+  }
+  if (count > 1) {
+    partyBadge.textContent = String(count);
+    partyBadge.classList.add('visible');
+  } else {
+    partyBadge.classList.remove('visible');
+  }
+}
+
+function listenToMyParty(partyId) {
+  if (myPartyUnsub) { myPartyUnsub(); myPartyUnsub = null; }
+  myPartyId = partyId;
+  const ref = partiesRef.child(partyId);
+  const handler = snap => {
+    const data = snap.val();
+    if (!data || !data.members || !data.members[playerID]) {
+      // Party bubar, atau kita sudah tidak jadi anggota (di-kick / keluar dari device lain)
+      myPartyId = null;
+      myPartyData = null;
+    } else {
+      myPartyData = data;
+    }
+    updatePartyBadge();
+    if (partyPanelBackdrop.classList.contains('visible')) renderPartyPanel();
+  };
+  ref.on('value', handler);
+  myPartyUnsub = () => ref.off('value', handler);
+}
+
+async function createParty() {
+  if (!mpEnabled || !authReady || myPartyId) return;
+  const ref = partiesRef.push();
+  await ref.set({
+    leader: playerID,
+    createdAt: firebase.database.ServerValue.TIMESTAMP,
+    members: { [playerID]: myPartyMemberInfo() }
+  });
+  listenToMyParty(ref.key);
+  unlockAchievement('ach_first_party');
+}
+
+async function kickPartyMember(targetId) {
+  if (!myPartyId || myPartyData.leader !== playerID) return;
+  await partiesRef.child(myPartyId).child('members').child(targetId).remove();
+}
+
+async function togglePartyReady() {
+  if (!myPartyId) return;
+  const cur = (myPartyData.members[playerID] && myPartyData.members[playerID].ready) || false;
+  await partiesRef.child(myPartyId).child('members').child(playerID).child('ready').set(!cur);
+}
+
+async function leaveParty() {
+  if (!myPartyId) return;
+  const partyId = myPartyId;
+  const isLeader = myPartyData.leader === playerID;
+  const memberIds = Object.keys(myPartyData.members || {}).filter(id => id !== playerID);
+  if (isLeader) {
+    if (memberIds.length === 0) {
+      await partiesRef.child(partyId).remove();
+    } else {
+      // Estafet kepemimpinan ke anggota berikutnya biar party tidak bubar sia-sia
+      await partiesRef.child(partyId).child('leader').set(memberIds[0]);
+      await partiesRef.child(partyId).child('members').child(playerID).remove();
+    }
+  } else {
+    await partiesRef.child(partyId).child('members').child(playerID).remove();
+  }
+  if (myPartyUnsub) { myPartyUnsub(); myPartyUnsub = null; }
+  myPartyId = null;
+  myPartyData = null;
+  updatePartyBadge();
+  renderPartyPanel();
+}
+
+async function sendPartyInvite(targetId, targetName) {
+  if (!mpEnabled || !authReady) return;
+  if (!myPartyId) await createParty();
+  await partyInvitesRef.child(targetId).push({
+    partyId: myPartyId,
+    fromId: playerID,
+    fromName: player.name || 'Petualang',
+    ts: firebase.database.ServerValue.TIMESTAMP
+  });
+  closePartyInviteList();
+}
+
+function openPartyInviteList() {
+  partyInviteList.innerHTML = '';
+  const existingMembers = (myPartyData && myPartyData.members) || {};
+  const candidates = Object.keys(otherPlayers).filter(id => !existingMembers[id]);
+  if (candidates.length === 0) {
+    partyInviteList.innerHTML = '<div class="party-empty">Belum ada pemain lain yang online.</div>';
+  } else {
+    for (const id of candidates) {
+      const p = otherPlayers[id];
+      const row = document.createElement('div');
+      row.className = 'invite-row';
+      row.innerHTML = `<span class="inv-name">${escapeHtml(p.name || 'Pemain')}</span><button>Undang</button>`;
+      row.querySelector('button').addEventListener('click', () => sendPartyInvite(id, p.name));
+      partyInviteList.appendChild(row);
+    }
+  }
+  partyInviteBackdrop.classList.add('visible');
+}
+function closePartyInviteList() { partyInviteBackdrop.classList.remove('visible'); }
+
+// ---------- Undangan masuk: dengarkan partyInvites/{playerID} ----------
+function setupPartyInviteListener() {
+  if (!partyInvitesRef) return;
+  partyInvitesRef.child(playerID).on('child_added', snap => {
+    const inv = snap.val();
+    if (!inv) return;
+    pendingInvite = { key: snap.key, partyId: inv.partyId, fromId: inv.fromId, fromName: inv.fromName };
+    partyInviteToastText.textContent = `${inv.fromName || 'Pemain'} mengundangmu ke party`;
+    partyInviteToast.classList.add('visible');
+  });
+}
+
+async function respondToInvite(accept) {
+  if (!pendingInvite) return;
+  const inv = pendingInvite;
+  pendingInvite = null;
+  partyInviteToast.classList.remove('visible');
+  await partyInvitesRef.child(playerID).child(inv.key).remove();
+  if (!accept) return;
+  // Gabung party yang mengundang (keluar dulu dari party lama kalau ada)
+  if (myPartyId && myPartyId !== inv.partyId) await leaveParty();
+  await partiesRef.child(inv.partyId).child('members').child(playerID).set(myPartyMemberInfo());
+  listenToMyParty(inv.partyId);
+  unlockAchievement('ach_first_party');
+}
+
+partyBtn.addEventListener('click', openPartyPanel);
+if (lobbyPartyBtn) lobbyPartyBtn.addEventListener('click', openPartyPanel);
+document.getElementById('closePartyPanelBtn').addEventListener('click', closePartyPanel);
+partyCreateBtn.addEventListener('click', createParty);
+partyInviteOpenBtn.addEventListener('click', openPartyInviteList);
+partyReadyBtn.addEventListener('click', togglePartyReady);
+partyLeaveBtn.addEventListener('click', leaveParty);
+document.getElementById('closePartyInviteBtn').addEventListener('click', closePartyInviteList);
+partyInviteAcceptBtn.addEventListener('click', () => respondToInvite(true));
+partyInviteDeclineBtn.addEventListener('click', () => respondToInvite(false));
+// ================= END PARTY SYSTEM =================
+
+// ================= MULTI-MAP + QUEUE SYSTEM =================
+function renderMapList() {
+  const list = document.getElementById('mapList');
+  if (!list) return;
+  list.innerHTML = '';
+  MAP_LIST.forEach(m => {
+    const count = countPlayersInMap(m.id);
+    const isFull = MAX_PLAYERS > 0 && count >= MAX_PLAYERS;
+    const row = document.createElement('div');
+    row.className = 'map-row' + (isFull ? ' full' : '') + (desiredMapId === m.id ? ' selected' : '');
+    row.dataset.mapId = m.id;
+    const subText = MAX_PLAYERS > 0 ? (count + '/' + MAX_PLAYERS + ' pemain' + (isFull ? ' • Penuh, otomatis ke instance baru' : '')) : (count + ' pemain online');
+    row.innerHTML = `<div class="mr-icon">${m.icon}</div>
+      <div class="mr-info">
+        <div class="mr-name">${escapeHtml(m.name)}</div>
+        <div class="mr-sub">${subText}</div>
+      </div>
+      <button>${desiredMapId === m.id ? 'Terpilih' : 'Pilih'}</button>`;
+    row.querySelector('button').addEventListener('click', () => selectMap(m.id));
+    list.appendChild(row);
+  });
+}
+function refreshMapPanelCounts() {
+  const backdrop = document.getElementById('mapBackdrop');
+  if (backdrop && backdrop.classList.contains('visible')) renderMapList();
+}
+// Bangun ulang otherPlayers dari snapshot terakhir sesuai currentMapId sekarang —
+// dipanggil manual saat currentMapId berubah di luar event Firebase (mis. setelah
+// resolveMapAssignment memindah ke instance map baru pas MULAI ditekan).
+function rebuildOtherPlayersForCurrentMap() {
+  for (const id in otherPlayers) {
+    delete otherPlayers[id]; delete avatarImgCache[id]; delete otherPlayersRender[id]; closePeerConnection(id);
+  }
+  for (const id in lastPlayersSnapshot) {
+    if (id === playerID) continue;
+    const d = lastPlayersSnapshot[id];
+    if ((d.mapId || 'meme_city') !== currentMapId) continue;
+    otherPlayers[id] = d;
+  }
+  updateMpIndicator(true, Object.keys(otherPlayers).length);
+}
+function selectMap(mapId) {
+  desiredMapId = mapId;
+  currentMapId = mapId; // sinkron sementara di lobby, resolusi overflow terjadi saat MULAI
+  const info = mapBaseInfo(mapId);
+  const labelEl = document.getElementById('lobbySelectedMapText');
+  if (labelEl) labelEl.textContent = info.name;
+  renderMapList();
+  refreshLobbyNames(lastPlayersSnapshot);
+  rebuildOtherPlayersForCurrentMap();
+  closeMapPanel();
+}
+function openMapPanel() { renderMapList(); document.getElementById('mapBackdrop').classList.add('visible'); }
+function closeMapPanel() { document.getElementById('mapBackdrop').classList.remove('visible'); }
+document.getElementById('closeMapBtn').addEventListener('click', closeMapPanel);
+document.getElementById('lobbySelectedMapBtn').addEventListener('click', openMapPanel);
+// ================= END MULTI-MAP + QUEUE SYSTEM =================
+
+// ================= ACHIEVEMENT SYSTEM =================
+const ACHIEVEMENTS = {
+  ach_first_login: { name: 'Petualang Baru', desc: 'Buat akun pertama kali', icon: '🌱', coin: 50 },
+  ach_first_chat:  { name: 'Bicara Pertama', desc: 'Kirim 1 pesan chat', icon: '💬', coin: 30 },
+  ach_first_party: { name: 'Tim Kompak', desc: 'Buat atau gabung Party', icon: '👥', coin: 40 },
+  ach_level5:      { name: 'Naik Level 5', desc: 'Capai Level 5', icon: '⭐', coin: 100 },
+  ach_first_duel_win: { name: 'Juara Duel', desc: 'Menangkan 1 kali duel', icon: '🥇', coin: 100 },
+  ach_shopper:     { name: 'Kolektor', desc: 'Beli 1 item di Shop', icon: '🛍️', coin: 60 },
+  ach_daily_7:     { name: 'Rajin Login', desc: 'Klaim Daily Reward 7 hari', icon: '📅', coin: 150 }
+};
+function unlockAchievement(id, silent) {
+  if (!ACHIEVEMENTS[id]) return;
+  if (!Array.isArray(player.achievements)) player.achievements = [];
+  if (player.achievements.includes(id)) return;
+  player.achievements.push(id);
+  const reward = ACHIEVEMENTS[id].coin || 0;
+  if (reward) addCurrency(reward, 0);
+  saveProfileFields({ achievements: player.achievements });
+  if (!silent) showToast('🏅 Achievement: ' + ACHIEVEMENTS[id].name + ' (+' + reward + ' 🪙)');
+}
+function renderAchievements() {
+  const list = document.getElementById('achievementList');
+  if (!list) return;
+  list.innerHTML = '';
+  const owned = Array.isArray(player.achievements) ? player.achievements : [];
+  for (const id in ACHIEVEMENTS) {
+    const a = ACHIEVEMENTS[id];
+    const unlocked = owned.includes(id);
+    const row = document.createElement('div');
+    row.className = 'ach-row' + (unlocked ? ' unlocked' : '');
+    row.innerHTML = `<div class="ach-icon">${a.icon}</div>
+      <div class="ach-info">
+        <div class="ach-name">${escapeHtml(a.name)}</div>
+        <div class="ach-desc">${escapeHtml(a.desc)}</div>
+      </div>
+      <div class="ach-reward">${unlocked ? '✔️' : '+' + a.coin + ' 🪙'}</div>`;
+    list.appendChild(row);
+  }
+}
+function openAchievementPanel() { renderAchievements(); document.getElementById('achievementBackdrop').classList.add('visible'); }
+function closeAchievementPanel() { document.getElementById('achievementBackdrop').classList.remove('visible'); }
+document.getElementById('closeAchievementBtn').addEventListener('click', closeAchievementPanel);
+document.getElementById('lobbyAchievementBtn').addEventListener('click', openAchievementPanel);
+document.getElementById('gearAchievementBtn').addEventListener('click', openAchievementPanel);
+// ================= END ACHIEVEMENT SYSTEM =================
+
+// ================= SHOP SYSTEM =================
+const SHOP_ITEMS = [
+  { id: 'creator_pass', name: 'Creator Pass', icon: '🎨', price: 300, currency: 'diamond', type: 'pass' },
+  { id: 'battle_pass',  name: 'Battle Pass',   icon: '🎫', price: 300, currency: 'coin', type: 'pass' },
+  { id: 'frame_gold',   name: 'Bingkai Emas',  icon: '🖼️', price: 150, currency: 'coin', type: 'frame', value: 'gold' },
+  { id: 'aura_blue',    name: 'Aura Biru',     icon: '🔵', price: 200, currency: 'coin', type: 'aura', value: '#4a90e2' },
+  { id: 'aura_red',     name: 'Aura Merah',    icon: '🔴', price: 200, currency: 'coin', type: 'aura', value: '#ff4757' },
+  { id: 'name_gold',    name: 'Nama Emas',     icon: '✨', price: 120, currency: 'coin', type: 'nameColor', value: 'gold' },
+  { id: 'name_rainbow', name: 'Nama Pelangi',  icon: '🌈', price: 150, currency: 'diamond', type: 'nameColor', value: 'rainbow' },
+  { id: 'sticker_pack', name: 'Paket Stiker',  icon: '💬', price: 100, currency: 'coin', type: 'sticker' }
+];
+function ownsItem(id) { return Array.isArray(player.inventory) && player.inventory.includes(id); }
+function buyItem(id) {
+  const item = SHOP_ITEMS.find(i => i.id === id);
+  if (!item) return;
+  if (!ownsItem(id)) {
+    const balance = item.currency === 'diamond' ? (player.diamond || 0) : (player.coin || 0);
+    if (balance < item.price) { showToast('Koin/diamond kamu tidak cukup!'); return; }
+    addCurrency(item.currency === 'coin' ? -item.price : 0, item.currency === 'diamond' ? -item.price : 0);
+    if (!Array.isArray(player.inventory)) player.inventory = [];
+    player.inventory.push(id);
+    saveProfileFields({ inventory: player.inventory });
+    unlockAchievement('ach_shopper');
+  }
+  applyShopItem(item);
+  renderShop();
+}
+function applyShopItem(item) {
+  if (item.type === 'frame') player.activeFrame = item.value;
+  else if (item.type === 'aura') player.activeAura = item.value;
+  else if (item.type === 'nameColor') player.nameColor = item.value;
+  else if (item.id === 'creator_pass') { player.creatorPass = true; refreshCreatorStudioVisibility(); }
+  else if (item.id === 'battle_pass') { player.battlePass = true; }
+  saveProfileFields({ activeFrame: player.activeFrame, activeAura: player.activeAura, nameColor: player.nameColor, creatorPass: player.creatorPass, battlePass: player.battlePass });
+  syncCosmeticsToRealtime();
+  showToast('Dipakai: ' + item.name);
+}
+function renderShop() {
+  const grid = document.getElementById('shopGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  SHOP_ITEMS.forEach(item => {
+    const owned = ownsItem(item.id);
+    const equipped = owned && (
+      (item.type === 'frame' && player.activeFrame === item.value) ||
+      (item.type === 'aura' && player.activeAura === item.value) ||
+      (item.type === 'nameColor' && player.nameColor === item.value) ||
+      (item.type === 'pass')
+    );
+    const el = document.createElement('div');
+    el.className = 'shop-item';
+    el.innerHTML = `<div class="si-icon">${item.icon}</div>
+      <div class="si-name">${escapeHtml(item.name)}</div>
+      <div class="si-price">${owned ? 'Dimiliki' : item.price + (item.currency === 'diamond' ? ' 💎' : ' 🪙')}</div>
+      <button class="${equipped ? 'equipped' : (owned ? 'equip' : 'buy')}">${equipped ? 'Terpakai' : (owned ? 'Pakai' : 'Beli')}</button>`;
+    el.querySelector('button').addEventListener('click', () => buyItem(item.id));
+    grid.appendChild(el);
+  });
+}
+function openShopPanel() { renderShop(); document.getElementById('shopBackdrop').classList.add('visible'); }
+function closeShopPanel() { document.getElementById('shopBackdrop').classList.remove('visible'); }
+document.getElementById('closeShopBtn').addEventListener('click', closeShopPanel);
+document.getElementById('lobbyShopBtn').addEventListener('click', openShopPanel);
+document.getElementById('gearShopBtn').addEventListener('click', openShopPanel);
+
+function refreshCreatorStudioVisibility() {
+  const field = document.getElementById('creatorStudioField');
+  if (field) field.style.display = player.creatorPass ? 'block' : 'none';
+}
+document.querySelectorAll('.creatorAuraBtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    player.activeAura = btn.dataset.color || null;
+    saveProfileFields({ activeAura: player.activeAura });
+    syncCosmeticsToRealtime();
+    showToast('Aura diperbarui!');
+  });
+});
+// ================= END SHOP SYSTEM =================
+
+// ================= LEADERBOARD =================
+async function loadLeaderboard() {
+  const list = document.getElementById('leaderboardList');
+  if (!list || !firestore) return;
+  list.innerHTML = '<div class="party-empty">Memuat...</div>';
+  try {
+    const snap = await firestore.collection('players').orderBy('level', 'desc').orderBy('exp', 'desc').limit(20).get();
+    if (snap.empty) { list.innerHTML = '<div class="party-empty">Belum ada data pemain.</div>'; return; }
+    list.innerHTML = '';
+    let rank = 0;
+    snap.forEach(doc => {
+      rank++;
+      const d = doc.data();
+      const row = document.createElement('div');
+      row.className = 'lb-row';
+      const photoHtml = d.photoURL ? `<img src="${d.photoURL}">` : `<div class="lb-fallback">${escapeHtml((d.name||'?').charAt(0).toUpperCase())}</div>`;
+      row.innerHTML = `<div class="lb-rank">${rank <= 3 ? ['🥇','🥈','🥉'][rank-1] : rank}</div>
+        ${photoHtml}
+        <div class="lb-info">
+          <div class="lb-name">${escapeHtml(d.name || 'Petualang')}</div>
+          <div class="lb-sub">Level ${d.level || 1} • ${d.coin || 0} 🪙</div>
+        </div>`;
+      list.appendChild(row);
+    });
+  } catch (err) {
+    console.error('Gagal muat leaderboard:', err);
+    list.innerHTML = '<div class="party-empty">Gagal memuat leaderboard.</div>';
+  }
+}
+function openLeaderboardPanel() { document.getElementById('leaderboardBackdrop').classList.add('visible'); loadLeaderboard(); }
+function closeLeaderboardPanel() { document.getElementById('leaderboardBackdrop').classList.remove('visible'); }
+document.getElementById('closeLeaderboardBtn').addEventListener('click', closeLeaderboardPanel);
+document.getElementById('lobbyLeaderboardBtn').addEventListener('click', openLeaderboardPanel);
+document.getElementById('gearLeaderboardBtn').addEventListener('click', openLeaderboardPanel);
+// ================= END LEADERBOARD =================
+
+// ================= DAILY REWARD =================
+const DAILY_REWARDS = [20, 30, 40, 60, 80, 100, 200]; // hari 1..7, hari ke-7 hadiah besar
+function isSameDay(a, b) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+function renderDailyPanel() {
+  const grid = document.getElementById('dailyGrid');
+  const claimBtn = document.getElementById('claimDailyBtn');
+  if (!grid) return;
+  const now = new Date();
+  const last = player.lastDailyClaim ? new Date(player.lastDailyClaim) : null;
+  const claimedToday = last && isSameDay(last, now);
+  const streak = player.dailyStreak || 0;
+  grid.innerHTML = '';
+  for (let i = 1; i <= 7; i++) {
+    const done = i <= streak && (claimedToday || i < streak + 1) && i <= (claimedToday ? streak : streak);
+    const isPast = i <= streak;
+    const isToday = !claimedToday && i === streak + 1;
+    const el = document.createElement('div');
+    el.className = 'daily-day' + (isPast ? ' claimed' : '') + (isToday ? ' today' : '');
+    el.innerHTML = `<span class="dd-icon">${isPast ? '✅' : '🎁'}</span>Hari ${i}<br>${DAILY_REWARDS[i-1]} 🪙`;
+    grid.appendChild(el);
+  }
+  if (claimBtn) {
+    claimBtn.disabled = !!claimedToday;
+    claimBtn.textContent = claimedToday ? 'Sudah diklaim hari ini' : 'Klaim Hadiah Hari ' + (streak % 7 + 1);
+  }
+}
+function claimDailyReward() {
+  const now = new Date();
+  const last = player.lastDailyClaim ? new Date(player.lastDailyClaim) : null;
+  if (last && isSameDay(last, now)) { showToast('Sudah diklaim hari ini, kembali besok!'); return; }
+  const yesterday = new Date(now); yesterday.setDate(yesterday.getDate() - 1);
+  const isConsecutive = last && isSameDay(last, yesterday);
+  let streak = isConsecutive ? (player.dailyStreak || 0) + 1 : 1;
+  if (streak > 7) streak = 1;
+  const reward = DAILY_REWARDS[streak - 1];
+  addCurrency(reward, 0);
+  player.dailyStreak = streak;
+  player.lastDailyClaim = now.getTime();
+  saveProfileFields({ dailyStreak: streak, lastDailyClaim: player.lastDailyClaim });
+  showToast('🎁 Hadiah harian: +' + reward + ' 🪙');
+  if (streak >= 7) unlockAchievement('ach_daily_7');
+  renderDailyPanel();
+}
+function openDailyPanel() { renderDailyPanel(); document.getElementById('dailyBackdrop').classList.add('visible'); }
+function closeDailyPanel() { document.getElementById('dailyBackdrop').classList.remove('visible'); }
+document.getElementById('closeDailyBtn').addEventListener('click', closeDailyPanel);
+document.getElementById('lobbyDailyBtn').addEventListener('click', openDailyPanel);
+document.getElementById('gearDailyBtn').addEventListener('click', openDailyPanel);
+document.getElementById('claimDailyBtn').addEventListener('click', claimDailyReward);
+// ================= END DAILY REWARD =================
+
+// ================= LUCKY SPIN =================
+const SPIN_SEGMENTS = [
+  { label: '10 🪙', coin: 10 }, { label: '5 💎', diamond: 5 }, { label: '30 🪙', coin: 30 }, { label: '50 EXP', exp: 50 },
+  { label: '20 🪙', coin: 20 }, { label: '10 💎', diamond: 10 }, { label: '80 🪙', coin: 80 }, { label: '100 🪙', coin: 100 }
+];
+let spinning = false;
+let spinRotation = 0;
+function spinWheel() {
+  if (spinning) return;
+  if ((player.coin || 0) < 50) { showToast('Koin tidak cukup untuk spin (butuh 50 🪙)'); return; }
+  spinning = true;
+  addCurrency(-50, 0);
+  const segCount = SPIN_SEGMENTS.length;
+  const segAngle = 360 / segCount;
+  const chosen = Math.floor(Math.random() * segCount);
+  const extraSpins = 5;
+  const targetAngle = 360 * extraSpins + (360 - (chosen * segAngle + segAngle / 2)) - 90;
+  spinRotation += targetAngle;
+  const wheelEl = document.getElementById('spinWheel');
+  const resultEl = document.getElementById('spinResultText');
+  const spinBtn = document.getElementById('doSpinBtn');
+  if (spinBtn) spinBtn.disabled = true;
+  if (resultEl) resultEl.textContent = 'Memutar...';
+  if (wheelEl) wheelEl.style.transform = 'rotate(' + spinRotation + 'deg)';
+  setTimeout(() => {
+    const seg = SPIN_SEGMENTS[chosen];
+    if (seg.coin) addCurrency(seg.coin, 0);
+    if (seg.diamond) addCurrency(0, seg.diamond);
+    if (seg.exp) addExp(seg.exp);
+    if (resultEl) resultEl.textContent = 'Kamu dapat: ' + seg.label + '!';
+    showToast('🎡 Hasil Spin: ' + seg.label);
+    spinning = false;
+    if (spinBtn) spinBtn.disabled = false;
+  }, 3300);
+}
+function openSpinPanel() { document.getElementById('spinBackdrop').classList.add('visible'); }
+function closeSpinPanel() { document.getElementById('spinBackdrop').classList.remove('visible'); }
+document.getElementById('closeSpinBtn').addEventListener('click', closeSpinPanel);
+document.getElementById('lobbySpinBtn').addEventListener('click', openSpinPanel);
+document.getElementById('gearSpinBtn').addEventListener('click', openSpinPanel);
+document.getElementById('doSpinBtn').addEventListener('click', spinWheel);
+// ================= END LUCKY SPIN =================
+
+// ================= DUEL SYSTEM =================
+let duelBattleRef = null;
+let duelBattleId = null;
+let amDuelP1 = false;
+let duelEndTimer = null;
+let duelResolveGuard = false;
+
+function syncCosmeticsToRealtime() {
+  if (mpEnabled && myPlayerRef) {
+    myPlayerRef.update({ nameColor: player.nameColor || null, activeAura: player.activeAura || null, activeFrame: player.activeFrame || null, battlePass: player.battlePass || false });
+  }
+}
+
+function findNearestPlayerId(range) {
+  let nearestId = null, nearestDist = range || 140;
+  for (const id in otherPlayers) {
+    const p = otherPlayers[id];
+    const d = Math.hypot((p.x || 0) - player.x, (p.y || 0) - player.y);
+    if (d < nearestDist) { nearestDist = d; nearestId = id; }
+  }
+  return nearestId;
+}
+
+function requestDuel() {
+  if (!gameEntered || !mpEnabled || !db) return;
+  if (duelBattleId) { showToast('Kamu sedang duel!'); return; }
+  const targetId = findNearestPlayerId(140);
+  if (!targetId) { showToast('Tidak ada pemain di dekatmu.'); return; }
+  const targetName = (otherPlayers[targetId] && otherPlayers[targetId].name) || 'Pemain';
+  const reqData = { from: playerID, fromName: player.name || 'Petualang', status: 'pending', ts: Date.now() };
+  db.ref('duels/' + targetId).set(reqData);
+  db.ref('duels/' + playerID + '_sent').set(Object.assign({}, reqData, { to: targetId, toName: targetName }));
+  showToast('Ajakan duel dikirim ke ' + targetName + '...');
+}
+const duelBtn = document.getElementById('duelBtn');
+duelBtn.addEventListener('touchstart', e => { requestDuel(); e.preventDefault(); }, { passive: false });
+duelBtn.addEventListener('click', requestDuel);
+
+function respondDuel(accept, req) {
+  if (!db) return;
+  if (accept) {
+    const battleId = [playerID, req.from].sort().join('_') + '_' + Date.now();
+    db.ref('duelBattles/' + battleId).set({
+      p1: req.from, p1Name: req.fromName, p2: playerID, p2Name: player.name || 'Petualang',
+      hpP1: 100, hpP2: 100, status: 'fighting', startedAt: Date.now(), duration: 15000
+    });
+    db.ref('duels/' + req.from + '_sent').update({ status: 'accepted', battleId });
+    db.ref('duels/' + playerID).remove();
+    openDuelBattle(battleId, false);
+  } else {
+    db.ref('duels/' + req.from + '_sent').update({ status: 'declined' });
+    db.ref('duels/' + playerID).remove();
+  }
+  document.getElementById('duelInviteToast').classList.remove('visible');
+}
+document.getElementById('duelInviteAcceptBtn').addEventListener('click', () => {
+  if (window.__pendingDuelReq) respondDuel(true, window.__pendingDuelReq);
+});
+document.getElementById('duelInviteDeclineBtn').addEventListener('click', () => {
+  if (window.__pendingDuelReq) respondDuel(false, window.__pendingDuelReq);
+});
+
+function setupDuelListeners() {
+  if (!mpEnabled || !db) return;
+  db.ref('duels/' + playerID).on('value', snap => {
+    const val = snap.val();
+    if (val && val.status === 'pending' && !duelBattleId) {
+      window.__pendingDuelReq = val;
+      document.getElementById('duelInviteToastText').textContent = (val.fromName || 'Pemain') + ' mengajak duel!';
+      document.getElementById('duelInviteToast').classList.add('visible');
+    } else if (!val) {
+      document.getElementById('duelInviteToast').classList.remove('visible');
+    }
+  });
+  db.ref('duels/' + playerID + '_sent').on('value', snap => {
+    const val = snap.val();
+    if (!val) return;
+    if (val.status === 'accepted' && val.battleId) {
+      db.ref('duels/' + playerID + '_sent').remove();
+      openDuelBattle(val.battleId, true);
+    } else if (val.status === 'declined') {
+      showToast((val.toName || 'Pemain') + ' menolak ajakan duel.');
+      db.ref('duels/' + playerID + '_sent').remove();
+    }
+  });
+}
+
+function openDuelBattle(battleId, isP1) {
+  duelBattleId = battleId;
+  amDuelP1 = isP1;
+  duelResolveGuard = false;
+  document.getElementById('duelBattleBackdrop').classList.add('visible');
+  document.getElementById('duelAttackBtn').disabled = false;
+  document.getElementById('duelStatusText').textContent = 'Fight!';
+  duelBattleRef = db.ref('duelBattles/' + battleId);
+  duelBattleRef.on('value', snap => {
+    const b = snap.val();
+    if (!b) return;
+    document.getElementById('duelMeName').textContent = isP1 ? (b.p1Name || 'Kamu') : (b.p2Name || 'Kamu');
+    document.getElementById('duelEnemyName').textContent = isP1 ? (b.p2Name || 'Lawan') : (b.p1Name || 'Lawan');
+    const myHp = isP1 ? b.hpP1 : b.hpP2;
+    const enemyHp = isP1 ? b.hpP2 : b.hpP1;
+    document.getElementById('duelMeHp').style.width = Math.max(0, myHp) + '%';
+    document.getElementById('duelEnemyHp').style.width = Math.max(0, enemyHp) + '%';
+    const elapsed = Date.now() - (b.startedAt || Date.now());
+    const remain = Math.max(0, Math.ceil((b.duration - elapsed) / 1000));
+    document.getElementById('duelTimerText').textContent = b.status === 'fighting' ? ('Sisa waktu: ' + remain + 's') : '';
+
+    if (b.status === 'fighting' && elapsed >= (b.duration || 15000) && !duelResolveGuard) {
+      duelResolveGuard = true;
+      const winnerIsP1 = (b.hpP1 || 0) >= (b.hpP2 || 0);
+      duelBattleRef.child('status').transaction(cur => cur === 'fighting' ? 'finished' : cur);
+      duelBattleRef.update({ winner: winnerIsP1 ? b.p1 : b.p2 });
+    }
+    if (b.status === 'finished') {
+      finishDuel(b, isP1);
+    }
+  });
+}
+
+function finishDuel(b, isP1) {
+  if (duelBattleRef) { duelBattleRef.off(); }
+  const myId = playerID;
+  const iWon = b.winner === myId;
+  document.getElementById('duelAttackBtn').disabled = true;
+  document.getElementById('duelStatusText').textContent = iWon ? '🏆 Kamu Menang!' : '💀 Kamu Kalah';
+  document.getElementById('duelTimerText').textContent = '';
+  if (!window.__duelRewardGiven || window.__duelRewardGiven !== b.startedAt) {
+    window.__duelRewardGiven = b.startedAt;
+    if (iWon) {
+      addCurrency(30, 0);
+      addExp(20);
+      player.duelWins = (player.duelWins || 0) + 1;
+      saveProfileFields({ duelWins: player.duelWins });
+      unlockAchievement('ach_first_duel_win');
+    } else {
+      addExp(5);
+      player.duelLosses = (player.duelLosses || 0) + 1;
+      saveProfileFields({ duelLosses: player.duelLosses });
+    }
+  }
+  setTimeout(() => {
+    document.getElementById('duelBattleBackdrop').classList.remove('visible');
+    duelBattleId = null;
+    duelBattleRef = null;
+  }, 2400);
+}
+
+function attackInDuel() {
+  if (!duelBattleId || !duelBattleRef) return;
+  const dmg = 5 + Math.floor(Math.random() * 11);
+  const targetField = amDuelP1 ? 'hpP2' : 'hpP1';
+  duelBattleRef.child(targetField).transaction(cur => Math.max(0, (typeof cur === 'number' ? cur : 100) - dmg));
+}
+document.getElementById('duelAttackBtn').addEventListener('touchstart', e => { attackInDuel(); e.preventDefault(); }, { passive: false });
+document.getElementById('duelAttackBtn').addEventListener('click', attackInDuel);
+// ================= END DUEL SYSTEM =================
 
 // Joystick implementation
 const joystick = { active: false, dx: 0, dy: 0, id: null };
@@ -1982,9 +3559,12 @@ document.querySelectorAll('.expr-field').forEach(field => {
         thumbRow.style.display = 'flex';
         // Kalau ekspresi yang baru diupload ini sedang aktif dipakai, langsung tampilkan
         if (player.expr === exprKey) player.sprite = compressed;
-        // Kirim ke Firebase per-ekspresi (jadi bagian dari node pemain ini, sehingga otomatis
-        // ikut terhapus saat pemain keluar/kena kick/tidak aktif — tidak ada sampah tersisa)
+        // Kirim ke Realtime Database per-ekspresi (dipakai pemain lain yang online SEKARANG,
+        // otomatis ikut terhapus saat pemain keluar/kena kick/tidak aktif)
         if (mpEnabled && myPlayerRef) myPlayerRef.child('avatars').update({ [exprKey]: dataURL });
+        // Simpan juga secara permanen ke Firebase Storage + Firestore (tersimpan lintas sesi,
+        // dipakai lagi otomatis saat pemain login ulang nanti)
+        if (__authUser) uploadAvatarToStorage(__authUser.uid, exprKey, dataURL);
       };
       compressed.src = dataURL;
     });
@@ -2193,112 +3773,26 @@ function drawGround() {
   const cols = Math.ceil(W/TILE)+2;
   const rows = Math.ceil(H/TILE)+2;
 
-  // Fungsi bantu: seed acak yang konsisten per-tile (tidak berubah tiap frame,
-  // jadi teksturnya tidak "berkedip")
-
-  const now = performance.now() / 1000;
+  // Fungsi bantu: seed acak yang konsisten per-tile (dipakai kalau nanti mau variasi lagi)
 
   for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
     const col = startCol+c, row = startRow+r;
     const wx = col*TILE, wy = row*TILE;
     const tType = getTerrain(col, row);
     const sx = wx - camera.x, sy = wy - camera.y;
-    const n = tileNoise(col, row);
 
-    if (tType === 'lake') {
-      // Danau tenang dengan riak melingkar pelan
-      ctx.fillStyle = n < 0.5 ? '#3f7fd1' : '#4a90e2';
-      ctx.fillRect(sx, sy, TILE, TILE);
-      const rippleT = now * 0.8 + (col * 0.4 + row * 0.4);
-      ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.arc(sx + TILE / 2, sy + TILE / 2, 5 + Math.sin(rippleT) * 2.5, 0, Math.PI * 2);
-      ctx.stroke();
-    } else if (tType === 'river') {
-      // Air dengan gradasi warna + kilau bergerak (poin: map lebih hidup)
-      ctx.fillStyle = n < 0.5 ? '#4a90e2' : '#5399e8';
-      ctx.fillRect(sx, sy, TILE, TILE);
-      const shimmerY = sy + TILE/2 + Math.sin(now * 1.4 + col * 0.6) * 5;
-      ctx.fillStyle = 'rgba(255,255,255,0.22)';
-      ctx.fillRect(sx + 6, shimmerY, TILE - 12, 3);
-      ctx.fillStyle = 'rgba(255,255,255,0.10)';
-      ctx.fillRect(sx + 2, sy + 6, TILE - 4, 2);
-    } else if (tType === 'path') {
-      // Jalan setapak tanah dengan variasi warna + kerikil kecil
-      ctx.fillStyle = n < 0.4 ? '#c29b61' : (n < 0.75 ? '#ba9257' : '#c8a26c');
-      ctx.fillRect(sx, sy, TILE, TILE);
-      ctx.fillStyle = 'rgba(0,0,0,0.08)';
-      ctx.fillRect(sx + 3, sy + 3, TILE - 6, TILE - 6);
-      if (n > 0.6) {
-        ctx.fillStyle = 'rgba(90,65,35,0.35)';
-        ctx.beginPath();
-        ctx.arc(sx + 10 + n*20, sy + 12 + (n*37%20), 2, 0, Math.PI*2);
-        ctx.fill();
-      }
-      if (n < 0.15) {
-        ctx.fillStyle = 'rgba(255,255,255,0.12)';
-        ctx.beginPath();
-        ctx.arc(sx + 30, sy + 30, 2, 0, Math.PI*2);
-        ctx.fill();
-      }
+    // ---------- Placeholder sederhana: tanah polos + kotak, siap diganti aset PNG kamu ----------
+    // Nanti tinggal isi TILE_TEXTURES.<jenis> dengan gambar (lihat MAP_TILE_CONFIG di atas <script>)
+    // untuk mengganti kotak warna ini jadi tekstur asli, tanpa perlu ubah logic di bawah ini.
+    const tex = TILE_TEXTURES[tType];
+    if (tex && tex.complete && tex.naturalWidth) {
+      ctx.drawImage(tex, sx, sy, TILE, TILE);
     } else {
-      // Rumput dengan variasi warna alami + rumpun kecil / bunga sesekali
-      ctx.fillStyle = n < 0.35 ? '#5fae3f' : (n < 0.7 ? '#57a53a' : '#66b846');
+      ctx.fillStyle = PLACEHOLDER_COLORS[tType] || PLACEHOLDER_COLORS.grass;
       ctx.fillRect(sx, sy, TILE, TILE);
-      if (((col)+(row))%2===0) {
-        ctx.fillStyle = 'rgba(0,0,0,0.05)';
-        ctx.fillRect(sx, sy, TILE, TILE);
-      }
-      // Rumpun rumput kecil (dikurangi biar tidak berat & tidak terlalu ramai)
-      if (n > 0.84) {
-        ctx.strokeStyle = 'rgba(40,90,30,0.5)';
-        ctx.lineWidth = 1.5;
-        const bx = sx + 10 + (n*53%28), by = sy + 14 + (n*91%20);
-        ctx.beginPath();
-        ctx.moveTo(bx, by); ctx.lineTo(bx-3, by-7);
-        ctx.moveTo(bx, by); ctx.lineTo(bx, by-8);
-        ctx.moveTo(bx, by); ctx.lineTo(bx+3, by-7);
-        ctx.stroke();
-      }
-      // Bunga kecil sesekali (dikurangi biar tidak berat)
-      if (n > 0.96) {
-        const fx = sx + 20 + (n*70%10), fy = sy + 26 + (n*40%10);
-        const petalColors = ['#fff07a', '#ff9ecf', '#c9a6ff', '#ffffff'];
-        ctx.fillStyle = petalColors[Math.floor(n*40)%petalColors.length];
-        for (let k=0;k<4;k++) {
-          const ang = k * Math.PI/2;
-          ctx.beginPath();
-          ctx.arc(fx + Math.cos(ang)*2.5, fy + Math.sin(ang)*2.5, 2, 0, Math.PI*2);
-          ctx.fill();
-        }
-        ctx.fillStyle = '#f4c542';
-        ctx.beginPath(); ctx.arc(fx, fy, 1.6, 0, Math.PI*2); ctx.fill();
-      }
-      // Batu kecil sesekali biar tanah tidak polos
-      else if (n > 0.75 && n <= 0.82) {
-        const px = sx + 8 + (n*61%18), py = sy + 18 + (n*33%12);
-        ctx.fillStyle = 'rgba(0,0,0,0.12)';
-        ctx.beginPath(); ctx.ellipse(px, py+2, 4, 1.6, 0, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#9a9a92';
-        ctx.beginPath(); ctx.ellipse(px, py, 3.6, 2.6, 0.3, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = 'rgba(255,255,255,0.3)';
-        ctx.beginPath(); ctx.ellipse(px-1, py-1, 1.4, 0.9, 0, 0, Math.PI*2); ctx.fill();
-      }
-    }
-
-    // Tepi berpasir di antara rumput & air (sungai/danau), biar transisinya tidak kaku
-    if (tType === 'grass') {
-      const isWater = t => t === 'river' || t === 'lake';
-      const nearRiver = isWater(getTerrain(col-1,row)) || isWater(getTerrain(col+1,row)) ||
-                         isWater(getTerrain(col,row-1)) || isWater(getTerrain(col,row+1));
-      if (nearRiver) {
-        ctx.fillStyle = 'rgba(222, 197, 142, 0.55)';
-        if (isWater(getTerrain(col,row-1))) ctx.fillRect(sx, sy, TILE, 8);
-        if (isWater(getTerrain(col,row+1))) ctx.fillRect(sx, sy+TILE-8, TILE, 8);
-        if (isWater(getTerrain(col-1,row))) ctx.fillRect(sx, sy, 8, TILE);
-        if (isWater(getTerrain(col+1,row))) ctx.fillRect(sx+TILE-8, sy, 8, TILE);
-      }
+      ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(sx + 0.5, sy + 0.5, TILE - 1, TILE - 1);
     }
   }
 
@@ -2547,6 +4041,76 @@ function drawNpc(x, y, name, color, phase) {
   drawNameTag(x, ry - 34, name, { color: '#ffe9b3' });
 }
 
+function getNameColor(nameColor) {
+  if (!nameColor) return '#ffe27a';
+  if (nameColor === 'gold') return '#ffd166';
+  if (nameColor === 'rainbow') {
+    const hue = (performance.now() / 20) % 360;
+    return `hsl(${hue}, 85%, 65%)`;
+  }
+  return nameColor;
+}
+const FRAME_COLORS = { gold: '#ffd166', silver: '#e0e0e0', diamond: '#7fd6ff' };
+function drawFrameRing(x, renderY, frameType) {
+  const color = FRAME_COLORS[frameType];
+  if (!color) return;
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2.5;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 6;
+  ctx.beginPath();
+  ctx.ellipse(x, renderY - 8, 15, 21, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  // Titik kecil dekoratif di 4 sisi bingkai (kesan "frame" bukan aura)
+  ctx.fillStyle = color;
+  [[0, -29], [0, 13], [-15, -8], [15, -8]].forEach(([dx, dy]) => {
+    ctx.beginPath();
+    ctx.arc(x + dx, renderY + dy, 1.6, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.restore();
+}
+function drawBattlePassBadge(x, tagY, hasBattlePass) {
+  if (!hasBattlePass) return;
+  ctx.save();
+  ctx.font = '11px Segoe UI';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
+  ctx.beginPath();
+  ctx.arc(x, tagY, 8, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillText('🎫', x, tagY + 0.5);
+  ctx.restore();
+}
+function drawAuraRing(x, renderY, color) {
+  if (!color) return;
+  ctx.save();
+  const t = performance.now() / 500;
+  const pulse = 1 + Math.sin(t) * 0.08;
+  ctx.globalAlpha = 0.55;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 3;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 12;
+  ctx.beginPath();
+  ctx.ellipse(x, renderY - 8, 22 * pulse, 28 * pulse, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+function drawStickerBubble(x, bubbleBottomY, sticker) {
+  ctx.save();
+  const t = performance.now() / 260;
+  const pop = 1 + Math.sin(t) * 0.06;
+  ctx.font = (34 * pop) + 'px Segoe UI';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+  ctx.shadowColor = 'rgba(0,0,0,0.4)';
+  ctx.shadowBlur = 6;
+  ctx.fillText(sticker, x, bubbleBottomY + 26);
+  ctx.restore();
+}
 function drawNameTag(x, y, text, opts) {
   opts = opts || {};
   ctx.save();
@@ -2578,6 +4142,9 @@ function drawPlayer(x,y) {
   const swayAngle = player.emoting ? Math.sin(player.emotePhase) * 0.22 : 0;
 
   const renderY = y - player.z - bounce;
+
+  if (player.activeAura) drawAuraRing(x, renderY, player.activeAura);
+  if (player.activeFrame) drawFrameRing(x, renderY, player.activeFrame);
 
   // Efek kedip merah saat kena dorongan (poin: kelihatan sendiri kalau habis kena pukul)
   if (player.hitFlashTimer > 0) {
@@ -2635,7 +4202,8 @@ function drawPlayer(x,y) {
 
   // Nama pemain di atas kepala
   if (player.name) {
-    drawNameTag(x, renderY - 62, player.name, { color: '#ffe27a' });
+    drawNameTag(x, renderY - 62, player.name, { color: getNameColor(player.nameColor) });
+    drawBattlePassBadge(x + 46, renderY - 62, player.battlePass);
   }
 
   // Voice Indicator / Audio Wave above head
@@ -2667,6 +4235,9 @@ function drawPlayer(x,y) {
 
   // Chat Bubble
   if (player.chatMessage && player.chatTimer > 0) {
+    if (STICKER_SET.includes(player.chatMessage)) {
+      drawStickerBubble(x, player.micActive ? (renderY - 78) : (renderY - 65), player.chatMessage);
+    } else {
     ctx.save();
     ctx.font = '13px Segoe UI';
     const padding = 8;
@@ -2696,6 +4267,7 @@ function drawPlayer(x,y) {
     ctx.textBaseline = 'middle';
     ctx.fillText(player.chatMessage, x, bubbleY + bubbleH / 2);
     ctx.restore();
+    }
   }
 }
 
@@ -2716,6 +4288,9 @@ function drawOtherPlayer(x, y, id, data, z) {
   const swayPhase = performance.now() / 1000 * 6 + idPhaseOffset(id);
   const swayAngle = data.emoting ? Math.sin(swayPhase) * 0.22 : 0;
   const renderY = y - z - bounce;
+
+  if (data.activeAura) drawAuraRing(x, renderY, data.activeAura);
+  if (data.activeFrame) drawFrameRing(x, renderY, data.activeFrame);
 
   let avImg = null;
   // Ambil foto sesuai ekspresi yang sedang dipakai pemain itu (fallback ke field 'avatar' lama)
@@ -2759,7 +4334,8 @@ function drawOtherPlayer(x, y, id, data, z) {
   }
 
   const label = data.name || ('Pemain ' + id.slice(0, 4));
-  drawNameTag(x, renderY - 48, label);
+  drawNameTag(x, renderY - 48, label, { color: getNameColor(data.nameColor) });
+  drawBattlePassBadge(x + 40, renderY - 48, data.battlePass);
 
   // Voice Indicator pemain lain (poin 3: sekarang tersinkron dari Firebase)
   if (data.micActive) {
@@ -2790,6 +4366,9 @@ function drawOtherPlayer(x, y, id, data, z) {
 
   // Chat Bubble pemain lain (poin 3: sekarang tersinkron dari Firebase)
   if (data.chatMessage) {
+    if (STICKER_SET.includes(data.chatMessage)) {
+      drawStickerBubble(x, data.micActive ? (renderY - 64) : (renderY - 51), data.chatMessage);
+    } else {
     ctx.save();
     ctx.font = '13px Segoe UI';
     const padding = 8;
@@ -2819,6 +4398,7 @@ function drawOtherPlayer(x, y, id, data, z) {
     ctx.textBaseline = 'middle';
     ctx.fillText(data.chatMessage, x, bubbleY + bubbleH / 2);
     ctx.restore();
+    }
   }
 }
 
@@ -2894,6 +4474,8 @@ function loop(now) {
   update(dt);
   ctx.clearRect(0,0,W,H);
   drawGround();
+  drawMapTintOverlay();
+  updateAndDrawAmbientParticles(dt);
   const dayInfo = getDayNightInfo();
   drawDayNightOverlay(dayInfo);
   updateTimeBadge(dayInfo);
