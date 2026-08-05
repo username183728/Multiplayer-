@@ -1069,6 +1069,11 @@
   <div class="panel-box">
     <h3><img src="assets/icons/map.png" class="icon-img" alt="" onerror="this.style.display='none'"> Pilih Map <button id="closeMapBtn">✕</button></h3>
     <div class="panel-sub">Kalau map penuh, kamu otomatis dipindah ke instance baru.</div>
+    <div class="party-join-row">
+      <input type="text" id="mapJoinCodeInput" maxlength="4" inputmode="numeric" placeholder="Masukkan kode map teman">
+      <button id="mapJoinCodeBtn" type="button">Gabung</button>
+    </div>
+    <div class="party-or-sep">— atau pilih map di bawah —</div>
     <div id="mapList"></div>
   </div>
 </div>
@@ -1598,13 +1603,16 @@ function iconImg(key, cls) {
 // dunia terasa terpisah per map walau masih 1 node Firebase "players").
 // Kalau map yang dipilih sudah penuh (>= MAX_PLAYERS), otomatis dialihkan ke
 // instance map berikutnya (map_2, map_3, dst) — sesuai skema "Map baru dibuat".
+// Tiap map punya "code" 4 digit tetap (kayak kode party di Roblox/Growtopia) supaya
+// pemain bisa langsung ketik kode itu di panel map buat masuk ke map yang sama
+// dengan temannya, tanpa harus scroll cari nama map satu-satu.
 const MAP_LIST = [
-  { id: 'meme_city', name: 'Meme City', icon: 'map_meme_city', tint: null },
-  { id: 'beach',      name: 'Beach',     icon: 'map_beach', tint: 'rgba(255,214,120,0.10)' },
-  { id: 'school',     name: 'School',    icon: 'map_school', tint: 'rgba(120,160,255,0.10)' },
-  { id: 'space',      name: 'Space',     icon: 'map_space', tint: 'rgba(15,10,45,0.5)' },
-  { id: 'horror',     name: 'Horror',    icon: 'map_horror', tint: 'rgba(40,0,15,0.42)' },
-  { id: 'christmas',  name: 'Christmas', icon: 'map_christmas', tint: 'rgba(140,205,255,0.16)' }
+  { id: 'meme_city', name: 'Meme City', icon: 'map_meme_city', tint: null, code: '1111' },
+  { id: 'beach',      name: 'Beach',     icon: 'map_beach', tint: 'rgba(255,214,120,0.10)', code: '2222' },
+  { id: 'school',     name: 'School',    icon: 'map_school', tint: 'rgba(120,160,255,0.10)', code: '3333' },
+  { id: 'space',      name: 'Space',     icon: 'map_space', tint: 'rgba(15,10,45,0.5)', code: '4444' },
+  { id: 'horror',     name: 'Horror',    icon: 'map_horror', tint: 'rgba(40,0,15,0.42)', code: '5555' },
+  { id: 'christmas',  name: 'Christmas (Salju)', icon: 'map_christmas', tint: 'rgba(140,205,255,0.16)', code: '6666' }
 ];
 let currentMapId = 'meme_city';
 let desiredMapId = 'meme_city';
@@ -1617,6 +1625,11 @@ function mapDisplayName(mapId) {
   const base = mapBaseInfo(mapId);
   const parts = (mapId || '').split('_instance_');
   return parts[1] ? (base.name + ' #' + parts[1]) : base.name;
+}
+// Cari map berdasarkan kode 4 digitnya (dipakai fitur "Gabung pakai Kode Map").
+function mapByCode(code) {
+  const clean = (code || '').trim();
+  return MAP_LIST.find(m => m.code === clean) || null;
 }
 function countPlayersInMap(mapId) {
   let c = 0;
@@ -2427,6 +2440,33 @@ function backToLobby() {
   lobbyOverlayEl.classList.add('visible');
 }
 
+// ---------- Titik spawn acak biar antar pemain gak numpuk-tindih di satu titik ----------
+// Sebelumnya semua pemain baru selalu muncul persis di tengah map (WORLD_W/2, WORLD_H/2),
+// jadi kalau beberapa temen masuk map/kode yang sama, avatar mereka numpuk saling tindih.
+// Fungsi ini menyebar titik munculnya di sekitar tengah map, dan kalau memungkinkan
+// menghindari titik yang sudah ditempati pemain lain yang sedang ada di map yang sama.
+function pickSpawnPoint(mapId) {
+  const cx = WORLD_W / 2, cy = WORLD_H / 2;
+  const radius = 160, minJarak = 50;
+  for (let attempt = 0; attempt < 12; attempt++) {
+    const angle = Math.random() * Math.PI * 2;
+    const dist = Math.random() * radius;
+    const x = Math.max(40, Math.min(WORLD_W - 40, cx + Math.cos(angle) * dist));
+    const y = Math.max(40, Math.min(WORLD_H - 40, cy + Math.sin(angle) * dist));
+    let tooClose = false;
+    for (const id in lastPlayersSnapshot) {
+      const d = lastPlayersSnapshot[id];
+      if (!d || (d.mapId || 'meme_city') !== mapId) continue;
+      const dx = (d.x || 0) - x, dy = (d.y || 0) - y;
+      if (Math.sqrt(dx * dx + dy * dy) < minJarak) { tooClose = true; break; }
+    }
+    if (!tooClose) return { x, y };
+  }
+  // Kalau 12x percobaan tetap penuh sesak, tetap kasih posisi acak (lebih baik daripada numpuk pasti)
+  const angle = Math.random() * Math.PI * 2;
+  return { x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius };
+}
+
 const lobbyNameInput = document.getElementById('lobbyNameInput');
 const lobbyPlayBtn = document.getElementById('lobbyPlayBtn');
 function submitLobby() {
@@ -2448,6 +2488,11 @@ function submitLobby() {
     currentMapId = desiredMapId;
     rebuildOtherPlayersForCurrentMap();
   }
+
+  // Sebar titik spawn biar gak numpuk-tindih sama pemain lain yang sudah ada di map ini
+  const spawn = pickSpawnPoint(currentMapId);
+  player.x = spawn.x;
+  player.y = spawn.y;
 
   enterGame(name);
 }
@@ -3129,7 +3174,7 @@ function renderMapList() {
     row.innerHTML = `<div class="mr-icon">${iconImg(m.icon, 'icon-img-lg')}</div>
       <div class="mr-info">
         <div class="mr-name">${escapeHtml(m.name)}</div>
-        <div class="mr-sub">${subText}</div>
+        <div class="mr-sub">${subText} • Kode: ${m.code}</div>
       </div>
       <button>${desiredMapId === m.id ? 'Terpilih' : 'Pilih'}</button>`;
     row.querySelector('button').addEventListener('click', () => selectMap(m.id));
@@ -3169,6 +3214,27 @@ function selectMap(mapId) {
 function openMapPanel() { renderMapList(); document.getElementById('mapBackdrop').classList.add('visible'); }
 function closeMapPanel() { document.getElementById('mapBackdrop').classList.remove('visible'); }
 document.getElementById('closeMapBtn').addEventListener('click', closeMapPanel);
+
+// ---------- Gabung Map pakai Kode (mis. "Map ini code 2564" -> temen ketik 2564) ----------
+// Cukup ketik kode 4 digit map yang sama dengan temanmu, langsung ke-set sebagai map
+// pilihan (desiredMapId/currentMapId) sama kayak pilih dari daftar map biasa, jadi kalian
+// berdua akan disatukan sesuai mapId yang sama di Firebase saat sama-sama tekan MULAI.
+const mapJoinCodeInput = document.getElementById('mapJoinCodeInput');
+const mapJoinCodeBtn = document.getElementById('mapJoinCodeBtn');
+function joinMapByCode() {
+  const code = (mapJoinCodeInput.value || '').trim();
+  if (!code) { showToast('Masukkan kode map dulu'); return; }
+  const found = mapByCode(code);
+  if (!found) { showToast('Kode map tidak ditemukan'); return; }
+  selectMap(found.id);
+  mapJoinCodeInput.value = '';
+  showToast('Masuk ke ' + found.name + ' (Kode ' + found.code + ')');
+}
+mapJoinCodeBtn.addEventListener('click', joinMapByCode);
+mapJoinCodeInput.addEventListener('keydown', e => { if (e.key === 'Enter') joinMapByCode(); });
+mapJoinCodeInput.addEventListener('input', () => {
+  mapJoinCodeInput.value = mapJoinCodeInput.value.replace(/[^0-9]/g, '');
+});
 document.getElementById('lobbySelectedMapBtn').addEventListener('click', openMapPanel);
 // ================= END MULTI-MAP + QUEUE SYSTEM =================
 
