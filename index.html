@@ -1141,6 +1141,8 @@
     <button id="gearSpinBtn" class="fileBtn" style="width:auto; flex:1;"><img src="assets/icons/spin.png" class="icon-img" alt="" onerror="this.style.display='none'"> Spin</button>
   </div>
 
+  <button id="gearBackToLobbyBtn" class="fileBtn" style="background:rgba(255,71,87,0.16); color:#ff4757; border:1px solid rgba(255,71,87,0.35); margin-bottom:6px;">🚪 Kembali ke Lobby</button>
+
   <div class="field" id="creatorStudioField" style="display:none;">
     <h3 style="margin-top:0;"><img src="assets/icons/creator_pass.png" class="icon-img" alt="" onerror="this.style.display='none'"> Creator Studio</h3>
     <div style="font-size:11px; opacity:0.7; margin-bottom:8px;">Kamu punya Creator Pass! Pilih warna aura bebas untuk karaktermu.</div>
@@ -1517,6 +1519,14 @@ function ensureFullscreen() {
   if (screen.orientation && screen.orientation.lock) {
     screen.orientation.lock('landscape').catch(() => {});
   }
+}
+// Coba kunci ke mode lanskap SEDINI MUNGKIN saat halaman baru dibuka (sebelum pemain
+// menyentuh apa pun) — di sebagian browser/mode (misal dibuka sebagai app terinstal/TWA)
+// ini berhasil tanpa perlu fullscreen dulu. Kalau browser menolak (kebanyakan browser
+// memang mewajibkan sentuhan pengguna dulu), tidak masalah — begitu pemain menyentuh
+// layar pertama kali, listener pointerdown di bawah otomatis mencoba lagi lewat fullscreen.
+if (screen.orientation && screen.orientation.lock) {
+  screen.orientation.lock('landscape').catch(() => {});
 }
 document.addEventListener('pointerdown', e => {
   const tag = e.target && e.target.tagName;
@@ -2378,6 +2388,43 @@ function enterGame(name) {
   }
   updateHudCurrency();
   refreshCreatorStudioVisibility();
+}
+
+// ---------- Kembali ke Lobby dari dalam game ----------
+// Membersihkan koneksi suara & data pemain di server, lalu memunculkan lagi
+// layar lobby (panggung karakter) di atas game yang tetap render di belakang.
+function backToLobby() {
+  if (!gameEntered) return;
+  if (!confirm('Kembali ke lobby? Kamu akan keluar dari map saat ini.')) return;
+
+  closePanel();
+  closePartyPanel();
+
+  if (player.micActive) {
+    disableMic();
+    player.micActive = false;
+    micBtn.classList.remove('active');
+  }
+  for (const id in peerConnections) closePeerConnection(id);
+  for (const id in otherPlayers) {
+    delete otherPlayers[id];
+    delete otherPlayersRender[id];
+    delete avatarImgCache[id];
+  }
+
+  if (mpEnabled && myPlayerRef) {
+    myPlayerRef.off();
+    myPlayerRef.remove();
+    myPlayerRef = null;
+  }
+
+  for (const k in keys) keys[k] = false;
+  player.moving = false;
+
+  gameEntered = false;
+  const lobbyOverlayEl = document.getElementById('lobbyOverlay');
+  lobbyOverlayEl.style.display = '';
+  lobbyOverlayEl.classList.add('visible');
 }
 
 const lobbyNameInput = document.getElementById('lobbyNameInput');
@@ -3650,6 +3697,7 @@ function closePanel() { panel.classList.remove('open'); backdrop.classList.remov
 gearBtn.addEventListener('click', openPanel);
 document.getElementById('closePanelBtn').addEventListener('click', closePanel);
 backdrop.addEventListener('click', closePanel);
+document.getElementById('gearBackToLobbyBtn').addEventListener('click', backToLobby);
 
 function loadImageFromFile(file, onReady) {
   const reader = new FileReader();
