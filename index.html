@@ -312,8 +312,25 @@
     box-shadow: 0 0 14px rgba(152,152,152,0.65), inset 0 1px 0 rgba(255,255,255,0.3);
   }
 
-  #chatBtn {
+  /* ---------- Deafen Button (di bawah tombol Mic) — matiin suara semua pemain lain ---------- */
+  #deafenBtn {
     position: fixed; top: 58px; left: 128px; z-index: 30;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(145deg, #3d3d3d, #1c1c1c);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: #fff; font-size: 15px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12);
+    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+  }
+  #deafenBtn:active { transform: scale(0.92); }
+  #deafenBtn.active {
+    background: linear-gradient(145deg, #d34c4c, #8a2626);
+    box-shadow: 0 0 14px rgba(211,76,76,0.65), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+
+  #chatBtn {
+    position: fixed; top: 102px; left: 128px; z-index: 30;
     width: 36px; height: 36px; border-radius: 50%;
     background: linear-gradient(145deg, #3d3d3d, #1c1c1c);
     border: 1px solid rgba(255,255,255,0.18);
@@ -326,7 +343,7 @@
 
   /* ---------- Party Button + Panel ---------- */
   #partyBtn {
-    position: fixed; top: 102px; left: 128px; z-index: 30;
+    position: fixed; top: 146px; left: 128px; z-index: 30;
     width: 36px; height: 36px; border-radius: 50%;
     background: linear-gradient(145deg, #3d3d3d, #1c1c1c);
     border: 1px solid rgba(255,255,255,0.18);
@@ -972,6 +989,7 @@
 
   <!-- Mic & Chat Buttons near Minimap -->
   <button id="micBtn" title="Mikrofon">🎤</button>
+  <button id="deafenBtn" title="Bisukan suara pemain lain">🔇</button>
   <button id="chatBtn" title="Chat">✉️</button>
   <button id="partyBtn" title="Party">👥<span id="partyBadge"></span></button>
 
@@ -2037,6 +2055,21 @@ const remoteAudioEls = {};    // remoteId -> <audio>
 let micAudioCtx = null, micAnalyser = null, micDataArray = null;
 let speakingHoldTimer = 0; // biar indikator hijau tidak kedap-kedip
 
+// ---------- Deafen (bisukan suara SEMUA pemain lain, mic sendiri tetap nyala) ----------
+let isDeafened = false;
+// Audio elements yang gagal autoplay (diblokir browser) ditaruh di sini, lalu
+// dicoba play() lagi begitu ada sentuhan/klik pertama di layar.
+const pendingAudioUnlock = [];
+function unlockAudioPlayback() {
+  if (micAudioCtx && micAudioCtx.state === 'suspended') micAudioCtx.resume().catch(() => {});
+  while (pendingAudioUnlock.length) {
+    const el = pendingAudioUnlock.pop();
+    if (el && el.isConnected) el.play().catch(() => {});
+  }
+}
+document.addEventListener('pointerdown', unlockAudioPlayback, { passive: true });
+document.addEventListener('touchstart', unlockAudioPlayback, { passive: true });
+
 function setupMicAnalyser(stream) {
   try {
     micAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -2084,6 +2117,14 @@ function getOrCreatePeerConnection(remoteId) {
       remoteAudioEls[remoteId] = audioEl;
     }
     audioEl.srcObject = e.streams[0];
+    audioEl.muted = isDeafened; // kalau lagi Deafen, pemain baru pun langsung dibisukan
+    // BUG FIX: banyak browser mobile/webview memblokir autoplay elemen <audio> yang
+    // dibuat secara dinamis (di luar langsung dalam event klik), jadi walau koneksi
+    // WebRTC-nya sukses, suaranya tetap tidak kedengaran sampai audio-nya di-play()
+    // manual. Kita coba play() langsung, dan kalau diblokir, dicoba lagi begitu ada
+    // sentuhan/klik pertama di layar (unlockAudioPlayback).
+    const tryPlay = () => audioEl.play().catch(() => { pendingAudioUnlock.push(audioEl); });
+    tryPlay();
   };
   pc.onconnectionstatechange = () => {
     if (['failed', 'closed', 'disconnected'].includes(pc.connectionState)) {
@@ -2098,7 +2139,11 @@ function closePeerConnection(remoteId) {
   const pc = peerConnections[remoteId];
   if (pc) { try { pc.close(); } catch(e){} delete peerConnections[remoteId]; }
   const audioEl = remoteAudioEls[remoteId];
-  if (audioEl) { audioEl.srcObject = null; audioEl.remove(); delete remoteAudioEls[remoteId]; }
+  if (audioEl) {
+    const idx = pendingAudioUnlock.indexOf(audioEl);
+    if (idx > -1) pendingAudioUnlock.splice(idx, 1);
+    audioEl.srcObject = null; audioEl.remove(); delete remoteAudioEls[remoteId];
+  }
 }
 
 // ---------- Suara mic pemain lain jadi lebih pelan/kencang tergantung jaraknya ----------
@@ -2808,6 +2853,23 @@ micBtn.addEventListener('click', async () => {
   } finally {
     micBusy = false;
   }
+});
+
+// Deafen Button — bisukan suara SEMUA pemain lain (mic sendiri tetap jalan,
+// jadi teman masih bisa dengar kamu, kamu cuma gak dengar mereka).
+const deafenBtn = document.getElementById('deafenBtn');
+function applyDeafenState() {
+  for (const id in remoteAudioEls) {
+    const el = remoteAudioEls[id];
+    if (el) el.muted = isDeafened;
+  }
+}
+deafenBtn.addEventListener('click', () => {
+  isDeafened = !isDeafened;
+  deafenBtn.classList.toggle('active', isDeafened);
+  deafenBtn.textContent = isDeafened ? '🔇' : '🔊';
+  applyDeafenState();
+  showToast(isDeafened ? 'Suara pemain lain dibisukan' : 'Suara pemain lain dinyalakan lagi');
 });
 
 // Skill 1: Bakar (🔥) - KHUSUS ADMIN: Pemain lain yang didekati akan dikeluarkan (kick) dari game
