@@ -389,6 +389,29 @@
     background:rgba(211,211,211,0.18); color:#d3d3d3; border:none; border-radius:7px;
     padding:7px 11px; font-size:11px; font-weight:600; cursor:pointer; font-family:'Poppins', sans-serif;
   }
+  /* ---------- Kartu info instance map (pojok panel Pilih Map) ---------- */
+  .map-instance-card {
+    background:rgba(211,211,211,0.08); border:1px solid rgba(211,211,211,0.3);
+    border-radius:12px; padding:12px 13px; margin-bottom:12px;
+  }
+  .mic-row1 { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:2px; }
+  .mic-map-name { color:#eaeaea; font-size:14px; font-weight:600; }
+  .mic-player-count { color:rgba(234,234,234,0.6); font-size:11.5px; white-space:nowrap; }
+  .mic-instance { color:rgba(234,234,234,0.5); font-size:11px; margin-bottom:10px; }
+  .mic-code-row {
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    background:rgba(0,0,0,0.25); border:1px solid rgba(211,211,211,0.25);
+    border-radius:9px; padding:9px 11px; margin-bottom:9px;
+  }
+  .mic-code-label { font-size:10.5px; color:rgba(234,234,234,0.5); }
+  .mic-code { font-size:15px; font-weight:700; letter-spacing:0.08em; color:#d3d3d3; }
+  .mic-actions { display:flex; gap:8px; }
+  .mic-actions button {
+    flex:1; background:rgba(211,211,211,0.16); color:#eaeaea; border:none; border-radius:8px;
+    padding:9px 8px; font-size:12px; font-weight:600; cursor:pointer; font-family:'Poppins', sans-serif;
+    transition:filter 0.15s;
+  }
+  .mic-actions button:active { filter:brightness(0.85); }
   .party-join-row { display:flex; gap:8px; margin-bottom:10px; }
   .party-join-row input {
     flex:1; min-width:0; padding:11px 10px; border-radius:10px; border:1px solid rgba(255,255,255,0.14);
@@ -1069,8 +1092,25 @@
   <div class="panel-box">
     <h3><img src="assets/icons/map.png" class="icon-img" alt="" onerror="this.style.display='none'"> Pilih Map <button id="closeMapBtn">✕</button></h3>
     <div class="panel-sub">Kalau map penuh, kamu otomatis dipindah ke instance baru.</div>
+
+    <div class="map-instance-card" id="mapInstanceCard">
+      <div class="mic-row1">
+        <span class="mic-map-name" id="micMapName">Meme City</span>
+        <span class="mic-player-count" id="micPlayerCount">👥 0/5</span>
+      </div>
+      <div class="mic-instance" id="micInstanceLabel">Instance #1</div>
+      <div class="mic-code-row">
+        <span class="mic-code-label">Kode Bergabung</span>
+        <span class="mic-code" id="micCodeText">CITY-1234</span>
+      </div>
+      <div class="mic-actions">
+        <button id="micCopyBtn" type="button">📋 Salin Kode</button>
+        <button id="micShareBtn" type="button">📤 Bagikan</button>
+      </div>
+    </div>
+
     <div class="party-join-row">
-      <input type="text" id="mapJoinCodeInput" maxlength="4" inputmode="numeric" placeholder="Masukkan kode map teman">
+      <input type="text" id="mapJoinCodeInput" maxlength="14" placeholder="Masukkan kode instance teman">
       <button id="mapJoinCodeBtn" type="button">Gabung</button>
     </div>
     <div class="party-or-sep">— atau pilih map di bawah —</div>
@@ -1607,12 +1647,12 @@ function iconImg(key, cls) {
 // pemain bisa langsung ketik kode itu di panel map buat masuk ke map yang sama
 // dengan temannya, tanpa harus scroll cari nama map satu-satu.
 const MAP_LIST = [
-  { id: 'meme_city', name: 'Meme City', icon: 'map_meme_city', tint: null, code: '1111' },
-  { id: 'beach',      name: 'Beach',     icon: 'map_beach', tint: 'rgba(255,214,120,0.10)', code: '2222' },
-  { id: 'school',     name: 'School',    icon: 'map_school', tint: 'rgba(120,160,255,0.10)', code: '3333' },
-  { id: 'space',      name: 'Space',     icon: 'map_space', tint: 'rgba(15,10,45,0.5)', code: '4444' },
-  { id: 'horror',     name: 'Horror',    icon: 'map_horror', tint: 'rgba(40,0,15,0.42)', code: '5555' },
-  { id: 'christmas',  name: 'Christmas (Salju)', icon: 'map_christmas', tint: 'rgba(140,205,255,0.16)', code: '6666' }
+  { id: 'meme_city', name: 'Meme City', icon: 'map_meme_city', tint: null, codePrefix: 'CITY' },
+  { id: 'beach',      name: 'Beach',     icon: 'map_beach', tint: 'rgba(255,214,120,0.10)', codePrefix: 'PANTAI' },
+  { id: 'school',     name: 'School',    icon: 'map_school', tint: 'rgba(120,160,255,0.10)', codePrefix: 'SKUL' },
+  { id: 'space',      name: 'Space',     icon: 'map_space', tint: 'rgba(15,10,45,0.5)', codePrefix: 'SPACE' },
+  { id: 'horror',     name: 'Horror',    icon: 'map_horror', tint: 'rgba(40,0,15,0.42)', codePrefix: 'HOROR' },
+  { id: 'christmas',  name: 'Christmas (Salju)', icon: 'map_christmas', tint: 'rgba(140,205,255,0.16)', codePrefix: 'SALJU' }
 ];
 let currentMapId = 'meme_city';
 let desiredMapId = 'meme_city';
@@ -1626,10 +1666,45 @@ function mapDisplayName(mapId) {
   const parts = (mapId || '').split('_instance_');
   return parts[1] ? (base.name + ' #' + parts[1]) : base.name;
 }
-// Cari map berdasarkan kode 4 digitnya (dipakai fitur "Gabung pakai Kode Map").
-function mapByCode(code) {
-  const clean = (code || '').trim();
-  return MAP_LIST.find(m => m.code === clean) || null;
+// ---------- Kode Bergabung PER-INSTANCE (mis. SALJU-2873) ----------
+// Setiap instance (Salju #1, Salju #2, Salju #3, dst) punya kode unik sendiri,
+// dihitung deterministik dari id instance-nya (hash sederhana) supaya semua
+// pemain di device manapun menghasilkan kode yang SAMA persis untuk instance
+// yang sama — tanpa perlu nyimpen daftar kode di server manapun.
+function hashString(str) {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) >>> 0;
+  return h;
+}
+function instanceCodeNumber(mapId) {
+  return 1000 + (hashString(mapId) % 9000); // selalu 4 digit: 1000-9999
+}
+function instanceCodeFor(mapId) {
+  const base = mapBaseInfo(mapId);
+  return (base.codePrefix || base.id.toUpperCase()) + '-' + instanceCodeNumber(mapId);
+}
+function instanceNumberOf(mapId) {
+  const parts = (mapId || '').split('_instance_');
+  return parts[1] ? parseInt(parts[1], 10) : 1;
+}
+// Cari mapId (instance) dari kode yang diketik pemain, mis. "SALJU-2873" atau cuma "2873".
+// Dicek terhadap 500 kemungkinan nomor instance per map — instance yang belum
+// pernah ada pemainnya pun tetap valid dicari (kodenya sudah pasti sejak awal).
+function findMapIdByCode(inputCode) {
+  const raw = (inputCode || '').trim().toUpperCase().replace(/\s+/g, '');
+  if (!raw) return null;
+  const dashIdx = raw.indexOf('-');
+  const prefix = dashIdx > -1 ? raw.slice(0, dashIdx) : null;
+  const digits = (dashIdx > -1 ? raw.slice(dashIdx + 1) : raw).replace(/[^0-9]/g, '');
+  if (digits.length < 3) return null;
+  const candidateMaps = prefix ? MAP_LIST.filter(m => m.codePrefix === prefix) : MAP_LIST;
+  for (const m of candidateMaps) {
+    for (let n = 1; n <= 500; n++) {
+      const mapId = n === 1 ? m.id : (m.id + '_instance_' + n);
+      if (String(instanceCodeNumber(mapId)) === digits) return mapId;
+    }
+  }
+  return null;
 }
 function countPlayersInMap(mapId) {
   let c = 0;
@@ -1640,15 +1715,19 @@ function countPlayersInMap(mapId) {
   return c;
 }
 // Cari instance map yang masih ada slot kosong; kalau semua penuh, buat instance baru.
-function resolveMapAssignment(baseMapId) {
-  if (MAX_PLAYERS <= 0) return baseMapId;
-  if (countPlayersInMap(baseMapId) < MAX_PLAYERS) return baseMapId;
+// desiredMapId boleh berupa instance spesifik (mis. hasil masuk pakai Kode Bergabung
+// ke "Salju #3") — kalau instance itu ternyata penuh pas MULAI ditekan, pencarian
+// overflow tetap dimulai dari map dasarnya (bukan numpuk suffix instance di instance).
+function resolveMapAssignment(desiredMapId) {
+  if (MAX_PLAYERS <= 0) return desiredMapId;
+  if (countPlayersInMap(desiredMapId) < MAX_PLAYERS) return desiredMapId;
+  const baseId = mapBaseInfo(desiredMapId).id;
   let n = 2;
-  while (countPlayersInMap(baseMapId + '_instance_' + n) >= MAX_PLAYERS) {
+  while (countPlayersInMap(baseId + '_instance_' + n) >= MAX_PLAYERS) {
     n++;
     if (n > 999) break; // pengaman
   }
-  return baseMapId + '_instance_' + n;
+  return baseId + '_instance_' + n;
 }
 
 const canvas = document.getElementById('game');
@@ -3174,16 +3253,31 @@ function renderMapList() {
     row.innerHTML = `<div class="mr-icon">${iconImg(m.icon, 'icon-img-lg')}</div>
       <div class="mr-info">
         <div class="mr-name">${escapeHtml(m.name)}</div>
-        <div class="mr-sub">${subText} • Kode: ${m.code}</div>
+        <div class="mr-sub">${subText} • Kode: ${instanceCodeFor(m.id)}</div>
       </div>
       <button>${desiredMapId === m.id ? 'Terpilih' : 'Pilih'}</button>`;
     row.querySelector('button').addEventListener('click', () => selectMap(m.id));
     list.appendChild(row);
   });
+  updateMapInstanceCard();
 }
 function refreshMapPanelCounts() {
   const backdrop = document.getElementById('mapBackdrop');
   if (backdrop && backdrop.classList.contains('visible')) renderMapList();
+}
+// Isi kartu info instance (nama map, jumlah pemain, nomor instance, kode gabung)
+// sesuai currentMapId yang lagi dipilih di lobby.
+function updateMapInstanceCard() {
+  const info = mapBaseInfo(currentMapId);
+  const count = countPlayersInMap(currentMapId);
+  const nameEl = document.getElementById('micMapName');
+  const countEl = document.getElementById('micPlayerCount');
+  const instEl = document.getElementById('micInstanceLabel');
+  const codeEl = document.getElementById('micCodeText');
+  if (nameEl) nameEl.textContent = info.name;
+  if (countEl) countEl.textContent = '👥 ' + (MAX_PLAYERS > 0 ? (count + '/' + MAX_PLAYERS) : (count + ' online'));
+  if (instEl) instEl.textContent = 'Instance #' + instanceNumberOf(currentMapId);
+  if (codeEl) codeEl.textContent = instanceCodeFor(currentMapId);
 }
 // Bangun ulang otherPlayers dari snapshot terakhir sesuai currentMapId sekarang —
 // dipanggil manual saat currentMapId berubah di luar event Firebase (mis. setelah
@@ -3209,31 +3303,53 @@ function selectMap(mapId) {
   renderMapList();
   refreshLobbyNames(lastPlayersSnapshot);
   rebuildOtherPlayersForCurrentMap();
+  updateMapInstanceCard();
   closeMapPanel();
 }
-function openMapPanel() { renderMapList(); document.getElementById('mapBackdrop').classList.add('visible'); }
+function openMapPanel() { renderMapList(); updateMapInstanceCard(); document.getElementById('mapBackdrop').classList.add('visible'); }
 function closeMapPanel() { document.getElementById('mapBackdrop').classList.remove('visible'); }
 document.getElementById('closeMapBtn').addEventListener('click', closeMapPanel);
 
-// ---------- Gabung Map pakai Kode (mis. "Map ini code 2564" -> temen ketik 2564) ----------
-// Cukup ketik kode 4 digit map yang sama dengan temanmu, langsung ke-set sebagai map
+// ---------- Salin Kode & Bagikan (kartu info instance) ----------
+const micCopyBtn = document.getElementById('micCopyBtn');
+const micShareBtn = document.getElementById('micShareBtn');
+micCopyBtn.addEventListener('click', () => {
+  const code = instanceCodeFor(currentMapId);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(() => showToast('Kode disalin: ' + code)).catch(() => showToast(code));
+  } else {
+    showToast(code);
+  }
+});
+micShareBtn.addEventListener('click', () => {
+  const code = instanceCodeFor(currentMapId);
+  const text = 'Ayo main bareng di Memeverse Online! Masuk ke ' + mapDisplayName(currentMapId) + ' pakai kode: ' + code;
+  if (navigator.share) {
+    navigator.share({ title: 'Memeverse Online', text }).catch(() => {});
+  } else {
+    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+  }
+});
+
+// ---------- Gabung Map pakai Kode Instance (mis. "SALJU-2873") ----------
+// Ketik kode instance yang sama dengan temanmu, langsung ke-set sebagai map
 // pilihan (desiredMapId/currentMapId) sama kayak pilih dari daftar map biasa, jadi kalian
 // berdua akan disatukan sesuai mapId yang sama di Firebase saat sama-sama tekan MULAI.
 const mapJoinCodeInput = document.getElementById('mapJoinCodeInput');
 const mapJoinCodeBtn = document.getElementById('mapJoinCodeBtn');
 function joinMapByCode() {
-  const code = (mapJoinCodeInput.value || '').trim();
-  if (!code) { showToast('Masukkan kode map dulu'); return; }
-  const found = mapByCode(code);
-  if (!found) { showToast('Kode map tidak ditemukan'); return; }
-  selectMap(found.id);
+  const raw = (mapJoinCodeInput.value || '').trim();
+  if (!raw) { showToast('Masukkan kode dulu'); return; }
+  const mapId = findMapIdByCode(raw);
+  if (!mapId) { showToast('Kode tidak ditemukan'); return; }
+  selectMap(mapId);
   mapJoinCodeInput.value = '';
-  showToast('Masuk ke ' + found.name + ' (Kode ' + found.code + ')');
+  showToast('Masuk ke ' + mapDisplayName(mapId) + ' (Kode ' + instanceCodeFor(mapId) + ')');
 }
 mapJoinCodeBtn.addEventListener('click', joinMapByCode);
 mapJoinCodeInput.addEventListener('keydown', e => { if (e.key === 'Enter') joinMapByCode(); });
 mapJoinCodeInput.addEventListener('input', () => {
-  mapJoinCodeInput.value = mapJoinCodeInput.value.replace(/[^0-9]/g, '');
+  mapJoinCodeInput.value = mapJoinCodeInput.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
 });
 document.getElementById('lobbySelectedMapBtn').addEventListener('click', openMapPanel);
 // ================= END MULTI-MAP + QUEUE SYSTEM =================
