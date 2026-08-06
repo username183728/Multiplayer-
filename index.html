@@ -34,6 +34,23 @@
     river: '',
     lake: ''
   };
+
+  // =====================================================================
+  // ====== ASET SENJATA & PELURU (gampang diganti sendiri lewat PNG) ======
+  // Taruh file PNG kamu (disarankan persegi, mis. 64x64, latar transparan) di
+  // folder yang sama dengan index.html ini, lalu tulis nama file/URL-nya di
+  // bawah. Kosongkan (isi dengan '') kalau belum punya asetnya — sementara
+  // akan dipakai gambar panah putih polos sebagai placeholder.
+  // Catatan arah: gambar dianggap MENGHADAP KE KANAN secara default, lalu
+  // otomatis diputar mengikuti arah bidik/lemparan.
+  // =====================================================================
+  window.WEAPON_VISUAL_CONFIG = {
+    // Ikon yang muncul di tangan/dekat pemain saat menahan tombol Tembak.
+    // Bisa diisi gambar pistol, pedang, tongkat sihir, atau apapun.
+    aimIndicatorImage: '',
+    // Gambar peluru/proyektil yang melesat dari pemain ke target.
+    bulletImage: ''
+  };
 </script>
 
 <!-- ====== PWA / Play Store readiness ====== -->
@@ -872,6 +889,25 @@
   }
   #mpStatus.online .dot { background:#989898; box-shadow:0 0 4px rgba(152,152,152,0.8); }
 
+  /* ---------- Bar Darah (HP) pemain: tepat di bawah indikator jumlah pemain online ---------- */
+  #hpBarWrap {
+    position:fixed; top:126px; left:14px; z-index:30;
+    width:104px;
+    background:rgba(0,0,0,0.32); border:1px solid rgba(255,255,255,0.15);
+    border-radius:10px; padding:5px 7px; pointer-events:none;
+  }
+  #hpBarRow { display:flex; align-items:center; justify-content:space-between; margin-bottom:3px; }
+  #hpBarLabel { font-size:9px; font-weight:700; letter-spacing:0.04em; color:rgba(255,255,255,0.75); }
+  #hpBarValue { font-size:9px; font-weight:600; color:rgba(255,255,255,0.75); }
+  #hpBarTrack { width:100%; height:7px; background:rgba(255,255,255,0.15); border-radius:5px; overflow:hidden; }
+  #hpBarFill {
+    height:100%; width:100%; border-radius:5px;
+    background: linear-gradient(90deg,#e23b3b,#8f1f1f);
+    transition: width 0.25s ease, background 0.25s ease;
+  }
+  #hpBarFill.low { background: linear-gradient(90deg,#ff6a3d,#b33a12); }
+  #hpBarFill.critical { background: linear-gradient(90deg,#ff2d2d,#7a0f0f); }
+
   /* =====================================================================
      ====== TEMA UI TERANG (putih/abu muda, kartu rounded, ikon gelap) ======
      Restyle tampilan lobi & HUD in-game supaya senada dengan referensi
@@ -1049,6 +1085,15 @@
   }
   #mpStatus .dot { background:#c7cad1; }
   #mpStatus.online .dot { background:#3ecf6a !important; box-shadow:none !important; }
+
+  /* ---- In-game HUD: bar darah (HP), kartu putih senada di bawah mpStatus ---- */
+  #hpBarWrap {
+    background:#ffffff !important; border:none !important;
+    box-shadow:0 2px 8px rgba(20,20,30,0.07);
+  }
+  #hpBarLabel { color:#8a8f98 !important; }
+  #hpBarValue { color:#8a8f98 !important; }
+  #hpBarTrack { background:#eceef1 !important; }
 
   /* ---- In-game HUD: joystick, tombol Lompat & skill jadi minimal & transparan ---- */
   #joystickBase {
@@ -1253,6 +1298,15 @@
 
   <button id="fsHint" title="Layar penuh"><img src="assets/icons/fullscreen.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"></button>
   <div id="mpStatus"><span class="dot"></span><span id="mpStatusText">…</span></div>
+
+  <!-- Bar Darah (HP) pemain, di bawah minimap & indikator jumlah pemain -->
+  <div id="hpBarWrap">
+    <div id="hpBarRow">
+      <span id="hpBarLabel">HP</span>
+      <span id="hpBarValue">100/100</span>
+    </div>
+    <div id="hpBarTrack"><div id="hpBarFill"></div></div>
+  </div>
 
   <div id="hudPlayerCard">
     <div id="hudPlayerAvatar">
@@ -1874,6 +1928,9 @@ const otherPlayersRender = {};
 const avatarImgCache = {};
 // Efek skill (api / dorongan) yang sedang tampil di layar, disinkronkan lewat Firebase
 const activeEffects = [];
+// Jejak "afterimage" saat Dash — array {x,y,facing,life,maxLife}, digambar
+// sebelum player supaya kelihatan seperti bayangan yang ditinggalkan.
+const dashTrail = [];
 // Serpihan debu saat berjalan
 const dustParticles = [];
 let dustSpawnTimer = 0;
@@ -1915,7 +1972,8 @@ const ICONS = {
   sunrise: 'sunrise.png', sun: 'sun.png', moon: 'moon.png', pointer: 'pointer.png',
   sticker_laugh: 'sticker_laugh.png', sticker_fire: 'sticker_fire.png', sticker_100: 'sticker_100.png',
   sticker_like: 'sticker_like.png', sticker_love: 'sticker_love.png', sticker_cry: 'sticker_cry.png',
-  fullscreen: 'fullscreen.png'
+  fullscreen: 'fullscreen.png',
+  aim_gun: 'aim_gun.png', bullet: 'bullet.png'
 };
 // Bikin tag <img> untuk sebuah ikon. Kalau file PNG belum ada / belum diganti, ikon otomatis
 // disembunyikan (bukan tampil rusak/kotak patah) supaya UI tetap rapi sebelum kamu isi logonya.
@@ -2067,6 +2125,8 @@ const player = {
   sprinting: false,
   stamina: 100,
   maxStamina: 100,
+  hp: 100,
+  maxHp: 100,
   dashTimer: 0,
   dashDx: 1,
   dashDy: 0,
@@ -2929,6 +2989,38 @@ function playJumpSound() {
   o.start(t0); o.stop(t0 + 0.24);
 }
 
+// Suara "whoosh" buat Dash — noise buffer disaring lewat bandpass yang frekuensinya
+// meluncur turun cepat, kesan angin/gesekan cepat, dibarengi oscillator rendah tipis.
+function playDashSound() {
+  const ctx = getSfxCtx();
+  if (!ctx) return;
+  const t0 = ctx.currentTime;
+  const dur = 0.22;
+
+  // Noise buffer (sumber "angin")
+  const bufferSize = Math.floor(ctx.sampleRate * dur);
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+  const noise = ctx.createBufferSource();
+  noise.buffer = buffer;
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.Q.value = 0.9;
+  filter.frequency.setValueAtTime(2200, t0);
+  filter.frequency.exponentialRampToValueAtTime(400, t0 + dur);
+
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(0.5, t0 + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+
+  noise.connect(filter).connect(g).connect(ctx.destination);
+  noise.start(t0); noise.stop(t0 + dur);
+}
+
+
 // ---------- Input & Mic & Chat & Skills ----------
 const keys = {};
 function triggerJump() {
@@ -3179,6 +3271,31 @@ function updateStaminaBarUI() {
   emoteBtn.classList.toggle('noStamina', player.stamina < DASH_COST);
 }
 
+// ---------- Bar Darah (HP) — di bawah minimap ----------
+// Saat ini nilainya penuh secara default (belum ada sumber damage aktif di
+// overworld). applyPlayerDamage()/healPlayer() disediakan siap pakai buat
+// nyambungin ke fitur combat/duel/perangkap nanti.
+const hpBarFillEl = document.getElementById('hpBarFill');
+const hpBarValueEl = document.getElementById('hpBarValue');
+function updateHpBarUI() {
+  if (!hpBarFillEl) return;
+  const pct = Math.max(0, Math.min(100, (player.hp / player.maxHp) * 100));
+  hpBarFillEl.style.width = pct + '%';
+  hpBarFillEl.classList.toggle('low', pct <= 50 && pct > 20);
+  hpBarFillEl.classList.toggle('critical', pct <= 20);
+  if (hpBarValueEl) hpBarValueEl.textContent = Math.round(Math.max(0, player.hp)) + '/' + player.maxHp;
+}
+function applyPlayerDamage(amount) {
+  player.hp = Math.max(0, player.hp - amount);
+  player.hitFlashTimer = 0.35;
+  updateHpBarUI();
+}
+function healPlayer(amount) {
+  player.hp = Math.min(player.maxHp, player.hp + amount);
+  updateHpBarUI();
+}
+updateHpBarUI();
+
 const emoteBtn = document.getElementById('emoteBtn');
 function useDash() {
   if (!gameEntered) return;
@@ -3204,6 +3321,7 @@ function useDash() {
   player.dashTimer = DASH_DURATION;
   player.dashDx = ddx;
   player.dashDy = ddy;
+  playDashSound();
   player.angle = Math.atan2(ddy, ddx);
   if (ddx < 0) { player.dir = 'left'; player.facing = 'left'; }
   else if (ddx > 0) { player.dir = 'right'; player.facing = 'right'; }
@@ -4375,6 +4493,9 @@ function update(dt) {
     const ndy = player.y + player.dashDy * DASH_SPEED * dt;
     if (!collides(ndx, player.y)) player.x = ndx;
     if (!collides(player.x, ndy)) player.y = ndy;
+    // Jejak "afterimage" — bayangan tipis di posisi sebelumnya, memudar cepat,
+    // kesan gerak super cepat khas animasi dash.
+    dashTrail.push({ x: player.x, y: player.y, facing: player.facing, life: 0.22, maxLife: 0.22 });
   } else {
     const nx = player.x + dx*curSpeed*dt;
     const ny = player.y + dy*curSpeed*dt;
@@ -4487,6 +4608,12 @@ function update(dt) {
   for (let i = activeEffects.length - 1; i >= 0; i--) {
     activeEffects[i].life -= dt;
     if (activeEffects[i].life <= 0) activeEffects.splice(i, 1);
+  }
+
+  // Jejak afterimage Dash — memudar lalu dibuang
+  for (let i = dashTrail.length - 1; i >= 0; i--) {
+    dashTrail[i].life -= dt;
+    if (dashTrail[i].life <= 0) dashTrail.splice(i, 1);
   }
 
   camera.x = Math.max(0, Math.min(WORLD_W - W, player.x - W/2));
@@ -4615,6 +4742,8 @@ function drawGround() {
   ]).concat(otherDrawables).concat(npcDrawables);
   drawables.sort((a,b)=>a.drawY-b.drawY);
 
+  drawDashTrail();
+
   for (const d of drawables) {
     const sx = d.x - camera.x, sy = d.y - camera.y;
     if (sx<-80||sx>W+80||sy<-80||sy>H+80) continue;
@@ -4645,13 +4774,29 @@ function drawGround() {
       const progress = Math.min(1, 1 - Math.max(0, ef.life) / (ef.maxLife || 0.35));
       const bx = ef.x + (endX - ef.x) * progress, by = ef.y + (endY - ef.y) * progress;
       const bsx = bx - camera.x, bsy = by - camera.y;
+      const travelAngle = Math.atan2(endY - ef.y, endX - ef.x);
+      const bulletImg = canvasIcons.bullet;
+      const hasBulletImg = bulletImg && bulletImg.complete && bulletImg.naturalWidth > 0;
+
       // Jejak peluru di belakangnya
-      ctx.strokeStyle = `rgba(255, 225, 80, ${alpha * 0.7})`;
+      ctx.strokeStyle = `rgba(255, 225, 80, ${alpha * 0.6})`;
       ctx.lineWidth = 3;
       ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(bsx, bsy); ctx.stroke();
-      // Peluru itu sendiri
-      ctx.fillStyle = `rgba(255, 240, 140, ${Math.max(alpha, 0.6)})`;
-      ctx.beginPath(); ctx.arc(bsx, bsy, 6, 0, Math.PI*2); ctx.fill();
+
+      // Peluru itu sendiri — pakai PNG (assets/icons/bullet.png) kalau ada, kalau tidak fallback bulatan kuning
+      if (hasBulletImg) {
+        const bw = 22, bh = 22 * (bulletImg.naturalHeight / bulletImg.naturalWidth);
+        ctx.save();
+        ctx.globalAlpha = Math.max(alpha, 0.6);
+        ctx.translate(bsx, bsy);
+        ctx.rotate(travelAngle); // PNG dianggap menghadap ke KANAN, diputar sesuai arah tembak
+        ctx.drawImage(bulletImg, -bw / 2, -bh / 2, bw, bh);
+        ctx.restore();
+      } else {
+        ctx.fillStyle = `rgba(255, 240, 140, ${Math.max(alpha, 0.6)})`;
+        ctx.beginPath(); ctx.arc(bsx, bsy, 6, 0, Math.PI*2); ctx.fill();
+      }
+
       // Percikan kena target saat peluru sampai
       if (progress >= 0.92) {
         const tx = endX - camera.x, ty = endY - camera.y;
@@ -4812,12 +4957,24 @@ function drawFrameRing(x, renderY, frameType) {
 // Preload ikon canvas (dipakai lewat drawImage, bukan fillText emoji lagi).
 // Kalau file PNG-nya belum diganti/belum ada, badge otomatis tidak digambar (tidak error).
 const canvasIcons = {};
+// Kalau WEAPON_VISUAL_CONFIG.aimIndicatorImage / bulletImage diisi (nama file
+// atau link https://...), itu yang dipakai. Kalau kosong, fallback ke file
+// assets/icons/aim_gun.png / assets/icons/bullet.png seperti biasa.
 function loadCanvasIcon(key) {
+  const weaponCfg = window.WEAPON_VISUAL_CONFIG || {};
+  let src;
+  if (key === 'aim_gun' && weaponCfg.aimIndicatorImage) {
+    src = weaponCfg.aimIndicatorImage;
+  } else if (key === 'bullet' && weaponCfg.bulletImage) {
+    src = weaponCfg.bulletImage;
+  } else {
+    src = ICON_BASE + (ICONS[key] || (key + '.png'));
+  }
   const img = new Image();
-  img.src = ICON_BASE + (ICONS[key] || (key + '.png'));
+  img.src = src;
   canvasIcons[key] = img;
 }
-['battle_pass'].forEach(loadCanvasIcon);
+['battle_pass', 'aim_gun', 'bullet'].forEach(loadCanvasIcon);
 
 function drawBattlePassBadge(x, tagY, hasBattlePass) {
   if (!hasBattlePass) return;
@@ -4887,38 +5044,66 @@ function drawAimArrow(x, groundY) {
   if (!aiming) return; // cuma tampil pas lagi nembak (tahan tombol Tembak), gak dipakai buat jalan/joystick
 
   const angle = aimAngle || 0;
-  const innerR = 16;
-  const outerR = 52;
-  const cosA = Math.cos(angle);
-  const sinA = Math.sin(angle) * 0.5; // dipipihkan supaya kelihatan nempel di tanah (perspektif atas)
+  const dist = 34; // jarak ikon dari pusat karakter
+  const gunImg = canvasIcons.aim_gun;
+  const hasImg = gunImg && gunImg.complete && gunImg.naturalWidth > 0;
 
-  const sxp = x + cosA * innerR;
-  const syp = groundY + sinA * innerR;
-  const exp = x + cosA * outerR;
-  const eyp = groundY + sinA * outerR;
+  const px = x + Math.cos(angle) * dist;
+  const py = groundY + Math.sin(angle) * dist * 0.5; // dipipihkan biar nempel di tanah (perspektif atas)
 
   ctx.save();
-  ctx.globalAlpha = 1;
-  ctx.shadowColor = 'rgba(0,0,0,0.65)';
-  ctx.shadowBlur = 5;
-  ctx.strokeStyle = '#ffffff';
-  ctx.fillStyle = '#ffffff';
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.moveTo(sxp, syp);
-  ctx.lineTo(exp, eyp);
-  ctx.stroke();
+  ctx.shadowColor = 'rgba(0,0,0,0.55)';
+  ctx.shadowBlur = 4;
 
-  // Kepala panah (segitiga solid) di ujung garis bidik
-  const headLen = 15;
-  const headAngle = Math.atan2(eyp - syp, exp - sxp);
-  ctx.beginPath();
-  ctx.moveTo(exp + Math.cos(headAngle) * 4, eyp + Math.sin(headAngle) * 4);
-  ctx.lineTo(exp - headLen * Math.cos(headAngle - 0.45), eyp - headLen * Math.sin(headAngle - 0.45));
-  ctx.lineTo(exp - headLen * Math.cos(headAngle + 0.45), eyp - headLen * Math.sin(headAngle + 0.45));
-  ctx.closePath();
-  ctx.fill();
+  if (hasImg) {
+    // Gambar PNG pistol/senjata, tinggal timpa assets/icons/aim_gun.png buat ganti modelnya.
+    // PNG dianggap menghadap ke KANAN secara default lalu diputar mengikuti arah bidik.
+    const size = 32;
+    ctx.translate(px, py);
+    ctx.rotate(angle);
+    ctx.drawImage(gunImg, -size / 2, -size / 2, size, size);
+  } else {
+    // Fallback panah vektor kalau assets/icons/aim_gun.png belum ada / gagal dimuat
+    const innerR = 16, outerR = 52;
+    const cosA = Math.cos(angle), sinA = Math.sin(angle) * 0.5;
+    const sxp = x + cosA * innerR, syp = groundY + sinA * innerR;
+    const exp = x + cosA * outerR, eyp = groundY + sinA * outerR;
+    ctx.strokeStyle = '#ffffff';
+    ctx.fillStyle = '#ffffff';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(sxp, syp);
+    ctx.lineTo(exp, eyp);
+    ctx.stroke();
+    const headLen = 15;
+    const headAngle = Math.atan2(eyp - syp, exp - sxp);
+    ctx.beginPath();
+    ctx.moveTo(exp + Math.cos(headAngle) * 4, eyp + Math.sin(headAngle) * 4);
+    ctx.lineTo(exp - headLen * Math.cos(headAngle - 0.45), eyp - headLen * Math.sin(headAngle - 0.45));
+    ctx.lineTo(exp - headLen * Math.cos(headAngle + 0.45), eyp - headLen * Math.sin(headAngle + 0.45));
+    ctx.closePath();
+    ctx.fill();
+  }
   ctx.restore();
+}
+
+// Gambar jejak "afterimage" Dash — siluet tipis pemain di posisi-posisi
+// sebelumnya selama dash, memudar & mengecil, kesan gerak sangat cepat.
+function drawDashTrail() {
+  for (const g of dashTrail) {
+    const gx = g.x - camera.x, gy = g.y - camera.y;
+    if (gx<-80||gx>W+80||gy<-80||gy>H+80) continue;
+    const t = Math.max(0, g.life / g.maxLife); // 1 -> 0
+    ctx.save();
+    ctx.globalAlpha = t * 0.4;
+    ctx.translate(gx, gy - 20);
+    if (g.facing === 'left') ctx.scale(-1, 1);
+    ctx.fillStyle = 'rgba(210, 230, 255, 0.9)';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 13 * (0.8 + t*0.2), 20 * (0.8 + t*0.2), 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
 }
 
 function drawPlayer(x,y) {
