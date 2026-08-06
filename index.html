@@ -560,10 +560,9 @@
   /* Baris bawah (dekat tombol Lompat): skill utama */
   #skill1Btn { right: 112px; bottom: 26px; }
   #skill2Btn { right: 168px; bottom: 26px; }
-  /* Baris atas: aksi sosial (emote, duel) */
+  /* Baris atas: aksi sosial (lari) */
   #emoteBtn { right: 112px; bottom: 82px; }
   #emoteBtn:active { animation: none; }
-  #duelBtn { right: 168px; bottom: 82px; }
 
   /* ---------- Ikon PNG kustom (ganti file PNG-nya sendiri di assets/icons/) ---------- */
   .icon-img { width:18px; height:18px; object-fit:contain; vertical-align:-3px; }
@@ -1208,9 +1207,8 @@
   </div>
 
   <button id="skill1Btn" class="skillBtn" title="Skill 1: Bakar (Admin: Kick)" style="display:none;"><img src="assets/icons/skill_fire.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"></button>
-  <button id="skill2Btn" class="skillBtn" title="Sapa: Gamper"><img src="assets/icons/skill_like.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"></button>
+  <button id="skill2Btn" class="skillBtn" title="Tembak"><img src="assets/icons/skill_shoot.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"></button>
   <button id="emoteBtn" class="skillBtn" title="Lari"><img src="assets/icons/skill_run.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"></button>
-  <button id="duelBtn" class="skillBtn" title="Ajak Duel pemain terdekat"><img src="assets/icons/duel.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"></button>
 
   <button id="fsHint" title="Layar penuh"><img src="assets/icons/fullscreen.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"></button>
   <div id="mpStatus"><span class="dot"></span><span id="mpStatusText">…</span></div>
@@ -1871,7 +1869,7 @@ const ICONS = {
   mic: 'mic.png', mute: 'mute.png', unmute: 'unmute.png', chat: 'chat.png', party: 'party.png',
   expr_normal: 'expr_normal.png', expr_marah: 'expr_marah.png', expr_senang: 'expr_senang.png',
   expr_sedih: 'expr_sedih.png', expr_ketawa: 'expr_ketawa.png',
-  skill_fire: 'skill_fire.png', skill_like: 'skill_like.png', skill_run: 'skill_run.png',
+  skill_fire: 'skill_fire.png', skill_shoot: 'skill_shoot.png', skill_run: 'skill_run.png',
   copy: 'copy.png', share: 'share.png', crown: 'crown.png', upload: 'upload.png', music: 'music.png',
   sunrise: 'sunrise.png', sun: 'sun.png', moon: 'moon.png', pointer: 'pointer.png',
   sticker_laugh: 'sticker_laugh.png', sticker_fire: 'sticker_fire.png', sticker_100: 'sticker_100.png',
@@ -2024,6 +2022,7 @@ const player = {
   emoting: false,
   emoteTimer: 0,
   emotePhase: 0,
+  sprinting: false,
   coin: 0,
   diamond: 0,
   level: 1,
@@ -2416,12 +2415,14 @@ function disableMic() {
 }
 
 // Kirim efek skill (api/dorongan) supaya terlihat oleh SEMUA pemain, bukan cuma yang memakainya
-function broadcastEffect(type, x, y) {
+function broadcastEffect(type, x, y, x2, y2) {
   if (!mpEnabled || !db || !authReady || !effectsRef) return;
-  const ref = effectsRef.push({
+  const payload = {
     type, x: Math.round(x), y: Math.round(y),
     ts: firebase.database.ServerValue.TIMESTAMP
-  });
+  };
+  if (x2 != null && y2 != null) { payload.x2 = Math.round(x2); payload.y2 = Math.round(y2); }
+  const ref = effectsRef.push(payload);
   // Bersihkan sendiri setelah dipakai supaya node "effects" tidak menumpuk jadi sampah
   setTimeout(() => { ref.remove(); }, 1200);
 }
@@ -2626,7 +2627,8 @@ if (mpEnabled && db && playersRef) {
     effectsRef.on('child_added', snap => {
       const e = snap.val();
       if (!e) return;
-      activeEffects.push({ type: e.type, x: e.x, y: e.y, life: 0.8 });
+      const dur = e.type === 'shoot' ? 0.35 : 0.8;
+      activeEffects.push({ type: e.type, x: e.x, y: e.y, x2: e.x2, y2: e.y2, life: dur, maxLife: dur });
     });
   });
 
@@ -2980,46 +2982,70 @@ function useSkill1() {
 skill1Btn.addEventListener('touchstart', e => { useSkill1(); e.preventDefault(); }, {passive: false});
 skill1Btn.addEventListener('click', useSkill1);
 
-// Skill 2: Gamper (🫱) - Dorong pemain lain yang didekati menjauh
+// Tembak: menembak pemain terdekat dengan proyektil, lalu mendorongnya menjauh
 const skill2Btn = document.getElementById('skill2Btn');
-function useSkill2() {
+const SHOOT_RANGE = 320;
+const SHOOT_HIT_RADIUS = 46;
+function useShoot() {
   if (!gameEntered) return;
   if (!mpEnabled || !db) return;
-  let nearestId = null, nearestDist = 100;
+
+  // Arah tembak mengikuti arah hadap pemain saat ini (atas/bawah/kiri/kanan)
+  const dirAngle = { right: 0, left: Math.PI, up: -Math.PI/2, down: Math.PI/2 }[player.dir] ?? 0;
+  const aimDx = Math.cos(dirAngle), aimDy = Math.sin(dirAngle);
+
+  // Cari pemain lain yang benar-benar ada di jalur tembakan (bukan cuma yang terdekat)
+  let hitId = null, hitFwd = SHOOT_RANGE;
   for (const id in otherPlayers) {
     const p = otherPlayers[id];
-    const d = Math.hypot((p.x||0) - player.x, (p.y||0) - player.y);
-    if (d < nearestDist) { nearestDist = d; nearestId = id; }
+    const px = (p.x||0) - player.x, py = (p.y||0) - player.y;
+    const fwd = px*aimDx + py*aimDy; // seberapa jauh di depan, searah tembakan
+    if (fwd <= 0 || fwd > SHOOT_RANGE) continue;
+    const perp = Math.abs(px*aimDy - py*aimDx); // jarak menyimpang dari garis tembak
+    if (perp <= SHOOT_HIT_RADIUS && fwd < hitFwd) { hitFwd = fwd; hitId = id; }
   }
-  if (!nearestId) return;
 
-  const target = otherPlayers[nearestId];
-  const angle = Math.atan2((target.y||0) - player.y, (target.x||0) - player.x);
-  const pushDist = 90;
-  let nx = (target.x||0) + Math.cos(angle) * pushDist;
-  let ny = (target.y||0) + Math.sin(angle) * pushDist;
-  nx = Math.max(20, Math.min(WORLD_W - 20, nx));
-  ny = Math.max(20, Math.min(WORLD_H - 20, ny));
+  let endX = player.x + aimDx * SHOOT_RANGE;
+  let endY = player.y + aimDy * SHOOT_RANGE;
 
-  broadcastEffect('push', target.x || player.x, target.y || player.y);
-  // Kirim event dorongan ke pemain yang dituju — DIA sendiri yang akan menerapkan
-  // posisi baru ini ke datanya, jadi tidak akan "balik lagi" ke posisi semula.
-  if (pushesRef) pushesRef.child(nearestId).push({ nx: Math.round(nx), ny: Math.round(ny) });
-  otherPlayers[nearestId] = { ...target, x: nx, y: ny };
-  if (otherPlayersRender[nearestId]) { otherPlayersRender[nearestId].x = nx; otherPlayersRender[nearestId].y = ny; }
+  if (hitId) {
+    const target = otherPlayers[hitId];
+    endX = target.x || player.x;
+    endY = target.y || player.y;
+
+    const pushDist = 90;
+    let nx = (target.x||0) + aimDx * pushDist;
+    let ny = (target.y||0) + aimDy * pushDist;
+    nx = Math.max(20, Math.min(WORLD_W - 20, nx));
+    ny = Math.max(20, Math.min(WORLD_H - 20, ny));
+
+    // Kirim event dorongan ke pemain yang dituju — DIA sendiri yang akan menerapkan
+    // posisi baru ini ke datanya, jadi tidak akan "balik lagi" ke posisi semula.
+    if (pushesRef) pushesRef.child(hitId).push({ nx: Math.round(nx), ny: Math.round(ny) });
+    otherPlayers[hitId] = { ...target, x: nx, y: ny };
+    if (otherPlayersRender[hitId]) { otherPlayersRender[hitId].x = nx; otherPlayersRender[hitId].y = ny; }
+  }
+
+  broadcastEffect('shoot', player.x, player.y, endX, endY);
 }
-skill2Btn.addEventListener('touchstart', e => { useSkill2(); e.preventDefault(); }, {passive: false});
-skill2Btn.addEventListener('click', useSkill2);
+skill2Btn.addEventListener('touchstart', e => { useShoot(); e.preventDefault(); }, {passive: false});
+skill2Btn.addEventListener('click', useShoot);
 
-// Emote: goyang seperti rumput kena angin (miring kiri-kanan saja)
+// Lari: tahan tombol untuk berlari lebih cepat, lepas untuk jalan normal lagi
 const emoteBtn = document.getElementById('emoteBtn');
-function useEmote() {
+function startSprint() {
   if (!gameEntered) return;
-  player.emoting = true;
-  player.emoteTimer = 2.2;
+  player.sprinting = true;
 }
-emoteBtn.addEventListener('touchstart', e => { useEmote(); e.preventDefault(); }, {passive: false});
-emoteBtn.addEventListener('click', useEmote);
+function stopSprint() {
+  player.sprinting = false;
+}
+emoteBtn.addEventListener('touchstart', e => { startSprint(); e.preventDefault(); }, {passive: false});
+emoteBtn.addEventListener('touchend', e => { stopSprint(); e.preventDefault(); }, {passive: false});
+emoteBtn.addEventListener('touchcancel', e => { stopSprint(); }, {passive: false});
+emoteBtn.addEventListener('mousedown', startSprint);
+emoteBtn.addEventListener('mouseup', stopSprint);
+emoteBtn.addEventListener('mouseleave', stopSprint);
 
 // Chat system wiring (max 50 chars enforced)
 const chatBtn = document.getElementById('chatBtn');
@@ -3788,10 +3814,6 @@ function requestDuel() {
   db.ref('duels/' + playerID + '_sent').set(Object.assign({}, reqData, { to: targetId, toName: targetName }));
   showToast('Ajakan duel dikirim ke ' + targetName + '...');
 }
-const duelBtn = document.getElementById('duelBtn');
-duelBtn.addEventListener('touchstart', e => { requestDuel(); e.preventDefault(); }, { passive: false });
-duelBtn.addEventListener('click', requestDuel);
-
 function respondDuel(accept, req) {
   if (!db) return;
   if (accept) {
@@ -4174,8 +4196,9 @@ function update(dt) {
   if (dy < 0 && Math.abs(dy) >= Math.abs(dx)) player.dir = 'up';
   else if (dy > 0 && Math.abs(dy) >= Math.abs(dx)) player.dir = 'down';
 
-  const nx = player.x + dx*player.speed*dt;
-  const ny = player.y + dy*player.speed*dt;
+  const curSpeed = player.speed * (player.sprinting ? 1.6 : 1);
+  const nx = player.x + dx*curSpeed*dt;
+  const ny = player.y + dy*curSpeed*dt;
   if (!collides(nx, player.y)) player.x = nx;
   if (!collides(player.x, ny)) player.y = ny;
 
@@ -4422,7 +4445,7 @@ function drawGround() {
   // Efek skill (api / dorongan) di atas semua entitas
   for (const ef of activeEffects) {
     const sx = ef.x - camera.x, sy = ef.y - camera.y;
-    const alpha = Math.max(0, ef.life / 0.8);
+    const alpha = Math.max(0, ef.life / (ef.maxLife || 0.8));
     if (ef.type === 'fire') {
       ctx.fillStyle = `rgba(255, 100, 30, ${alpha})`;
       ctx.beginPath(); ctx.arc(sx, sy - 10, 16 * (0.7 + alpha*0.3), 0, Math.PI*2); ctx.fill();
@@ -4432,6 +4455,25 @@ function drawGround() {
       ctx.strokeStyle = `rgba(120, 200, 255, ${alpha})`;
       ctx.lineWidth = 3;
       ctx.beginPath(); ctx.arc(sx, sy, 26 * (1 - alpha) + 6, 0, Math.PI*2); ctx.stroke();
+    } else if (ef.type === 'shoot') {
+      const endX = ef.x2 != null ? ef.x2 : ef.x, endY = ef.y2 != null ? ef.y2 : ef.y;
+      const progress = Math.min(1, 1 - Math.max(0, ef.life) / (ef.maxLife || 0.35));
+      const bx = ef.x + (endX - ef.x) * progress, by = ef.y + (endY - ef.y) * progress;
+      const bsx = bx - camera.x, bsy = by - camera.y;
+      // Jejak peluru di belakangnya
+      ctx.strokeStyle = `rgba(255, 225, 80, ${alpha * 0.7})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(bsx, bsy); ctx.stroke();
+      // Peluru itu sendiri
+      ctx.fillStyle = `rgba(255, 240, 140, ${Math.max(alpha, 0.6)})`;
+      ctx.beginPath(); ctx.arc(bsx, bsy, 6, 0, Math.PI*2); ctx.fill();
+      // Percikan kena target saat peluru sampai
+      if (progress >= 0.92) {
+        const tx = endX - camera.x, ty = endY - camera.y;
+        ctx.strokeStyle = `rgba(255, 200, 60, ${alpha})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(tx, ty, 12 * (1.4 - alpha), 0, Math.PI*2); ctx.stroke();
+      }
     }
   }
 
