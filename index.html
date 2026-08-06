@@ -859,6 +859,235 @@
     display:flex; align-items:center; gap:6px;
     pointer-events:none; transition: background 0.4s;
   }
+
+  /* =====================================================================
+     ====== TEMA UI TERANG (putih/abu muda, kartu rounded, ikon gelap) ======
+     Restyle tampilan lobi & HUD in-game supaya senada dengan referensi
+     desain: latar terang, kartu putih melayang dengan bayangan lembut,
+     tombol hitam solid untuk aksi utama (Main), teks & ikon gelap.
+     ===================================================================== */
+  #loginOverlay, #lobbyOverlay {
+    background:#f4f5f7 !important;
+  }
+  #lobbyBgImage, #lobbyNamesBg { display:none !important; }
+
+  /* ---- Lobby: topbar (kiri: foto+nama+online, kanan: tombol Setting) ---- */
+  .lobby-topbar { padding:22px 26px; }
+  .lobby-topbar-left { display:flex; align-items:center; gap:12px; }
+  .lobby-topbar-avatar {
+    width:42px; height:42px; border-radius:50%; background:#e7e8eb; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+    color:#8a8f98; font-size:18px; font-weight:700;
+  }
+  .lobby-topbar-avatar .lobby-account-photo {
+    width:42px; height:42px; border:none; position:static;
+  }
+  .lobby-topbar-avatar .lobby-account-initial { background:transparent; color:#8a8f98; }
+  .lobby-topbar-name { font-size:15.5px; font-weight:700; color:#161616; line-height:1.25; text-shadow:none; }
+  .lobby-topbar-status {
+    display:flex; align-items:center; gap:5px; font-size:12px; color:#8a8f98; margin-top:2px;
+  }
+  .lobby-topbar-status .dot { width:7px; height:7px; border-radius:50%; background:#3ecf6a; flex-shrink:0; }
+  .lobby-setting-btn {
+    display:flex; align-items:center; gap:8px;
+    background:#ffffff; border:none; border-radius:14px; padding:11px 18px;
+    font-size:13.5px; font-weight:600; color:#161616; cursor:pointer;
+    box-shadow:0 2px 12px rgba(20,20,30,0.08);
+    font-family:'Poppins', sans-serif; transition:filter 0.15s, transform 0.1s;
+  }
+  .lobby-setting-btn:active { filter:brightness(0.95); transform:scale(0.98); }
+  .lobby-setting-icon { font-size:15px; }
+
+  /* ---- Lobby: panggung avatar tengah ---- */
+  .lobby-char-ring {
+    border-color: rgba(20,20,30,0.08) !important;
+    box-shadow:0 10px 30px rgba(20,20,30,0.10) !important;
+    background:#fff;
+  }
+  #lobbyCharAvatar {
+    border:4px solid #fff; box-shadow:0 10px 26px rgba(20,20,30,0.16) !important;
+  }
+  .lobby-char-fallback {
+    background:#e7e8eb !important; color:#8a8f98;
+    box-shadow:0 10px 26px rgba(20,20,30,0.16) !important; border:4px solid #fff;
+  }
+  .lobby-nickname-input {
+    color:#161616 !important; text-shadow:none !important;
+    border-bottom-color: rgba(20,20,30,0.14) !important;
+  }
+  .lobby-nickname-input::placeholder { color:rgba(22,22,22,0.32) !important; }
+  .lobby-level-pill {
+    background:#eceef1; color:#5b616e; font-size:12.5px; font-weight:600;
+    padding:6px 16px; border-radius:20px;
+  }
+
+  /* ---- Lobby: tombol "Ganti Avatar" di sisi kanan panggung ---- */
+  .lobby-avatar-change-btn {
+    position:absolute; top:50%; right:64px; transform:translateY(-50%); z-index:5;
+    display:flex; align-items:center; gap:8px;
+    background:#ffffff; border:none; border-radius:14px; padding:13px 20px;
+    font-size:13.5px; font-weight:600; color:#161616; cursor:pointer;
+    box-shadow:0 2px 12px rgba(20,20,30,0.08);
+    font-family:'Poppins', sans-serif; transition:filter 0.15s, transform 0.1s;
+  }
+  .lobby-avatar-change-btn:active { filter:brightness(0.95); transform:translateY(-50%) scale(0.98); }
+  .lobby-avatar-change-icon { font-size:15px; }
+
+  /* ---- Lobby: kartu menu cepat (Shop / Misi / Hadiah / Rank) ---- */
+  #lobbyQuickMenu { bottom:104px; gap:16px; }
+  #lobbyQuickMenu button {
+    width:78px; height:78px; border-radius:18px; border:none;
+    background:#ffffff; color:#161616; font-size:26px;
+    flex-direction:column; gap:7px;
+    box-shadow:0 2px 12px rgba(20,20,30,0.07);
+  }
+  #lobbyQuickMenu button:active { filter:brightness(0.95); transform:scale(0.96); }
+  #lobbyQuickMenu .lqm-label {
+    position:static; font-size:12px; font-weight:600; color:#161616; opacity:1;
+  }
+
+  /* ---- Lobby: tombol Map (putih) & Main (hitam), pojok kanan-bawah ---- */
+  #lobbySelectedMapBtn.lobby-map-btn {
+    position:absolute; right:158px; bottom:24px; top:auto; left:auto; z-index:3;
+    background:#ffffff !important; border:none !important; color:#161616 !important;
+    border-radius:14px !important; padding:15px 20px !important; font-size:13.5px !important;
+    box-shadow:0 2px 12px rgba(20,20,30,0.08) !important; backdrop-filter:none !important;
+  }
+  .lobby-start-btn {
+    right:24px; top:auto !important; bottom:24px;
+    background:#161616 !important; color:#fff !important;
+    border-radius:14px !important; box-shadow:0 6px 20px rgba(20,20,30,0.22) !important;
+    padding:15px 26px !important;
+  }
+  .lobby-start-arrow { font-size:12px; }
+
+  /* ---- Lobby: label versi, pojok kiri-bawah ---- */
+  .app-version-tag {
+    position:fixed; left:16px; bottom:14px; z-index:3;
+    color:rgba(22,22,22,0.35); font-size:11px; font-family:'Poppins', sans-serif;
+    pointer-events:none;
+  }
+
+  /* ---- Settings panel harus tampil di atas overlay lobi ---- */
+  #settingsPanel { z-index:260 !important; }
+  #panelBackdrop { z-index:250 !important; }
+
+  /* ---- In-game HUD: tombol bulat kecil (mic/mute/chat/party) jadi putih ---- */
+  #micBtn, #deafenBtn, #chatBtn, #partyBtn {
+    background:#ffffff !important; border:none !important; color:#161616 !important;
+    box-shadow:0 2px 10px rgba(20,20,30,0.08) !important;
+  }
+  #micBtn.active { background:#161616 !important; color:#fff !important; }
+  #deafenBtn.active { background:#e3524d !important; color:#fff !important; }
+  #partyBtn.in-party { background:#eceef1 !important; box-shadow:0 0 0 2px rgba(22,22,22,0.15) !important; }
+  #partyBadge { background:#161616 !important; color:#fff !important; border:1px solid #fff !important; }
+
+  /* ---- In-game HUD: badge waktu (Pagi / jam) jadi dua kartu putih bertumpuk ---- */
+  #timeBadgeStack {
+    position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:30;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    pointer-events:none;
+  }
+  #timeBadgeStack #timeBadge {
+    position:static; transform:none;
+    background:#ffffff !important; color:#161616 !important; border:none !important;
+    box-shadow:0 2px 10px rgba(20,20,30,0.08); font-weight:700;
+  }
+  #timeClockBadge {
+    background:#ffffff; color:#5b616e; border-radius:20px; padding:5px 14px;
+    font-size:11.5px; font-weight:600; box-shadow:0 2px 10px rgba(20,20,30,0.08);
+  }
+
+  /* ---- In-game HUD: kartu pemain (foto+nama+online) pojok kanan-atas ---- */
+  #hudPlayerCard {
+    position:fixed; top:14px; right:64px; z-index:30;
+    display:flex; align-items:center; gap:10px;
+    background:#ffffff; border-radius:16px; padding:8px 14px 8px 8px;
+    box-shadow:0 2px 10px rgba(20,20,30,0.08);
+    font-family:'Poppins', sans-serif;
+    max-width:180px;
+  }
+  #hudPlayerAvatar {
+    position:relative; width:38px; height:38px; border-radius:50%; flex-shrink:0;
+    background:#e7e8eb; display:flex; align-items:center; justify-content:center;
+    overflow:hidden; color:#8a8f98; font-size:16px; font-weight:700;
+  }
+  #hudPlayerPhoto { width:38px; height:38px; object-fit:cover; border-radius:50%; display:none; }
+  #hudPlayerPhoto.has-photo { display:block; }
+  #hudPlayerInitial.hidden { display:none; }
+  .hud-player-info { overflow:hidden; }
+  #hudPlayerName {
+    font-size:13px; font-weight:700; color:#161616;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:110px;
+  }
+  .hud-player-status {
+    display:flex; align-items:center; gap:5px; font-size:11px; color:#8a8f98; margin-top:1px;
+  }
+  .hud-player-status .dot { width:6px; height:6px; border-radius:50%; background:#3ecf6a; flex-shrink:0; }
+
+  #gearBtn {
+    position:fixed; top:14px; right:14px; z-index:30;
+    width:42px; height:42px; border-radius:50%;
+    background:#ffffff; border:none;
+    color:#161616; font-size:17px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 2px 10px rgba(20,20,30,0.08);
+  }
+  #gearBtn:active { filter:brightness(0.95); }
+
+  /* ---- In-game HUD: kartu Lv/EXP + statistik ringkas, di bawah kartu pemain ---- */
+  #hudCurrency {
+    top:64px !important; right:14px !important;
+    background:#ffffff !important; border:none !important;
+    border-radius:16px !important; padding:12px 14px !important; gap:6px !important;
+    box-shadow:0 2px 10px rgba(20,20,30,0.08);
+    min-width:132px;
+  }
+  #hudCurrency .hud-row { color:#161616 !important; justify-content:space-between; }
+  #hudCurrency .hud-lvl {
+    background:transparent !important; color:#161616 !important; padding:0 !important;
+    font-size:12.5px !important; font-weight:700 !important;
+  }
+  .hud-exp-frac { font-size:10.5px; color:#8a8f98; font-weight:600; }
+  #hudExpBarWrap { background:#eceef1 !important; }
+  #hudExpBar { background:linear-gradient(90deg,#161616,#3d3d3d) !important; }
+
+  /* ---- In-game HUD: mpStatus (jumlah pemain + nama map) di bawah minimap ---- */
+  #mpStatus {
+    background:#ffffff !important; color:#161616 !important; border:none !important;
+    box-shadow:0 2px 8px rgba(20,20,30,0.07); font-weight:600;
+  }
+  #mpStatus .dot { background:#c7cad1; }
+  #mpStatus.online .dot { background:#3ecf6a !important; box-shadow:none !important; }
+
+  /* ---- In-game HUD: joystick, tombol Lompat & skill jadi terang ---- */
+  #joystickBase {
+    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.85), rgba(255,255,255,0.55)) !important;
+    border: 2px solid rgba(20,20,30,0.1) !important;
+    box-shadow: 0 4px 14px rgba(20,20,30,0.12), inset 0 2px 6px rgba(20,20,30,0.05) !important;
+  }
+  #joystickStick {
+    background: radial-gradient(circle at 35% 30%, #ffffff, #e7e8eb) !important;
+    border: 2px solid rgba(20,20,30,0.14) !important;
+    box-shadow: 0 3px 8px rgba(20,20,30,0.18) !important;
+  }
+  #jumpBtn {
+    background: linear-gradient(145deg, #ffffff, #eceef1) !important;
+    border: 2px solid rgba(20,20,30,0.1) !important;
+    color:#161616 !important; text-shadow:none !important;
+    box-shadow: 0 4px 14px rgba(20,20,30,0.14), inset 0 2px 6px rgba(255,255,255,0.6) !important;
+  }
+  .skillBtn {
+    background: linear-gradient(145deg, #ffffff, #f2f3f5) !important;
+    border: 2px solid rgba(20,20,30,0.08) !important;
+    color:#161616 !important;
+    box-shadow: 0 3px 10px rgba(20,20,30,0.12) !important;
+  }
+  #skill1Btn, #exprWheel { display:none !important; }
+  #fsHint {
+    background:#ffffff !important; color:#161616 !important; border:none !important;
+    box-shadow:0 2px 8px rgba(20,20,30,0.08) !important;
+  }
 </style>
 </head>
 <body>
@@ -945,9 +1174,21 @@
   <div id="lobbyNamesBg"></div>
 
   <div class="lobby-topbar">
-    <div class="lobby-brand"><span class="lobby-brand-mark">😂</span> MEMEVERSE ONLINE</div>
-    <div id="lobbyOnlineCount" class="lobby-online-pill">Menghubungkan...</div>
+    <div class="lobby-topbar-left">
+      <div class="lobby-topbar-avatar">
+        <img id="lobbyAccountPhoto" class="lobby-account-photo" alt="">
+        <div id="lobbyAccountInitial" class="lobby-account-photo lobby-account-initial">?</div>
+      </div>
+      <div>
+        <div id="lobbyAccountName" class="lobby-topbar-name">Nama Player</div>
+        <div id="lobbyOnlineCount" class="lobby-topbar-status"><span class="dot"></span>Menghubungkan...</div>
+      </div>
+    </div>
+    <button id="lobbySettingBtn" type="button" class="lobby-setting-btn"><span class="lobby-setting-icon">⚙️</span> Setting</button>
   </div>
+
+  <button id="lobbyAvatarUploadBtn" type="button" class="lobby-avatar-change-btn"><span class="lobby-avatar-change-icon">👤</span> Ganti Avatar</button>
+  <input type="file" id="lobbyAvatarFileInput" accept="image/*" style="display:none">
 
   <div class="lobby-stage">
     <div class="lobby-char-wrap">
@@ -955,33 +1196,22 @@
       <img id="lobbyCharAvatar" class="lobby-char-breathe" alt="Avatar">
       <div id="lobbyCharFallback" class="lobby-char-fallback lobby-char-breathe">😂</div>
     </div>
-    <input type="text" id="lobbyNameInput" class="lobby-nickname-input" placeholder="Nama kamu" maxlength="16">
+    <input type="text" id="lobbyNameInput" class="lobby-nickname-input" placeholder="Nama" maxlength="16">
+    <div class="lobby-level-pill">Level <span id="lobbyLevelText">1</span></div>
   </div>
 
-  <div class="lobby-account-panel">
-    <div class="lobby-account-photo-wrap">
-      <img id="lobbyAccountPhoto" class="lobby-account-photo" alt="">
-      <div id="lobbyAccountInitial" class="lobby-account-photo lobby-account-initial">?</div>
-      <button id="lobbyAvatarUploadBtn" type="button" class="lobby-avatar-upload-btn" title="Ganti foto avatar">📷</button>
-      <input type="file" id="lobbyAvatarFileInput" accept="image/*" style="display:none">
-    </div>
-    <div class="lobby-account-info">
-      <div id="lobbyAccountName" class="lobby-account-name">Petualang</div>
-      <div class="lobby-account-sub">Masuk dengan Google</div>
-    </div>
-  </div>
-
-  <button id="lobbyPlayBtn" class="lobby-start-btn">MULAI <span class="lobby-start-arrow">▶</span></button>
-  <button id="lobbyPartyBtn" type="button">👥 <span id="lobbyPartyBtnText">Party</span></button>
-  <button id="lobbySelectedMapBtn" type="button"><img src="assets/icons/map.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"> <span id="lobbySelectedMapText">Meme City</span></button>
+  <div id="appVersionTag" class="app-version-tag">Versi 1.0.0</div>
+  <button id="lobbySelectedMapBtn" type="button" class="lobby-map-btn"><img src="assets/icons/map.png" class="icon-img-btn" alt="" onerror="this.outerHTML='🗺️'"> <span>Map</span><span id="lobbySelectedMapText" style="display:none;">Meme City</span></button>
+  <button id="lobbyPlayBtn" class="lobby-start-btn"><span class="lobby-start-arrow">▶</span> Main</button>
+  <button id="lobbyPartyBtn" type="button" style="display:none;">👥 <span id="lobbyPartyBtnText">Party</span></button>
 
   <div id="lobbyQuickMenu">
-    <button id="lobbyShopBtn" title="Shop"><img src="assets/icons/shop.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"><span class="lqm-label">Shop</span></button>
-    <button id="lobbyLeaderboardBtn" title="Leaderboard"><img src="assets/icons/leaderboard.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"><span class="lqm-label">Ranking</span></button>
-    <button id="lobbyAchievementBtn" title="Achievement"><img src="assets/icons/achievement.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"><span class="lqm-label">Misi</span></button>
-    <button id="lobbyDailyBtn" title="Daily Reward"><img src="assets/icons/gift.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"><span class="lqm-label">Harian</span></button>
-    <button id="lobbySpinBtn" title="Lucky Spin"><img src="assets/icons/spin.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"><span class="lqm-label">Spin</span></button>
+    <button id="lobbyShopBtn" title="Shop"><img src="assets/icons/shop.png" class="icon-img-btn" alt="" onerror="this.outerHTML='🛍️'"><span class="lqm-label">Shop</span></button>
+    <button id="lobbyAchievementBtn" title="Misi"><img src="assets/icons/achievement.png" class="icon-img-btn" alt="" onerror="this.outerHTML='🎯'"><span class="lqm-label">Misi</span></button>
+    <button id="lobbyDailyBtn" title="Hadiah"><img src="assets/icons/gift.png" class="icon-img-btn" alt="" onerror="this.outerHTML='🎁'"><span class="lqm-label">Hadiah</span></button>
+    <button id="lobbyLeaderboardBtn" title="Rank"><img src="assets/icons/leaderboard.png" class="icon-img-btn" alt="" onerror="this.outerHTML='🏆'"><span class="lqm-label">Rank</span></button>
   </div>
+  <button id="lobbySpinBtn" title="Lucky Spin" style="display:none;"><img src="assets/icons/spin.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"><span class="lqm-label">Spin</span></button>
 </div>
 
 <div id="gameContainer">
@@ -1009,20 +1239,37 @@
   </div>
 
   <button id="skill1Btn" class="skillBtn" title="Skill 1: Bakar (Admin: Kick)" style="display:none;">🔥</button>
-  <button id="skill2Btn" class="skillBtn" title="Skill 2: Gamper">🫱</button>
-  <button id="emoteBtn" class="skillBtn" title="Emote: Joget Meme">😂</button>
+  <button id="skill2Btn" class="skillBtn" title="Sapa: Gamper">👍</button>
+  <button id="emoteBtn" class="skillBtn" title="Lari">🏃</button>
   <button id="duelBtn" class="skillBtn" title="Ajak Duel pemain terdekat"><img src="assets/icons/duel.png" class="icon-img-btn" alt="⚔" onerror="this.outerHTML='⚔️'"></button>
 
   <button id="fsHint" title="Layar penuh">⛶</button>
   <div id="mpStatus"><span class="dot"></span><span id="mpStatusText">…</span></div>
-  <div id="timeBadge"><span id="timeBadgeIcon">🌅</span><span id="timeBadgeText">Pagi</span></div>
+  <div id="timeBadgeStack">
+    <div id="timeBadge"><span id="timeBadgeIcon">🌅</span><span id="timeBadgeText">Pagi</span></div>
+    <div id="timeClockBadge"><span id="timeBadgeClock">08:00</span></div>
+  </div>
+
+  <div id="hudPlayerCard">
+    <div id="hudPlayerAvatar">
+      <img id="hudPlayerPhoto" alt="">
+      <div id="hudPlayerInitial">?</div>
+    </div>
+    <div class="hud-player-info">
+      <div id="hudPlayerName">Nama Player</div>
+      <div class="hud-player-status"><span class="dot"></span>Online</div>
+    </div>
+  </div>
+  <button id="gearBtn" title="Pengaturan">⚙️</button>
 
   <div id="hudCurrency">
-    <div class="hud-row"><span class="hud-lvl" id="hudLevel">Lv.1</span></div>
+    <div class="hud-row"><span class="hud-lvl" id="hudLevel">Lv. <span id="hudLevelPillText">1</span></span><span id="hudExpFraction" class="hud-exp-frac">0 / 100</span></div>
     <div id="hudExpBarWrap"><div id="hudExpBar"></div></div>
-    <div class="hud-row"><img src="assets/icons/coin.png" class="icon-img-sm" alt="" onerror="this.style.display='none'"> <span id="hudCoin">0</span></div>
-    <div class="hud-row"><img src="assets/icons/diamond.png" class="icon-img-sm" alt="" onerror="this.style.display='none'"> <span id="hudDiamond">0</span></div>
+    <div class="hud-row"><img src="assets/icons/coin.png" class="icon-img-sm" alt="" onerror="this.outerHTML='⚔️'"> <span id="hudCoin">0</span></div>
+    <div class="hud-row"><img src="assets/icons/diamond.png" class="icon-img-sm" alt="" onerror="this.outerHTML='🛡️'"> <span id="hudDiamond">0</span></div>
   </div>
+
+  <div id="appVersionTagGame" class="app-version-tag">Versi 1.0.0</div>
 </div>
 
 <!-- Chat Input Modal -->
@@ -1189,7 +1436,6 @@
   </div>
 </div>
 
-<button id="gearBtn" title="Pengaturan">⚙️</button>
 <div id="panelBackdrop"></div>
 <div id="settingsPanel">
   <button id="closePanelBtn">✕</button>
@@ -1502,6 +1748,12 @@ function updateHudCurrency() {
     const pct = Math.max(0, Math.min(100, ((player.exp || 0) / need) * 100));
     barEl.style.width = pct + '%';
   }
+  const lobbyLvlEl = document.getElementById('lobbyLevelText');
+  if (lobbyLvlEl) lobbyLvlEl.textContent = (player.level || 1);
+  const hudLvlPill = document.getElementById('hudLevelPillText');
+  if (hudLvlPill) hudLvlPill.textContent = (player.level || 1);
+  const hudExpFrac = document.getElementById('hudExpFraction');
+  if (hudExpFrac) hudExpFrac.textContent = (player.exp || 0) + ' / ' + expNeeded(player.level || 1);
 }
 
 // ---------- Tambah / kurangi koin & diamond ----------
@@ -1665,12 +1917,7 @@ function iconImg(key, cls) {
 // pemain bisa langsung ketik kode itu di panel map buat masuk ke map yang sama
 // dengan temannya, tanpa harus scroll cari nama map satu-satu.
 const MAP_LIST = [
-  { id: 'meme_city', name: 'Meme City', icon: 'map_meme_city', tint: null, codePrefix: 'CITY' },
-  { id: 'beach',      name: 'Beach',     icon: 'map_beach', tint: 'rgba(255,214,120,0.10)', codePrefix: 'PANTAI' },
-  { id: 'school',     name: 'School',    icon: 'map_school', tint: 'rgba(120,160,255,0.10)', codePrefix: 'SKUL' },
-  { id: 'space',      name: 'Space',     icon: 'map_space', tint: 'rgba(15,10,45,0.5)', codePrefix: 'SPACE' },
-  { id: 'horror',     name: 'Horror',    icon: 'map_horror', tint: 'rgba(40,0,15,0.42)', codePrefix: 'HOROR' },
-  { id: 'christmas',  name: 'Christmas (Salju)', icon: 'map_christmas', tint: 'rgba(140,205,255,0.16)', codePrefix: 'SALJU' }
+  { id: 'meme_city', name: 'Meme City', icon: 'map_meme_city', tint: null, codePrefix: 'CITY' }
 ];
 let currentMapId = 'meme_city';
 let desiredMapId = 'meme_city';
@@ -1852,11 +2099,18 @@ function getDayNightInfo() {
       const alpha = lerp(s0.a, s1.a, segT);
       const label = segT < 0.5 ? s0.label : s1.label;
       const icon = segT < 0.5 ? s0.icon : s1.icon;
-      return { color, alpha, label, icon };
+      return { color, alpha, label, icon, cycleT };
     }
   }
   const last = DAY_STOPS[DAY_STOPS.length - 1];
-  return { color: last.c, alpha: last.a, label: last.label, icon: last.icon };
+  return { color: last.c, alpha: last.a, label: last.label, icon: last.icon, cycleT };
+}
+// Jam virtual (HH:MM) turunan dari posisi siklus siang-malam, dipakai di badge waktu HUD.
+function clockTextFromCycle(cycleT) {
+  const totalMin = Math.floor(cycleT * 24 * 60);
+  const hh = Math.floor(totalMin / 60) % 24;
+  const mm = totalMin % 60;
+  return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
 }
 function drawDayNightOverlay(info) {
   if (info.alpha <= 0.003) return;
@@ -1922,6 +2176,8 @@ function updateTimeBadge(info) {
     document.getElementById('timeBadgeIcon').textContent = info.icon;
     lastBadgeLabel = info.label;
   }
+  const clockEl = document.getElementById('timeBadgeClock');
+  if (clockEl) clockEl.textContent = clockTextFromCycle(info.cycleT || 0);
 }
 
 // ---------- Setup koneksi multiplayer (Firebase Realtime Database) ----------
@@ -2020,6 +2276,10 @@ if (lobbyAvatarUploadBtn && lobbyAvatarFileInput) {
           const lobbyAccountInitialEl = document.getElementById('lobbyAccountInitial');
           if (lobbyAccountPhotoEl) { lobbyAccountPhotoEl.src = dataURL; lobbyAccountPhotoEl.classList.add('has-photo'); }
           if (lobbyAccountInitialEl) lobbyAccountInitialEl.classList.add('hidden');
+          const hudPlayerPhotoEl2 = document.getElementById('hudPlayerPhoto');
+          const hudPlayerInitialEl2 = document.getElementById('hudPlayerInitial');
+          if (hudPlayerPhotoEl2) { hudPlayerPhotoEl2.src = dataURL; hudPlayerPhotoEl2.classList.add('has-photo'); }
+          if (hudPlayerInitialEl2) hudPlayerInitialEl2.classList.add('hidden');
         };
         compressed.src = dataURL;
       };
@@ -2353,6 +2613,10 @@ if (mpEnabled && db && playersRef) {
     const lobbyAccountNameEl = document.getElementById('lobbyAccountName');
     const displayName = player.name || 'Petualang';
     if (lobbyAccountNameEl) lobbyAccountNameEl.textContent = displayName;
+    const hudPlayerPhotoEl = document.getElementById('hudPlayerPhoto');
+    const hudPlayerInitialEl = document.getElementById('hudPlayerInitial');
+    const hudPlayerNameEl = document.getElementById('hudPlayerName');
+    if (hudPlayerNameEl) hudPlayerNameEl.textContent = displayName;
     if (player.photoURL) {
       if (lobbyCharAvatarEl) {
         lobbyCharAvatarEl.src = player.photoURL;
@@ -2364,8 +2628,14 @@ if (mpEnabled && db && playersRef) {
         lobbyAccountPhotoEl.classList.add('has-photo');
       }
       if (lobbyAccountInitialEl) lobbyAccountInitialEl.classList.add('hidden');
-    } else if (lobbyAccountInitialEl) {
-      lobbyAccountInitialEl.textContent = displayName.charAt(0).toUpperCase();
+      if (hudPlayerPhotoEl) {
+        hudPlayerPhotoEl.src = player.photoURL;
+        hudPlayerPhotoEl.classList.add('has-photo');
+      }
+      if (hudPlayerInitialEl) hudPlayerInitialEl.classList.add('hidden');
+    } else {
+      if (lobbyAccountInitialEl) lobbyAccountInitialEl.textContent = displayName.charAt(0).toUpperCase();
+      if (hudPlayerInitialEl) hudPlayerInitialEl.textContent = displayName.charAt(0).toUpperCase();
     }
 
     // Dengarkan apakah pemain ini dikeluarkan (kick) oleh pemain lain
@@ -2638,12 +2908,7 @@ const PLACEHOLDER_COLORS = {
 // (lapisan-lapisannya sama, cuma "kulit" warnanya beda-beda per tema — Beach jadi pasir, Space jadi
 // permukaan gelap, Christmas jadi salju, dst. Ini dipakai bareng tint overlay yang sudah ada.)
 const MAP_PALETTES = {
-  meme_city: { grass: '#5fae3f', path: '#c29b61', river: '#4a90e2', lake: '#3f7fd1' },
-  beach:     { grass: '#e8d89a', path: '#dcc686', river: '#33b6c9', lake: '#2aa1c4' },
-  school:    { grass: '#8fae7a', path: '#b9b2a1', river: '#5aa7d6', lake: '#4f96c2' },
-  space:     { grass: '#231a3d', path: '#392a5c', river: '#5b3fa0', lake: '#4a2f8a' },
-  horror:    { grass: '#22301f', path: '#3a2a22', river: '#345942', lake: '#1f3a2c' },
-  christmas: { grass: '#eef4fb', path: '#dbe6f2', river: '#6fb7e8', lake: '#5aa6da' }
+  meme_city: { grass: '#ffffff', path: '#ffffff', river: '#ffffff', lake: '#ffffff' }
 };
 function currentPalette() {
   return MAP_PALETTES[mapBaseInfo(currentMapId).id] || MAP_PALETTES.meme_city;
@@ -2660,114 +2925,26 @@ const TILE_TEXTURES = {};
   }
 })();
 function getTerrain(col, row) {
-  const wx = col * TILE, wy = row * TILE;
-  if (Math.hypot(wx - LAKE.x, wy - LAKE.y) < LAKE.r) return 'lake';
-
-  const riverLine = Math.sin(col * 0.1) * 6 + 25;
-  if (Math.abs(row - riverLine) < 2) return 'river';
-
-  const pathLine = Math.cos(row * 0.08) * 8 + 20;
-  if (Math.abs(col - pathLine) < 1.5) return 'path';
-
+  // Tanah polos: tidak ada sungai/danau/jalan, semuanya rumput (warna putih via MAP_PALETTES)
   return 'grass';
 }
 
+// Tanah polos: tidak ada pohon/batu/semak, rumah, NPC, ikan, atau kupu-kupu/burung.
 const obstacles = [];
 function seededRandom(seed) {
   let s = seed;
   return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
 }
-const rnd = seededRandom(42);
-for (let i=0; i<130; i++) {
-  const r = rnd();
-  const type = r < 0.55 ? 'tree' : (r < 0.8 ? 'rock' : 'bush');
-  const rx = rnd()*WORLD_W, ry = rnd()*WORLD_H;
-  const col = Math.floor(rx/TILE), row = Math.floor(ry/TILE);
-  const oTerrain = getTerrain(col, row);
-  if (oTerrain === 'river' || oTerrain === 'lake') continue;
-  const baseR = type === 'tree' ? 22 : (type === 'rock' ? 14 : 11);
-  obstacles.push({ x: rx, y: ry, type, r: baseR, scale: 0.8 + rnd()*0.6 });
-}
-for (let i = obstacles.length-1; i>=0; i--) {
-  const o = obstacles[i];
-  if (Math.hypot(o.x-player.x, o.y-player.y) < 140) obstacles.splice(i,1);
-}
 
-// ---------- Desa kecil: rumah-rumah + NPC warga ----------
-const VILLAGE = { x: WORLD_W * 0.30, y: WORLD_H * 0.65 };
-const HOUSE_LAYOUT = [
-  { dx: -130, dy: -30, roof: '#c96b4a' },
-  { dx:   30, dy: -95, roof: '#b5866a' },
-  { dx:  170, dy:  10, roof: '#a9714f' },
-  { dx:  -20, dy:  110, roof: '#c48257' },
-  { dx: -180, dy:  95, roof: '#b06e4d' }
-];
-const HOUSES = HOUSE_LAYOUT.map(h => ({ x: VILLAGE.x + h.dx, y: VILLAGE.y + h.dy, roof: h.roof }));
-HOUSES.forEach(h => {
-  // Bersihkan pohon/batu yang kebetulan nongol di lokasi rumah biar rapi
-  for (let i = obstacles.length-1; i>=0; i--) {
-    if (Math.hypot(obstacles[i].x - h.x, obstacles[i].y - h.y) < 60) obstacles.splice(i,1);
-  }
-  obstacles.push({ x: h.x, y: h.y, type: 'house', r: 40, scale: 1, roof: h.roof });
-});
+// ---------- Desa (dinonaktifkan: tanah polos, tanpa rumah/NPC) ----------
+const HOUSES = [];
+const NPCS = [];
 
-const NPC_NAMES = ['Pak Tani', 'Bu Ratih', 'Kang Somad', 'Nyi Ijah', 'Om Darto'];
-const NPC_COLORS = ['#6f9a52', '#c96b7a', '#5a7fb0', '#d8a44a', '#8a6bb0'];
-const NPCS = HOUSES.map((h, i) => ({
-  homeX: h.x, homeY: h.y + 50,
-  name: NPC_NAMES[i % NPC_NAMES.length],
-  color: NPC_COLORS[i % NPC_COLORS.length],
-  speed: 0.15 + (i % 3) * 0.05,
-  range: 18 + (i % 3) * 6,
-  phase: i * 1.7
-}));
-
-// ---------- Ikan kecil di air (danau & sungai) ----------
+// ---------- Ikan (dinonaktifkan: tanah polos, tanpa air/ikan) ----------
 const FISH = [];
-const FISH_COLORS = ['#ff8c42', '#f4d35e', '#7ec8e3', '#ff6b81', '#e8e8e8', '#6fcf97'];
-const rndFish = seededRandom(101);
-// Ikan di danau, tersebar acak di dalam lingkaran danau
-for (let i=0; i<26; i++) {
-  const ang = rndFish()*Math.PI*2, rad = rndFish()*LAKE.r*0.82;
-  FISH.push({
-    homeX: LAKE.x + Math.cos(ang)*rad, homeY: LAKE.y + Math.sin(ang)*rad,
-    phase: rndFish()*Math.PI*2, speed: 0.6+rndFish()*0.7, range: 8+rndFish()*12,
-    size: 3+rndFish()*2, color: FISH_COLORS[Math.floor(rndFish()*FISH_COLORS.length)]
-  });
-}
-// Ikan di sepanjang sungai
-for (let wx=0; wx<WORLD_W; wx+=220) {
-  if (rndFish() > 0.6) continue;
-  const col = wx/TILE;
-  const riverLine = Math.sin(col * 0.1) * 6 + 25;
-  const wy = riverLine * TILE + (rndFish()-0.5)*30;
-  FISH.push({
-    homeX: wx, homeY: wy,
-    phase: rndFish()*Math.PI*2, speed: 0.6+rndFish()*0.7, range: 6+rndFish()*8,
-    size: 3+rndFish()*2, color: FISH_COLORS[Math.floor(rndFish()*FISH_COLORS.length)]
-  });
-}
 
-// ---------- Hewan darat kecil: kupu-kupu & burung kecil di atas rumput ----------
+// ---------- Hewan darat kecil (dinonaktifkan: tanah polos, tanpa kupu-kupu/burung) ----------
 const CRITTERS = [];
-const rndCritter = seededRandom(202);
-const BUTTERFLY_COLORS = ['#ff9ecf', '#fff07a', '#8ec9ff', '#ffffff'];
-const BIRD_COLORS = ['#8b5a2b', '#5a5a5a', '#c97b4a'];
-for (let i=0; i<60; i++) {
-  const cx = rndCritter()*WORLD_W, cy = rndCritter()*WORLD_H;
-  const col = Math.floor(cx/TILE), row = Math.floor(cy/TILE);
-  if (getTerrain(col, row) !== 'grass') continue;
-  const isButterfly = rndCritter() < 0.55;
-  CRITTERS.push({
-    type: isButterfly ? 'butterfly' : 'bird',
-    homeX: cx, homeY: cy,
-    phase: rndCritter()*Math.PI*2,
-    speed: isButterfly ? (0.8+rndCritter()*0.6) : (0.4+rndCritter()*0.3),
-    range: isButterfly ? (16+rndCritter()*20) : (5+rndCritter()*7),
-    color: isButterfly ? BUTTERFLY_COLORS[Math.floor(rndCritter()*BUTTERFLY_COLORS.length)]
-                        : BIRD_COLORS[Math.floor(rndCritter()*BIRD_COLORS.length)]
-  });
-}
 
 // ---------- Efek suara lompat: satu suara "pantulan" sederhana ----------
 let sfxCtx = null;
@@ -3939,6 +4116,8 @@ const backdrop = document.getElementById('panelBackdrop');
 function openPanel() { panel.classList.add('open'); backdrop.classList.add('open'); }
 function closePanel() { panel.classList.remove('open'); backdrop.classList.remove('open'); }
 gearBtn.addEventListener('click', openPanel);
+const lobbySettingBtnEl = document.getElementById('lobbySettingBtn');
+if (lobbySettingBtnEl) lobbySettingBtnEl.addEventListener('click', openPanel);
 document.getElementById('closePanelBtn').addEventListener('click', closePanel);
 backdrop.addEventListener('click', closePanel);
 document.getElementById('gearBackToLobbyBtn').addEventListener('click', backToLobby);
@@ -4239,9 +4418,6 @@ function drawGround() {
       const palette = currentPalette();
       ctx.fillStyle = palette[tType] || palette.grass;
       ctx.fillRect(sx, sy, TILE, TILE);
-      ctx.strokeStyle = 'rgba(0,0,0,0.08)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(sx + 0.5, sy + 0.5, TILE - 1, TILE - 1);
     }
   }
 
@@ -4867,8 +5043,8 @@ function drawMinimap() {
   const mapX = 14, mapY = 14;
 
   ctx.save();
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+  ctx.strokeStyle = 'rgba(20, 20, 30, 0.10)';
   ctx.lineWidth = 2;
   ctx.fillRect(mapX, mapY, mapW, mapH);
   ctx.strokeRect(mapX, mapY, mapW, mapH);
@@ -4880,9 +5056,10 @@ function drawMinimap() {
 
   const scaleX = mapW / WORLD_W;
   const scaleY = mapH / WORLD_H;
-  const miniPalette = currentPalette();
 
-  ctx.strokeStyle = miniPalette.river;
+  // Aksen dekoratif biru (garis sungai & danau) tetap dipakai di minimap walau
+  // tanah dunia sekarang putih polos, supaya tampilan minimap sesuai referensi.
+  ctx.strokeStyle = '#5b9bd5';
   ctx.lineWidth = 3;
   ctx.beginPath();
   for (let x = 0; x < WORLD_W; x += 40) {
@@ -4897,13 +5074,13 @@ function drawMinimap() {
   ctx.stroke();
 
   // Danau di minimap
-  ctx.fillStyle = miniPalette.lake;
+  ctx.fillStyle = '#5b9bd5';
   ctx.beginPath();
   ctx.arc(mapX + LAKE.x * scaleX, mapY + LAKE.y * scaleY, Math.max(3, LAKE.r * scaleX), 0, Math.PI * 2);
   ctx.fill();
 
   // Draw other players on minimap
-  ctx.fillStyle = '#8a8a8a';
+  ctx.fillStyle = '#8a8f98';
   for (const id in otherPlayers) {
     const p = otherPlayersRender[id] || otherPlayers[id];
     const opx = mapX + (p.x||0) * scaleX;
@@ -4916,7 +5093,7 @@ function drawMinimap() {
   // Draw player on minimap
   const px = mapX + player.x * scaleX;
   const py = mapY + player.y * scaleY;
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = '#161616';
   ctx.beginPath();
   ctx.arc(px, py, 4, 0, Math.PI * 2);
   ctx.fill();
