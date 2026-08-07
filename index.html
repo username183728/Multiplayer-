@@ -34,6 +34,66 @@
     river: '',
     lake: ''
   };
+
+  // =====================================================================
+  // ====== OBJECT LAYER PETA (kamu atur sendiri di sini lewat code) ======
+  // Ini daftar objek yang ditaruh DI ATAS tanah: pohon, batu, rumah, tembok,
+  // papan nama, dsb — masing-masing pakai PNG sendiri, posisi & ukuran bebas.
+  // Cuma kamu (developer) yang bisa ubah lewat array ini; SEMUA pemain akan
+  // melihat objek yang SAMA persis karena ini bagian dari code, bukan
+  // pengaturan per-pemain.
+  //
+  // Tiap objek: { image, x, y, width, height, collision, collisionInset, anchor }
+  //   image           : nama file / URL PNG (folder sama dengan index.html), latar transparan disarankan.
+  //   x, y            : posisi TITIK KAKI objek di dunia (koordinat peta, 0..WORLD_W / 0..WORLD_H).
+  //   width, height   : ukuran gambar saat digambar (px).
+  //   collision       : true kalau pemain harus mentok/tidak bisa nembus (misal tembok, rumah, batu besar).
+  //                     false kalau cuma dekorasi (bisa dilewati, misal rumput hias, papan tanda kecil).
+  //   collisionInset  : (opsional) perkecil kotak tabrakan dari tepi gambar, dalam px. Default 0.
+  //   anchor          : (opsional) 'bottom' (default, titik x,y ada di tengah-bawah gambar, cocok buat
+  //                     objek berdiri kayak pohon/rumah) atau 'center' (titik x,y di tengah gambar persis).
+  //
+  // Contoh (hapus tanda // di depan buat dipakai, ganti nama filenya):
+  window.MAP_OBJECTS_CONFIG = [
+    // { image: 'assets/pohon.png', x: 600, y: 420, width: 96, height: 120, collision: true, collisionInset: 20 },
+    // { image: 'assets/batu.png',  x: 900, y: 700, width: 64, height: 48,  collision: true },
+    // { image: 'assets/rumah.png', x: 1400, y: 900, width: 220, height: 200, collision: true, collisionInset: 30, anchor: 'bottom' },
+    // { image: 'assets/papan-tanda.png', x: 500, y: 300, width: 40, height: 50, collision: false },
+  ];
+
+  // =====================================================================
+  // ====== ASET SENJATA & PELURU (gampang diganti sendiri lewat PNG) ======
+  // Taruh file PNG kamu (disarankan persegi, mis. 64x64, latar transparan) di
+  // folder yang sama dengan index.html ini, lalu tulis nama file/URL-nya di
+  // bawah. Kosongkan (isi dengan '') kalau belum punya asetnya — sementara
+  // akan dipakai gambar panah putih polos sebagai placeholder.
+  // Catatan arah: gambar dianggap MENGHADAP KE KANAN secara default, lalu
+  // otomatis diputar mengikuti arah bidik/lemparan.
+  // =====================================================================
+  window.WEAPON_VISUAL_CONFIG = {
+    // Ikon yang muncul di tangan/dekat pemain saat menahan tombol Tembak.
+    // Bisa diisi gambar pistol, pedang, tongkat sihir, atau apapun.
+    aimIndicatorImage: '',
+    // Gambar peluru/proyektil yang melesat dari pemain ke target.
+    bulletImage: ''
+  };
+
+  // =====================================================================
+  // ====== NPC TARGET LATIHAN TEMBAK (buat tes tembak, mati kalau kena 4x) ======
+  // NPC ini BUKAN pemain sungguhan, cuma boneka target yang bisa ditembak buat
+  // nyoba sistem tembak. Kena tembak 4x -> "mati" (jatuh + hilang sebentar),
+  // lalu otomatis hidup lagi (respawn) setelah beberapa detik.
+  // Posisi & gambar bebas kamu atur di sini lewat code.
+  // =====================================================================
+  window.SHOOT_TEST_NPC_CONFIG = {
+    enabled: true,        // false kalau mau matiin NPC latihan ini
+    x: null,               // posisi X di dunia peta. null = otomatis dekat titik spawn pemain.
+    y: null,               // posisi Y di dunia peta. null = otomatis dekat titik spawn pemain.
+    name: 'Target Latihan',
+    image: '',              // nama file/URL PNG boneka target (kosong = pakai gambar boneka bawaan)
+    hitsToKill: 4,          // berapa kali kena tembak sampai "mati"
+    respawnSeconds: 4       // jeda sebelum hidup lagi setelah mati
+  };
 </script>
 
 <!-- ====== PWA / Play Store readiness ====== -->
@@ -872,6 +932,25 @@
   }
   #mpStatus.online .dot { background:#989898; box-shadow:0 0 4px rgba(152,152,152,0.8); }
 
+  /* ---------- Bar Darah (HP) pemain: tepat di bawah indikator jumlah pemain online ---------- */
+  #hpBarWrap {
+    position:fixed; top:126px; left:14px; z-index:30;
+    width:104px;
+    background:rgba(0,0,0,0.32); border:1px solid rgba(255,255,255,0.15);
+    border-radius:10px; padding:5px 7px; pointer-events:none;
+  }
+  #hpBarRow { display:flex; align-items:center; justify-content:space-between; margin-bottom:3px; }
+  #hpBarLabel { font-size:9px; font-weight:700; letter-spacing:0.04em; color:rgba(255,255,255,0.75); }
+  #hpBarValue { font-size:9px; font-weight:600; color:rgba(255,255,255,0.75); }
+  #hpBarTrack { width:100%; height:7px; background:rgba(255,255,255,0.15); border-radius:5px; overflow:hidden; }
+  #hpBarFill {
+    height:100%; width:100%; border-radius:5px;
+    background: linear-gradient(90deg,#e23b3b,#8f1f1f);
+    transition: width 0.25s ease, background 0.25s ease;
+  }
+  #hpBarFill.low { background: linear-gradient(90deg,#ff6a3d,#b33a12); }
+  #hpBarFill.critical { background: linear-gradient(90deg,#ff2d2d,#7a0f0f); }
+
   /* =====================================================================
      ====== TEMA UI TERANG (putih/abu muda, kartu rounded, ikon gelap) ======
      Restyle tampilan lobi & HUD in-game supaya senada dengan referensi
@@ -1049,6 +1128,15 @@
   }
   #mpStatus .dot { background:#c7cad1; }
   #mpStatus.online .dot { background:#3ecf6a !important; box-shadow:none !important; }
+
+  /* ---- In-game HUD: bar darah (HP), kartu putih senada di bawah mpStatus ---- */
+  #hpBarWrap {
+    background:#ffffff !important; border:none !important;
+    box-shadow:0 2px 8px rgba(20,20,30,0.07);
+  }
+  #hpBarLabel { color:#8a8f98 !important; }
+  #hpBarValue { color:#8a8f98 !important; }
+  #hpBarTrack { background:#eceef1 !important; }
 
   /* ---- In-game HUD: joystick, tombol Lompat & skill jadi minimal & transparan ---- */
   #joystickBase {
@@ -1253,6 +1341,15 @@
 
   <button id="fsHint" title="Layar penuh"><img src="assets/icons/fullscreen.png" class="icon-img-btn" alt="" onerror="this.style.display='none'"></button>
   <div id="mpStatus"><span class="dot"></span><span id="mpStatusText">…</span></div>
+
+  <!-- Bar Darah (HP) pemain, di bawah minimap & indikator jumlah pemain -->
+  <div id="hpBarWrap">
+    <div id="hpBarRow">
+      <span id="hpBarLabel">HP</span>
+      <span id="hpBarValue">100/100</span>
+    </div>
+    <div id="hpBarTrack"><div id="hpBarFill"></div></div>
+  </div>
 
   <div id="hudPlayerCard">
     <div id="hudPlayerAvatar">
@@ -1526,6 +1623,22 @@
     <div class="soundRow" style="display:none;"><span><img src="assets/icons/music.png" class="icon-img-sm" alt="" onerror="this.style.display='none'"> Suara tersimpan</span></div>
   </div>
   <p style="font-size:11px; opacity:0.6; margin-top:-6px; margin-bottom:14px;">Tiap slot bisa diisi foto + suara sendiri. Di layar permainan, tekan tombol 1️⃣-5️⃣ kecil di atas tombol LOMPAT untuk pindah foto sekaligus muter suaranya.</p>
+
+  <h3>🖼️ Latar Tanah (Map)</h3>
+  <div class="field" id="groundField">
+    <div style="font-size:11px; opacity:0.7; margin-bottom:8px;">Upload 1 PNG buat jadi tanah. Pilih dulu mau dipakai jadi apa:</div>
+    <select id="groundModeSelect" style="margin-bottom:8px;">
+      <option value="single">1 Foto Penuh (membentang di seluruh map)</option>
+      <option value="tile">Ubin / Tile (diulang berpola kecil-kecil)</option>
+    </select>
+    <input type="file" id="groundFileInput" accept="image/png,image/*" style="display:none">
+    <button class="fileBtn" id="groundFileBtn"><img src="assets/icons/upload.png" class="icon-img-sm" alt="" onerror="this.style.display='none'"> Upload PNG Tanah</button>
+    <div class="thumbRow" id="groundThumbRow" style="display:none;">
+      <img class="exprThumb" id="groundThumbImg"><span id="groundThumbLabel">Tersimpan</span>
+    </div>
+    <button class="fileBtn" id="groundResetBtn" style="margin-top:6px; background:rgba(255,80,80,0.1); border-color:rgba(255,80,80,0.35); display:none;">Kembalikan ke Tanah Polos</button>
+    <div style="font-size:10.5px; opacity:0.55; margin-top:8px;">"1 Foto Penuh" cocok buat foto/peta satu gambar utuh. "Ubin/Tile" cocok buat tekstur kecil (mis. 32x32/64x64) yang diulang biar tidak berbayang.</div>
+  </div>
 
   <h3>Posisi Joystick</h3>
   <div class="field">
@@ -1874,6 +1987,9 @@ const otherPlayersRender = {};
 const avatarImgCache = {};
 // Efek skill (api / dorongan) yang sedang tampil di layar, disinkronkan lewat Firebase
 const activeEffects = [];
+// Jejak "afterimage" saat Dash — array {x,y,facing,life,maxLife}, digambar
+// sebelum player supaya kelihatan seperti bayangan yang ditinggalkan.
+const dashTrail = [];
 // Serpihan debu saat berjalan
 const dustParticles = [];
 let dustSpawnTimer = 0;
@@ -2034,11 +2150,15 @@ resize();
 const WORLD_W = 4800, WORLD_H = 4800;
 const TILE = 32;
 
+// Skala ukuran karakter (badan, avatar, bayangan, & posisi nama/bubble di atas kepala).
+// Diturunkan dari 1 -> 0.75 supaya pemain kelihatan lebih kecil/proporsional di peta.
+const PLAYER_SCALE = 0.75;
+
 const player = { 
   x: WORLD_W/2, 
   y: WORLD_H/2, 
-  w: 30, 
-  h: 36, 
+  w: 30 * PLAYER_SCALE, 
+  h: 36 * PLAYER_SCALE, 
   speed: 220, 
   dir: 'down', 
   facing: 'right', 
@@ -2068,6 +2188,8 @@ const player = {
   sprinting: false,
   stamina: 100,
   maxStamina: 100,
+  hp: 100,
+  maxHp: 100,
   dashTimer: 0,
   dashDx: 1,
   dashDy: 0,
@@ -2889,11 +3011,107 @@ const TILE_TEXTURES = {};
   }
 })();
 
+// ---------- Tanah dari PNG upload sendiri (poin baru: bisa jadi 1 foto penuh ATAU diulang jadi tile) ----------
+// groundMode: 'tile' = tekstur kecil di-createPattern & diulang (dipakai lewat TILE_TEXTURES.grass di atas)
+//             'single' = 1 gambar dibentangkan menutupi SELURUH WORLD_W x WORLD_H, lalu digeser sesuai kamera
+let groundMode = 'tile';
+let groundSingleImage = null; // Image object dipakai kalau groundMode === 'single'
+(function restoreGroundFromStorage() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('memeverse_groundConfig') || 'null');
+    if (!saved || !saved.dataURL) return;
+    groundMode = saved.mode === 'single' ? 'single' : 'tile';
+    const img = new Image();
+    img.onload = () => {
+      if (groundMode === 'single') groundSingleImage = img;
+      else TILE_TEXTURES.grass = img;
+    };
+    img.src = saved.dataURL;
+  } catch (e) {}
+})();
+
 // Tanah polos: tidak ada pohon/batu/semak, rumah, NPC, ikan, atau kupu-kupu/burung.
 const obstacles = [];
 
+// ---------- Object Layer (diisi developer lewat window.MAP_OBJECTS_CONFIG di atas) ----------
+// Setiap objek dimuat jadi { img, loaded, x, y, w, h, drawY, collision, cx, cy, cw, ch }
+// cx/cy/cw/ch = kotak tabrakan (AABB) siap pakai, sudah dikurangi collisionInset.
+const MAP_OBJECTS = (window.MAP_OBJECTS_CONFIG || []).map(cfg => {
+  const w = cfg.width || 64, h = cfg.height || 64;
+  const anchor = cfg.anchor === 'center' ? 'center' : 'bottom';
+  // drawY dipakai buat depth-sorting (siapa digambar di depan/belakang) -> pakai titik kaki objek.
+  const footY = anchor === 'center' ? cfg.y + h/2 : cfg.y;
+  const inset = cfg.collisionInset || 0;
+  const topY = anchor === 'center' ? cfg.y - h/2 : cfg.y - h;
+  const leftX = cfg.x - w/2;
+  const obj = {
+    img: null, loaded: false,
+    x: cfg.x, y: cfg.y, w, h, anchor,
+    drawY: footY,
+    collision: !!cfg.collision,
+    cx: leftX + inset, cy: topY + inset,
+    cw: Math.max(0, w - inset*2), ch: Math.max(0, h - inset*2)
+  };
+  if (cfg.image) {
+    const img = new Image();
+    img.onload = () => { obj.loaded = true; };
+    img.src = cfg.image;
+    obj.img = img;
+  }
+  return obj;
+});
+
+// Jarak titik (px,py) ke kotak persegi (rx,ry,rw,rh) — dipakai buat collision objek persegi vs pemain (lingkaran).
+function distToRect(px, py, rx, ry, rw, rh) {
+  const cx = Math.max(rx, Math.min(px, rx+rw));
+  const cy = Math.max(ry, Math.min(py, ry+rh));
+  return Math.hypot(px-cx, py-cy);
+}
+
 // ---------- Desa (dinonaktifkan: tanah polos, tanpa rumah/NPC) ----------
 const NPCS = [];
+
+// ---------- NPC Target Latihan Tembak (window.SHOOT_TEST_NPC_CONFIG di atas) ----------
+// Boneka target statis: bisa ditembak, kena 4x tembak -> "mati" (rebah + hilang),
+// lalu otomatis respawn (hidup lagi, hits balik ke 0) setelah beberapa detik.
+const shootTestNpc = (function initShootTestNpc() {
+  const cfg = window.SHOOT_TEST_NPC_CONFIG || {};
+  if (cfg.enabled === false) return null;
+  const npc = {
+    x: (typeof cfg.x === 'number') ? cfg.x : WORLD_W/2 + 220,
+    y: (typeof cfg.y === 'number') ? cfg.y : WORLD_H/2,
+    name: cfg.name || 'Target Latihan',
+    hitsToKill: cfg.hitsToKill || 4,
+    respawnSeconds: cfg.respawnSeconds || 4,
+    hits: 0,
+    dead: false,
+    respawnTimer: 0,
+    hitFlashTimer: 0,
+    deathAnim: 0, // 0..1, dipakai buat animasi rebah+pudar waktu mati
+    img: null,
+    loaded: false,
+    r: 22 // radius kasar buat collision & deteksi tembak
+  };
+  if (cfg.image) {
+    const img = new Image();
+    img.onload = () => { npc.loaded = true; };
+    img.src = cfg.image;
+    npc.img = img;
+  }
+  return npc;
+})();
+
+// Dipanggil dari useShoot() waktu peluru kena NPC target ini.
+function hitShootTestNpc() {
+  if (!shootTestNpc || shootTestNpc.dead) return;
+  shootTestNpc.hits++;
+  shootTestNpc.hitFlashTimer = 0.28;
+  if (shootTestNpc.hits >= shootTestNpc.hitsToKill) {
+    shootTestNpc.dead = true;
+    shootTestNpc.deathAnim = 0;
+    shootTestNpc.respawnTimer = shootTestNpc.respawnSeconds;
+  }
+}
 
 // ---------- Ikan (dinonaktifkan: tanah polos, tanpa air/ikan) ----------
 const FISH = [];
@@ -2929,6 +3147,38 @@ function playJumpSound() {
   o.connect(g).connect(ctx.destination);
   o.start(t0); o.stop(t0 + 0.24);
 }
+
+// Suara "whoosh" buat Dash — noise buffer disaring lewat bandpass yang frekuensinya
+// meluncur turun cepat, kesan angin/gesekan cepat, dibarengi oscillator rendah tipis.
+function playDashSound() {
+  const ctx = getSfxCtx();
+  if (!ctx) return;
+  const t0 = ctx.currentTime;
+  const dur = 0.22;
+
+  // Noise buffer (sumber "angin")
+  const bufferSize = Math.floor(ctx.sampleRate * dur);
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+  const noise = ctx.createBufferSource();
+  noise.buffer = buffer;
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.Q.value = 0.9;
+  filter.frequency.setValueAtTime(2200, t0);
+  filter.frequency.exponentialRampToValueAtTime(400, t0 + dur);
+
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(0.5, t0 + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+
+  noise.connect(filter).connect(g).connect(ctx.destination);
+  noise.start(t0); noise.stop(t0 + dur);
+}
+
 
 // ---------- Input & Mic & Chat & Skills ----------
 const keys = {};
@@ -3030,33 +3280,48 @@ function useSkill1() {
 skill1Btn.addEventListener('touchstart', e => { useSkill1(); e.preventDefault(); }, {passive: false});
 skill1Btn.addEventListener('click', useSkill1);
 
-// Tembak: menembak pemain terdekat dengan proyektil, lalu mendorongnya menjauh
+// Tembak: menembak pemain terdekat ATAU NPC Target Latihan dengan proyektil,
+// lalu mendorong/melukai targetnya. Tetap jalan walau mode offline (biar bisa dites tanpa Firebase),
+// cuma bagian "dorong pemain lain" yang perlu koneksi multiplayer.
 const skill2Btn = document.getElementById('skill2Btn');
 const SHOOT_RANGE = 320;
 const SHOOT_HIT_RADIUS = 46;
 function useShoot() {
   if (!gameEntered) return;
-  if (!mpEnabled || !db) return;
 
   // Arah tembak 360° mengikuti aimAngle (hasil drag di tombol Tembak), BUKAN arah gerak/joystick
   const dirAngle = aimAngle || 0;
   const aimDx = Math.cos(dirAngle), aimDy = Math.sin(dirAngle);
 
-  // Cari pemain lain yang benar-benar ada di jalur tembakan (bukan cuma yang terdekat)
-  let hitId = null, hitFwd = SHOOT_RANGE;
-  for (const id in otherPlayers) {
-    const p = otherPlayers[id];
-    const px = (p.x||0) - player.x, py = (p.y||0) - player.y;
-    const fwd = px*aimDx + py*aimDy; // seberapa jauh di depan, searah tembakan
-    if (fwd <= 0 || fwd > SHOOT_RANGE) continue;
-    const perp = Math.abs(px*aimDy - py*aimDx); // jarak menyimpang dari garis tembak
-    if (perp <= SHOOT_HIT_RADIUS && fwd < hitFwd) { hitFwd = fwd; hitId = id; }
+  // Cari target terdekat DI JALUR TEMBAKAN: bisa pemain lain, ATAU NPC Target Latihan.
+  let hitId = null, hitFwd = SHOOT_RANGE, hitNpc = false;
+  if (mpEnabled && db) {
+    for (const id in otherPlayers) {
+      const p = otherPlayers[id];
+      const px = (p.x||0) - player.x, py = (p.y||0) - player.y;
+      const fwd = px*aimDx + py*aimDy; // seberapa jauh di depan, searah tembakan
+      if (fwd <= 0 || fwd > SHOOT_RANGE) continue;
+      const perp = Math.abs(px*aimDy - py*aimDx); // jarak menyimpang dari garis tembak
+      if (perp <= SHOOT_HIT_RADIUS && fwd < hitFwd) { hitFwd = fwd; hitId = id; hitNpc = false; }
+    }
+  }
+  if (shootTestNpc && !shootTestNpc.dead) {
+    const px = shootTestNpc.x - player.x, py = shootTestNpc.y - player.y;
+    const fwd = px*aimDx + py*aimDy;
+    if (fwd > 0 && fwd <= SHOOT_RANGE) {
+      const perp = Math.abs(px*aimDy - py*aimDx);
+      if (perp <= SHOOT_HIT_RADIUS && fwd < hitFwd) { hitFwd = fwd; hitId = null; hitNpc = true; }
+    }
   }
 
   let endX = player.x + aimDx * SHOOT_RANGE;
   let endY = player.y + aimDy * SHOOT_RANGE;
 
-  if (hitId) {
+  if (hitNpc) {
+    endX = shootTestNpc.x;
+    endY = shootTestNpc.y;
+    hitShootTestNpc();
+  } else if (hitId) {
     const target = otherPlayers[hitId];
     endX = target.x || player.x;
     endY = target.y || player.y;
@@ -3074,7 +3339,11 @@ function useShoot() {
     if (otherPlayersRender[hitId]) { otherPlayersRender[hitId].x = nx; otherPlayersRender[hitId].y = ny; }
   }
 
+  // Efek peluru buat pemain lain (lewat Firebase, kalau online)...
   broadcastEffect('shoot', player.x, player.y, endX, endY);
+  // ...DAN langsung juga ditambahkan lokal, supaya tetap kelihatan walau lagi offline
+  // atau round-trip Firebase-nya telat (efek dobel dari server nanti otomatis hilang sendiri, tidak masalah).
+  activeEffects.push({ type: 'shoot', x: player.x, y: player.y, x2: endX, y2: endY, life: 0.35, maxLife: 0.35 });
 }
 
 // --- 360° Drag-to-Aim: tahan tombol Tembak lalu geser jari/mouse ke segala arah
@@ -3180,6 +3449,31 @@ function updateStaminaBarUI() {
   emoteBtn.classList.toggle('noStamina', player.stamina < DASH_COST);
 }
 
+// ---------- Bar Darah (HP) — di bawah minimap ----------
+// Saat ini nilainya penuh secara default (belum ada sumber damage aktif di
+// overworld). applyPlayerDamage()/healPlayer() disediakan siap pakai buat
+// nyambungin ke fitur combat/duel/perangkap nanti.
+const hpBarFillEl = document.getElementById('hpBarFill');
+const hpBarValueEl = document.getElementById('hpBarValue');
+function updateHpBarUI() {
+  if (!hpBarFillEl) return;
+  const pct = Math.max(0, Math.min(100, (player.hp / player.maxHp) * 100));
+  hpBarFillEl.style.width = pct + '%';
+  hpBarFillEl.classList.toggle('low', pct <= 50 && pct > 20);
+  hpBarFillEl.classList.toggle('critical', pct <= 20);
+  if (hpBarValueEl) hpBarValueEl.textContent = Math.round(Math.max(0, player.hp)) + '/' + player.maxHp;
+}
+function applyPlayerDamage(amount) {
+  player.hp = Math.max(0, player.hp - amount);
+  player.hitFlashTimer = 0.35;
+  updateHpBarUI();
+}
+function healPlayer(amount) {
+  player.hp = Math.min(player.maxHp, player.hp + amount);
+  updateHpBarUI();
+}
+updateHpBarUI();
+
 const emoteBtn = document.getElementById('emoteBtn');
 function useDash() {
   if (!gameEntered) return;
@@ -3205,6 +3499,7 @@ function useDash() {
   player.dashTimer = DASH_DURATION;
   player.dashDx = ddx;
   player.dashDy = ddy;
+  playDashSound();
   player.angle = Math.atan2(ddy, ddx);
   if (ddx < 0) { player.dir = 'left'; player.facing = 'left'; }
   else if (ddx > 0) { player.dir = 'right'; player.facing = 'right'; }
@@ -3961,27 +4256,6 @@ function syncCosmeticsToRealtime() {
   }
 }
 
-function findNearestPlayerId(range) {
-  let nearestId = null, nearestDist = range || 140;
-  for (const id in otherPlayers) {
-    const p = otherPlayers[id];
-    const d = Math.hypot((p.x || 0) - player.x, (p.y || 0) - player.y);
-    if (d < nearestDist) { nearestDist = d; nearestId = id; }
-  }
-  return nearestId;
-}
-
-function requestDuel() {
-  if (!gameEntered || !mpEnabled || !db) return;
-  if (duelBattleId) { showToast('Kamu sedang duel!'); return; }
-  const targetId = findNearestPlayerId(140);
-  if (!targetId) { showToast('Tidak ada pemain di dekatmu.'); return; }
-  const targetName = (otherPlayers[targetId] && otherPlayers[targetId].name) || 'Pemain';
-  const reqData = { from: playerID, fromName: player.name || 'Petualang', status: 'pending', ts: Date.now() };
-  db.ref('duels/' + targetId).set(reqData);
-  db.ref('duels/' + playerID + '_sent').set(Object.assign({}, reqData, { to: targetId, toName: targetName }));
-  showToast('Ajakan duel dikirim ke ' + targetName + '...');
-}
 function respondDuel(accept, req) {
   if (!db) return;
   if (accept) {
@@ -4226,6 +4500,81 @@ function loadImageFromFile(file, onReady) {
   reader.readAsDataURL(file);
 }
 
+// ---------- Upload PNG Tanah (poin baru): pilih "1 Foto Penuh" atau "Ubin/Tile" ----------
+const groundModeSelect = document.getElementById('groundModeSelect');
+const groundFileInput = document.getElementById('groundFileInput');
+const groundFileBtn = document.getElementById('groundFileBtn');
+const groundThumbRow = document.getElementById('groundThumbRow');
+const groundThumbImg = document.getElementById('groundThumbImg');
+const groundThumbLabel = document.getElementById('groundThumbLabel');
+const groundResetBtn = document.getElementById('groundResetBtn');
+
+// Set dropdown & preview sesuai apa yang tersimpan (kalau ada) saat panel dibuka pertama kali.
+(function initGroundUI() {
+  if (groundModeSelect) groundModeSelect.value = groundMode;
+  try {
+    const saved = JSON.parse(localStorage.getItem('memeverse_groundConfig') || 'null');
+    if (saved && saved.dataURL) {
+      groundThumbImg.src = saved.dataURL;
+      groundThumbLabel.textContent = saved.mode === 'single' ? 'Tersimpan (1 Foto Penuh)' : 'Tersimpan (Ubin/Tile)';
+      groundThumbRow.style.display = 'flex';
+      groundResetBtn.style.display = 'block';
+    }
+  } catch (e) {}
+})();
+
+if (groundFileBtn) groundFileBtn.addEventListener('click', () => groundFileInput.click());
+if (groundFileInput) groundFileInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const mode = groundModeSelect.value === 'single' ? 'single' : 'tile';
+  loadImageFromFile(file, img => {
+    // Batas ukuran beda tiap mode: "1 Foto Penuh" boleh lebih besar (detail peta),
+    // "Ubin/Tile" dijaga kecil (biasanya 32-512px) biar polanya tetap rapat & hemat memori.
+    const maxDim = mode === 'single' ? 2048 : 512;
+    const scale = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
+    const outW = Math.max(1, Math.round(img.naturalWidth * scale));
+    const outH = Math.max(1, Math.round(img.naturalHeight * scale));
+    const off = document.createElement('canvas');
+    off.width = outW; off.height = outH;
+    const octx = off.getContext('2d');
+    octx.imageSmoothingEnabled = true;
+    octx.imageSmoothingQuality = 'high';
+    octx.drawImage(img, 0, 0, outW, outH);
+    // PNG dipertahankan (lossless) supaya sambungan ubin tetap presisi & transparansi tidak rusak.
+    const dataURL = off.toDataURL('image/png');
+
+    const finalImg = new Image();
+    finalImg.onload = () => {
+      groundMode = mode;
+      if (mode === 'single') {
+        groundSingleImage = finalImg;
+      } else {
+        TILE_TEXTURES.grass = finalImg;
+      }
+      try {
+        localStorage.setItem('memeverse_groundConfig', JSON.stringify({ mode, dataURL }));
+      } catch (err) {}
+      groundThumbImg.src = dataURL;
+      groundThumbLabel.textContent = mode === 'single' ? 'Tersimpan (1 Foto Penuh)' : 'Tersimpan (Ubin/Tile)';
+      groundThumbRow.style.display = 'flex';
+      groundResetBtn.style.display = 'block';
+    };
+    finalImg.src = dataURL;
+  });
+});
+
+if (groundResetBtn) groundResetBtn.addEventListener('click', () => {
+  groundSingleImage = null;
+  delete TILE_TEXTURES.grass;
+  groundMode = 'tile';
+  try { localStorage.removeItem('memeverse_groundConfig'); } catch (e) {}
+  groundThumbRow.style.display = 'none';
+  groundResetBtn.style.display = 'none';
+  groundFileInput.value = '';
+  if (groundModeSelect) groundModeSelect.value = 'tile';
+});
+
 // ---------- Upload foto ekspresi (maks 5): tetap jernih, cuma diturunkan resolusinya kalau kegedean ----------
 // Tiap slot (.expr-field) punya tombol upload sendiri, dikenali lewat atribut data-expr.
 document.querySelectorAll('.expr-field').forEach(field => {
@@ -4320,6 +4669,16 @@ function collides(nx, ny) {
     const minDist = o.r*o.scale + player.w/2 - 6;
     if (Math.hypot(o.x-nx, o.y-ny) < minDist) return true;
   }
+  // Object layer (pohon/batu/rumah/tembok dari MAP_OBJECTS_CONFIG) yang collision:true
+  // memblokir pemain lewat kotak tabrakan (rectangle) miliknya.
+  for (const obj of MAP_OBJECTS) {
+    if (!obj.collision) continue;
+    if (distToRect(nx, ny, obj.cx, obj.cy, obj.cw, obj.ch) < player.w/2 - 4) return true;
+  }
+  // NPC Target Latihan Tembak: cuma menghalangi jalan selagi masih "hidup".
+  if (shootTestNpc && !shootTestNpc.dead) {
+    if (Math.hypot(shootTestNpc.x-nx, shootTestNpc.y-ny) < shootTestNpc.r + player.w/2 - 6) return true;
+  }
   if (nx < player.w/2 || nx > WORLD_W-player.w/2 || ny < player.h/2 || ny > WORLD_H-player.h/2) return true;
   // Batasan sungai dihilangkan: sungai cuma dekorasi visual, tidak menghalangi jalan.
   return false;
@@ -4376,6 +4735,9 @@ function update(dt) {
     const ndy = player.y + player.dashDy * DASH_SPEED * dt;
     if (!collides(ndx, player.y)) player.x = ndx;
     if (!collides(player.x, ndy)) player.y = ndy;
+    // Jejak "afterimage" — bayangan tipis di posisi sebelumnya, memudar cepat,
+    // kesan gerak super cepat khas animasi dash.
+    dashTrail.push({ x: player.x, y: player.y, facing: player.facing, life: 0.22, maxLife: 0.22 });
   } else {
     const nx = player.x + dx*curSpeed*dt;
     const ny = player.y + dy*curSpeed*dt;
@@ -4458,6 +4820,20 @@ function update(dt) {
   // Kedip merah singkat saat kena dorongan (poin: kelihatan kalau kena pukul)
   if (player.hitFlashTimer > 0) player.hitFlashTimer -= dt;
 
+  // Update NPC Target Latihan Tembak: animasi mati, lalu hitung mundur respawn
+  if (shootTestNpc) {
+    if (shootTestNpc.hitFlashTimer > 0) shootTestNpc.hitFlashTimer -= dt;
+    if (shootTestNpc.dead) {
+      if (shootTestNpc.deathAnim < 1) shootTestNpc.deathAnim = Math.min(1, shootTestNpc.deathAnim + dt * 2.5);
+      shootTestNpc.respawnTimer -= dt;
+      if (shootTestNpc.respawnTimer <= 0) {
+        shootTestNpc.dead = false;
+        shootTestNpc.hits = 0;
+        shootTestNpc.deathAnim = 0;
+      }
+    }
+  }
+
   // Serpihan debu saat berjalan
   if (gameEntered && player.moving && player.z === 0) {
     dustSpawnTimer += dt;
@@ -4490,6 +4866,12 @@ function update(dt) {
     if (activeEffects[i].life <= 0) activeEffects.splice(i, 1);
   }
 
+  // Jejak afterimage Dash — memudar lalu dibuang
+  for (let i = dashTrail.length - 1; i >= 0; i--) {
+    dashTrail[i].life -= dt;
+    if (dashTrail[i].life <= 0) dashTrail.splice(i, 1);
+  }
+
   camera.x = Math.max(0, Math.min(WORLD_W - W, player.x - W/2));
   camera.y = Math.max(0, Math.min(WORLD_H - H, player.y - H/2));
 
@@ -4500,20 +4882,30 @@ function drawGround() {
   ctx.save();
   ctx.beginPath(); ctx.rect(0,0,W,H); ctx.clip();
 
-  // ---------- Tanah putih polos, tanpa kotak-kotak/grid tile ----------
-  // Kalau MAP_TILE_CONFIG.grass diisi PNG, tekstur itu dipakai sebagai satu
-  // background besar (di-tile lewat createPattern) supaya tetap tanpa sambungan kotak.
-  const tex = TILE_TEXTURES.grass;
-  if (tex && tex.complete && tex.naturalWidth) {
-    const pattern = ctx.createPattern(tex, 'repeat');
-    ctx.save();
-    ctx.translate(-camera.x % TILE, -camera.y % TILE);
-    ctx.fillStyle = pattern;
-    ctx.fillRect(-TILE, -TILE, W + TILE*2, H + TILE*2);
-    ctx.restore();
+  // ---------- Tanah: putih polos, ATAU PNG upload sendiri (1 foto penuh / ubin diulang) ----------
+  if (groundMode === 'single' && groundSingleImage && groundSingleImage.complete && groundSingleImage.naturalWidth) {
+    // Mode "1 Foto Penuh": gambar dianggap menutupi SELURUH peta (WORLD_W x WORLD_H),
+    // jadi kita ambil potongan (source rect) sesuai posisi kamera, lalu digambar penuh 1 layar.
+    const img = groundSingleImage;
+    const scaleX = img.naturalWidth / WORLD_W;
+    const scaleY = img.naturalHeight / WORLD_H;
+    const sx = camera.x * scaleX, sy = camera.y * scaleY;
+    const sw = W * scaleX, sh = H * scaleY;
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
   } else {
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, W, H);
+    const tex = TILE_TEXTURES.grass;
+    if (groundMode === 'tile' && tex && tex.complete && tex.naturalWidth) {
+      // Mode "Ubin/Tile": tekstur kecil diulang mulus lewat createPattern, digeser sesuai kamera.
+      const pattern = ctx.createPattern(tex, 'repeat');
+      ctx.save();
+      ctx.translate(-camera.x % TILE, -camera.y % TILE);
+      ctx.fillStyle = pattern;
+      ctx.fillRect(-TILE, -TILE, W + TILE*2, H + TILE*2);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, W, H);
+    }
   }
 
   // Ikan kecil berenang di air (danau & sungai)
@@ -4611,10 +5003,23 @@ function drawGround() {
     if (sx<-80||sx>W+80||sy<-80||sy>H+80) continue;
     visibleObstacles.push(o);
   }
+  // Object layer: cuma proses yang kelihatan di layar biar tetap ringan.
+  const visibleMapObjects = [];
+  for (const obj of MAP_OBJECTS) {
+    const sx = obj.x - camera.x, sy = obj.drawY - camera.y;
+    if (sx<-160||sx>W+160||sy<-160||sy>H+160) continue;
+    visibleMapObjects.push({ isMapObject:true, obj, x: obj.x, y: obj.drawY, drawY: obj.drawY });
+  }
+  // NPC Target Latihan Tembak (satu boneka statis, selalu diproses kalau ada)
+  const shootTestNpcDrawables = (shootTestNpc && (window.SHOOT_TEST_NPC_CONFIG?.enabled !== false))
+    ? [{ isShootTestNpc:true, x: shootTestNpc.x, y: shootTestNpc.y, drawY: shootTestNpc.y }]
+    : [];
   const drawables = visibleObstacles.map(o=>({ type:o.type, x:o.x, y:o.y, scale:o.scale, roof:o.roof, drawY:o.y })).concat([
     { isPlayer:true, x: player.x, y: player.y, drawY: player.y }
-  ]).concat(otherDrawables).concat(npcDrawables);
+  ]).concat(otherDrawables).concat(npcDrawables).concat(visibleMapObjects).concat(shootTestNpcDrawables);
   drawables.sort((a,b)=>a.drawY-b.drawY);
+
+  drawDashTrail();
 
   for (const d of drawables) {
     const sx = d.x - camera.x, sy = d.y - camera.y;
@@ -4622,6 +5027,8 @@ function drawGround() {
     if (d.isPlayer) drawPlayer(sx, sy);
     else if (d.isOther) drawOtherPlayer(sx, sy, d.id, d.data, d.z || 0);
     else if (d.isNpc) drawNpc(sx, sy, d.name, d.color, d.phase);
+    else if (d.isMapObject) drawMapObject(sx, sy, d.obj);
+    else if (d.isShootTestNpc) drawShootTestNpc(sx, sy, shootTestNpc);
     else if (d.type==='tree') drawTree(sx, sy, d.scale);
     else if (d.type==='rock') drawRock(sx, sy, d.scale);
     else if (d.type==='house') drawHouse(sx, sy, d.scale, d.roof);
@@ -4683,6 +5090,112 @@ function drawGround() {
 }
 
 // ---------- Dekorasi peta: gambar vektor bawaan ----------
+// ---------- Object Layer: gambar objek dari MAP_OBJECTS_CONFIG (pohon/batu/rumah/tembok, dll) ----------
+function drawMapObject(sx, sy, obj) {
+  // sx,sy = posisi titik kaki (anchor) objek di layar. Gambar ditaruh relatif dari situ.
+  const drawX = sx - obj.w/2;
+  const drawY = obj.anchor === 'center' ? sy - obj.h/2 : sy - obj.h;
+
+  // Bayangan tipis di tanah biar objek tidak kelihatan "melayang".
+  ctx.fillStyle = 'rgba(0,0,0,0.16)';
+  ctx.beginPath();
+  ctx.ellipse(sx, obj.anchor === 'center' ? sy + obj.h/2 : sy, obj.w*0.32, obj.w*0.14, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  if (obj.img && obj.loaded) {
+    ctx.drawImage(obj.img, drawX, drawY, obj.w, obj.h);
+  } else {
+    // Placeholder selagi gambar belum di-set / belum kemuat: kotak putus-putus + label.
+    ctx.save();
+    ctx.strokeStyle = 'rgba(120,120,120,0.6)';
+    ctx.setLineDash([4,4]);
+    ctx.strokeRect(drawX, drawY, obj.w, obj.h);
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(120,120,120,0.35)';
+    ctx.fillRect(drawX, drawY, obj.w, obj.h);
+    ctx.fillStyle = 'rgba(60,60,60,0.8)';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('objek?', sx, sy - obj.h/2);
+    ctx.restore();
+  }
+
+  // Aktifkan baris di bawah ini sementara kalau mau LIHAT kotak tabrakannya waktu ngatur posisi:
+  // if (obj.collision) { ctx.strokeStyle='red'; ctx.strokeRect(obj.cx - camera.x, obj.cy - camera.y, obj.cw, obj.ch); }
+}
+
+// ---------- NPC Target Latihan Tembak: boneka target, HP bar, kena 4x tembak = "mati" lalu respawn ----------
+function drawShootTestNpc(sx, sy, npc) {
+  const size = 44; // ukuran gambar/placeholder boneka
+  const anim = npc.deathAnim || 0;
+
+  ctx.save();
+  // Waktu "mati": rebah (rotasi 90°) + memudar, dipakai buat kasih feedback jelas kena 4x.
+  const rot = npc.dead ? (Math.PI/2) * Math.min(1, anim * 1.6) : 0;
+  const alpha = npc.dead ? Math.max(0, 1 - anim) : 1;
+  ctx.globalAlpha = alpha;
+
+  // Bayangan
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.beginPath();
+  ctx.ellipse(sx, sy + 4, size*0.32, size*0.13, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  ctx.translate(sx, sy - size/2);
+  ctx.rotate(rot);
+
+  if (npc.img && npc.loaded) {
+    ctx.drawImage(npc.img, -size/2, -size/2, size, size);
+  } else {
+    // Placeholder bawaan: boneka jerami sederhana (lingkaran kepala + badan kotak + silang target).
+    ctx.fillStyle = '#c98a4b';
+    ctx.fillRect(-4, -size/2 + 10, 8, size - 14); // tiang
+    ctx.fillStyle = '#e2c290';
+    ctx.beginPath(); ctx.arc(0, -size/2 + 8, 9, 0, Math.PI*2); ctx.fill(); // kepala jerami
+    ctx.strokeStyle = '#8a5a2b'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(-13, -size/2 + 22); ctx.lineTo(13, -size/2 + 22); ctx.stroke(); // lengan
+    // Lingkaran target merah-putih di dada
+    ctx.fillStyle = '#e34b4b';
+    ctx.beginPath(); ctx.arc(0, 2, 10, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(0, 2, 6, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#e34b4b';
+    ctx.beginPath(); ctx.arc(0, 2, 2.5, 0, Math.PI*2); ctx.fill();
+  }
+
+  // Kedip putih singkat waktu baru kena tembak
+  if (npc.hitFlashTimer > 0) {
+    ctx.globalAlpha = alpha * Math.min(1, npc.hitFlashTimer / 0.28);
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.fillRect(-size/2, -size/2, size, size);
+  }
+  ctx.restore();
+
+  if (!npc.dead) {
+    // Nama + HP bar kecil (jumlah tembakan tersisa sebelum "mati")
+    drawNameTag(sx, sy - size - 14, npc.name, { color: '#ffb3b3' });
+    const barW = 40, barH = 5;
+    const remaining = Math.max(0, npc.hitsToKill - npc.hits);
+    const pct = remaining / npc.hitsToKill;
+    const barX = sx - barW/2, barY = sy - size - 6;
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.fillRect(barX, barY, barW, barH);
+    ctx.fillStyle = pct > 0.34 ? '#4caf50' : '#e34b4b';
+    ctx.fillRect(barX, barY, barW * pct, barH);
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1;
+    ctx.strokeRect(barX, barY, barW, barH);
+  } else {
+    // Sedang "mati" / nunggu respawn: tampilkan hitung mundur kecil di bekas posisinya.
+    ctx.save();
+    ctx.globalAlpha = 0.7;
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Respawn ' + Math.max(0, Math.ceil(npc.respawnTimer)) + 's', sx, sy - size - 6);
+    ctx.restore();
+  }
+}
+
 function drawTree(x,y,scale) {
   ctx.save();
   ctx.translate(x,y); ctx.scale(scale,scale);
@@ -4829,9 +5342,21 @@ function drawFrameRing(x, renderY, frameType) {
 // Preload ikon canvas (dipakai lewat drawImage, bukan fillText emoji lagi).
 // Kalau file PNG-nya belum diganti/belum ada, badge otomatis tidak digambar (tidak error).
 const canvasIcons = {};
+// Kalau WEAPON_VISUAL_CONFIG.aimIndicatorImage / bulletImage diisi (nama file
+// atau link https://...), itu yang dipakai. Kalau kosong, fallback ke file
+// assets/icons/aim_gun.png / assets/icons/bullet.png seperti biasa.
 function loadCanvasIcon(key) {
+  const weaponCfg = window.WEAPON_VISUAL_CONFIG || {};
+  let src;
+  if (key === 'aim_gun' && weaponCfg.aimIndicatorImage) {
+    src = weaponCfg.aimIndicatorImage;
+  } else if (key === 'bullet' && weaponCfg.bulletImage) {
+    src = weaponCfg.bulletImage;
+  } else {
+    src = ICON_BASE + (ICONS[key] || (key + '.png'));
+  }
   const img = new Image();
-  img.src = ICON_BASE + (ICONS[key] || (key + '.png'));
+  img.src = src;
   canvasIcons[key] = img;
 }
 ['battle_pass', 'aim_gun', 'bullet'].forEach(loadCanvasIcon);
@@ -4947,18 +5472,37 @@ function drawAimArrow(x, groundY) {
   ctx.restore();
 }
 
+// Gambar jejak "afterimage" Dash — siluet tipis pemain di posisi-posisi
+// sebelumnya selama dash, memudar & mengecil, kesan gerak sangat cepat.
+function drawDashTrail() {
+  for (const g of dashTrail) {
+    const gx = g.x - camera.x, gy = g.y - camera.y;
+    if (gx<-80||gx>W+80||gy<-80||gy>H+80) continue;
+    const t = Math.max(0, g.life / g.maxLife); // 1 -> 0
+    ctx.save();
+    ctx.globalAlpha = t * 0.4;
+    ctx.translate(gx, gy - 20);
+    if (g.facing === 'left') ctx.scale(-1, 1);
+    ctx.fillStyle = 'rgba(210, 230, 255, 0.9)';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 13 * (0.8 + t*0.2), 20 * (0.8 + t*0.2), 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
 function drawPlayer(x,y) {
   const shadowScale = Math.max(0.6, 1 - (player.z / 180));
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
   ctx.beginPath(); 
-  ctx.ellipse(x, y+16, 14 * shadowScale, 5 * shadowScale, 0, 0, Math.PI*2); 
+  ctx.ellipse(x, y+16*PLAYER_SCALE, 14*PLAYER_SCALE * shadowScale, 5*PLAYER_SCALE * shadowScale, 0, 0, Math.PI*2); 
   ctx.fill();
 
   // Panah arah bidik: nempel di tanah tepat di bawah kaki karakter, mengikuti sudut hadap 360°
-  drawAimArrow(x, y + 14);
+  drawAimArrow(x, y + 14*PLAYER_SCALE);
 
   // Animasi berjalan: bobbing naik-turun + sedikit squash/stretch (poin 3)
-  const bounce = player.moving ? Math.abs(Math.sin(player.walkAnim)) * 5 : 0;
+  const bounce = player.moving ? Math.abs(Math.sin(player.walkAnim)) * 5 * PLAYER_SCALE : 0;
   const squashX = player.moving ? 1 - Math.abs(Math.sin(player.walkAnim)) * 0.05 : 1;
   const squashY = player.moving ? 1 + Math.abs(Math.sin(player.walkAnim)) * 0.05 : 1;
   // Goyang emote kiri-kanan saja, seperti rumput kena angin
@@ -4976,32 +5520,32 @@ function drawPlayer(x,y) {
     ctx.strokeStyle = `rgba(255, 70, 70, ${t})`;
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.arc(x, renderY - 10, 24 * (1.4 - t), 0, Math.PI*2);
+    ctx.arc(x, renderY - 10*PLAYER_SCALE, 24*PLAYER_SCALE * (1.4 - t), 0, Math.PI*2);
     ctx.stroke();
     ctx.restore();
   }
 
   if (player.sprite) {
     const img = player.sprite;
-    const targetH = 54;
+    const targetH = 54 * PLAYER_SCALE;
     const targetW = targetH * (img.naturalWidth / img.naturalHeight);
     ctx.save();
     ctx.translate(x, renderY);
     ctx.rotate(swayAngle);
     if (player.facing === 'left') ctx.scale(-1, 1);
     ctx.scale(squashX, squashY);
-    ctx.drawImage(img, -targetW/2, -targetH + 14, targetW, targetH);
+    ctx.drawImage(img, -targetW/2, -targetH + 14*PLAYER_SCALE, targetW, targetH);
     ctx.restore();
   } else if (player.googlePhotoImg && player.googlePhotoImg.complete && player.googlePhotoImg.naturalWidth) {
     const img = player.googlePhotoImg;
-    const targetH = 54;
+    const targetH = 54 * PLAYER_SCALE;
     const targetW = targetH * (img.naturalWidth / img.naturalHeight);
     ctx.save();
     ctx.translate(x, renderY);
     ctx.rotate(swayAngle);
     if (player.facing === 'left') ctx.scale(-1, 1);
     ctx.scale(squashX, squashY);
-    ctx.drawImage(img, -targetW/2, -targetH + 14, targetW, targetH);
+    ctx.drawImage(img, -targetW/2, -targetH + 14*PLAYER_SCALE, targetW, targetH);
     ctx.restore();
   } else {
     ctx.save();
@@ -5012,27 +5556,27 @@ function drawPlayer(x,y) {
     ctx.strokeStyle = 'rgba(255,255,255,0.85)';
     ctx.setLineDash([4,4]);
     ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.ellipse(0, -6, 14, 20, 0, 0, Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(0, -6*PLAYER_SCALE, 14*PLAYER_SCALE, 20*PLAYER_SCALE, 0, 0, Math.PI*2); ctx.stroke();
     ctx.setLineDash([]);
     ctx.fillStyle = 'rgba(255,255,255,0.15)';
-    ctx.beginPath(); ctx.ellipse(0, -6, 14, 20, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0, -6*PLAYER_SCALE, 14*PLAYER_SCALE, 20*PLAYER_SCALE, 0, 0, Math.PI*2); ctx.fill();
     ctx.fillStyle = 'rgba(255,255,255,0.85)';
-    ctx.font = 'bold 16px Segoe UI';
+    ctx.font = 'bold ' + Math.round(16*PLAYER_SCALE) + 'px Segoe UI';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('+', 0, -6);
+    ctx.fillText('+', 0, -6*PLAYER_SCALE);
     ctx.restore();
   }
 
   // Nama pemain di atas kepala
   if (player.name) {
-    drawNameTag(x, renderY - 62, player.name, { color: getNameColor(player.nameColor) });
-    drawBattlePassBadge(x + 46, renderY - 62, player.battlePass);
+    drawNameTag(x, renderY - 62*PLAYER_SCALE, player.name, { color: getNameColor(player.nameColor) });
+    drawBattlePassBadge(x + 46*PLAYER_SCALE, renderY - 62*PLAYER_SCALE, player.battlePass);
   }
 
   // Voice Indicator / Audio Wave above head
   if (player.micActive) {
     ctx.save();
-    const indicatorY = renderY - 44;
+    const indicatorY = renderY - 44*PLAYER_SCALE;
     const color = player.isSpeaking ? '#ffffff' : '#7a7a7a';
     
     ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
@@ -5059,7 +5603,7 @@ function drawPlayer(x,y) {
   // Chat Bubble
   if (player.chatMessage && player.chatTimer > 0) {
     if (STICKER_SET.includes(player.chatMessage)) {
-      drawStickerBubble(x, player.micActive ? (renderY - 78) : (renderY - 65), player.chatMessage);
+      drawStickerBubble(x, player.micActive ? (renderY - 78*PLAYER_SCALE) : (renderY - 65*PLAYER_SCALE), player.chatMessage);
     } else {
     ctx.save();
     ctx.font = '13px Segoe UI';
@@ -5068,7 +5612,7 @@ function drawPlayer(x,y) {
     const bubbleW = Math.max(40, textMetrics.width + padding * 2);
     const bubbleH = 26;
     const bubbleX = x - bubbleW / 2;
-    const bubbleY = player.micActive ? (renderY - 78) : (renderY - 65);
+    const bubbleY = player.micActive ? (renderY - 78*PLAYER_SCALE) : (renderY - 65*PLAYER_SCALE);
 
     ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
@@ -5100,12 +5644,12 @@ function drawOtherPlayer(x, y, id, data, z) {
   const shadowScale = Math.max(0.6, 1 - (z / 180));
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
   ctx.beginPath();
-  ctx.ellipse(x, y+16, 14 * shadowScale, 5 * shadowScale, 0, 0, Math.PI*2);
+  ctx.ellipse(x, y+16*PLAYER_SCALE, 14*PLAYER_SCALE * shadowScale, 5*PLAYER_SCALE * shadowScale, 0, 0, Math.PI*2);
   ctx.fill();
 
   // Animasi berjalan untuk pemain lain, pakai fase acak per-id biar tidak seragam persis
   const phase = performance.now() / 1000 * 9 + idPhaseOffset(id);
-  const bounce = data.moving ? Math.abs(Math.sin(phase)) * 5 : 0;
+  const bounce = data.moving ? Math.abs(Math.sin(phase)) * 5 * PLAYER_SCALE : 0;
   const squashX = data.moving ? 1 - Math.abs(Math.sin(phase)) * 0.05 : 1;
   const squashY = data.moving ? 1 + Math.abs(Math.sin(phase)) * 0.05 : 1;
   const swayPhase = performance.now() / 1000 * 6 + idPhaseOffset(id);
@@ -5133,14 +5677,14 @@ function drawOtherPlayer(x, y, id, data, z) {
   }
 
   if (avImg && avImg.complete && avImg.naturalWidth) {
-    const targetH = 54;
+    const targetH = 54 * PLAYER_SCALE;
     const targetW = targetH * (avImg.naturalWidth / avImg.naturalHeight);
     ctx.save();
     ctx.translate(x, renderY);
     ctx.rotate(swayAngle);
     if (data.facing === 'left') ctx.scale(-1, 1);
     ctx.scale(squashX, squashY);
-    ctx.drawImage(avImg, -targetW/2, -targetH + 14, targetW, targetH);
+    ctx.drawImage(avImg, -targetW/2, -targetH + 14*PLAYER_SCALE, targetW, targetH);
     ctx.restore();
   } else {
     ctx.save();
@@ -5150,20 +5694,20 @@ function drawOtherPlayer(x, y, id, data, z) {
     ctx.scale(squashX, squashY);
     ctx.strokeStyle = 'rgba(74, 144, 226, 0.9)';
     ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.ellipse(0, -6, 14, 20, 0, 0, Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(0, -6*PLAYER_SCALE, 14*PLAYER_SCALE, 20*PLAYER_SCALE, 0, 0, Math.PI*2); ctx.stroke();
     ctx.fillStyle = 'rgba(74, 144, 226, 0.25)';
-    ctx.beginPath(); ctx.ellipse(0, -6, 14, 20, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0, -6*PLAYER_SCALE, 14*PLAYER_SCALE, 20*PLAYER_SCALE, 0, 0, Math.PI*2); ctx.fill();
     ctx.restore();
   }
 
   const label = data.name || ('Pemain ' + id.slice(0, 4));
-  drawNameTag(x, renderY - 48, label, { color: getNameColor(data.nameColor) });
-  drawBattlePassBadge(x + 40, renderY - 48, data.battlePass);
+  drawNameTag(x, renderY - 48*PLAYER_SCALE, label, { color: getNameColor(data.nameColor) });
+  drawBattlePassBadge(x + 40*PLAYER_SCALE, renderY - 48*PLAYER_SCALE, data.battlePass);
 
   // Voice Indicator pemain lain (poin 3: sekarang tersinkron dari Firebase)
   if (data.micActive) {
     ctx.save();
-    const indicatorY = renderY - 30;
+    const indicatorY = renderY - 30*PLAYER_SCALE;
     const color = data.isSpeaking ? '#ffffff' : '#7a7a7a';
 
     ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
@@ -5190,7 +5734,7 @@ function drawOtherPlayer(x, y, id, data, z) {
   // Chat Bubble pemain lain (poin 3: sekarang tersinkron dari Firebase)
   if (data.chatMessage) {
     if (STICKER_SET.includes(data.chatMessage)) {
-      drawStickerBubble(x, data.micActive ? (renderY - 64) : (renderY - 51), data.chatMessage);
+      drawStickerBubble(x, data.micActive ? (renderY - 64*PLAYER_SCALE) : (renderY - 51*PLAYER_SCALE), data.chatMessage);
     } else {
     ctx.save();
     ctx.font = '13px Segoe UI';
@@ -5199,7 +5743,7 @@ function drawOtherPlayer(x, y, id, data, z) {
     const bubbleW = Math.max(40, textMetrics.width + padding * 2);
     const bubbleH = 26;
     const bubbleX = x - bubbleW / 2;
-    const bubbleY = data.micActive ? (renderY - 64) : (renderY - 51);
+    const bubbleY = data.micActive ? (renderY - 64*PLAYER_SCALE) : (renderY - 51*PLAYER_SCALE);
 
     ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
